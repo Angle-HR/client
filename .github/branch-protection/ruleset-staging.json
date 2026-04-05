@@ -1,0 +1,44 @@
+{
+  "name": "angle-hr-web-staging",
+  "target": "branch",
+  "source": "angle-hr-web",
+  "enforcement": "active",
+  "conditions": {
+    "ref_name": {
+      "include": ["refs/heads/staging"],
+      "exclude": []
+    }
+  },
+  "rules": [
+    {
+      "type": "deletion"
+    },
+    {
+      "type": "pull_request",
+      "parameters": {
+        "required_approving_review_count": 1,
+        "dismiss_stale_reviews_on_push": false,
+        "require_code_owner_review": false,
+        "require_last_push_approval": false,
+        "required_review_thread_resolution": false
+      }
+    },
+    {
+      "type": "required_status_checks",
+      "parameters": {
+        "strict_required_status_checks_policy": true,
+        "required_status_checks": [
+          {
+            "context": "Lint, format, and typecheck"
+          },
+          {
+            "context": "Unit tests"
+          },
+          {
+            "context": "Next.js build"
+          }
+        ]
+      }
+    }
+  ]
+}

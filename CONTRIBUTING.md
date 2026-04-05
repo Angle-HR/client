@@ -17,12 +17,12 @@ All contributors are expected to follow our [Code of Conduct](CODE_OF_CONDUCT.md
 
 Use a short prefix so history stays easy to scan:
 
-| Prefix | Use for |
-| --- | --- |
-| `feat/` | New features |
-| `fix/` | Bug fixes |
-| `chore/` | Tooling, deps, chores |
-| `docs/` | Documentation only |
+| Prefix      | Use for                          |
+| ----------- | -------------------------------- |
+| `feat/`     | New features                     |
+| `fix/`      | Bug fixes                        |
+| `chore/`    | Tooling, deps, chores            |
+| `docs/`     | Documentation only               |
 | `refactor/` | Behavior-preserving code changes |
 
 Examples: `feat/applicant-profile`, `fix/login-redirect`.
@@ -53,7 +53,7 @@ Optional scope: `feat(auth): add session refresh`.
 
 1. **One logical change per PR** when possible; large changes are easier to review when split.
 2. **Update docs** if you change behavior, env vars, or contributor-facing workflow.
-3. **CI must pass** — required checks are configured on protected branches (see [.github/branch-protection](.github/branch-protection/README.md)).
+3. **CI must pass** — required checks are configured on protected branches. After your first green Actions run, copy exact check names into rulesets (see [.github/branch-protection/README.md](.github/branch-protection/README.md)).
 4. **Review** — maintainers will review; address feedback or ask questions on the PR.
 
 ## Questions

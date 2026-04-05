@@ -34,18 +34,26 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+## Code quality
+
+- **ESLint** uses [`eslint-config-next`](https://www.npmjs.com/package/eslint-config-next), which bundles **`eslint-plugin-import`** and **`eslint-plugin-jsx-a11y`**. This repo adds an **`import/order`** rule in [`eslint.config.mjs`](eslint.config.mjs).
+- **Prettier** is configured in [`.prettierrc`](.prettierrc); **`eslint-config-prettier`** disables conflicting ESLint rules.
+- **TypeScript** runs with `strict` and `noUncheckedIndexedAccess` ([`tsconfig.json`](tsconfig.json)).
+- **Git hooks:** [Husky](https://typicode.github.io/husky/) runs [lint-staged](https://github.com/lint-staged/lint-staged) on commit; [commitlint](https://github.com/conventional-changelog/commitlint) enforces Conventional Commits.
+
 ## Scripts
 
-| Command | Description |
-| --- | --- |
-| `npm run dev` | Development server |
-| `npm run build` | Production build |
-| `npm run start` | Start production server |
-| `npm run lint` | ESLint |
-| `npm run format` | Format with Prettier |
-| `npm run format:check` | Check formatting |
-| `npm run typecheck` | TypeScript (`tsc --noEmit`) |
-| `npm run test` | Unit tests (Vitest) |
+| Command                | Description                 |
+| ---------------------- | --------------------------- |
+| `npm run dev`          | Development server          |
+| `npm run build`        | Production build            |
+| `npm run start`        | Start production server     |
+| `npm run lint`         | ESLint                      |
+| `npm run format`       | Format with Prettier        |
+| `npm run format:check` | Check formatting            |
+| `npm run typecheck`    | TypeScript (`tsc --noEmit`) |
+| `npm run test`         | Unit tests (Vitest, watch)  |
+| `npm run test:ci`      | Unit tests (CI, single run) |
 
 See [`Makefile`](Makefile) for shortcuts (`make lint`, `make test`, `make check`, etc.).
 
