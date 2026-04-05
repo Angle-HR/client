@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Angle HR Web
 
-## Getting Started
+Open-source frontend for **Angle HR**, built with [Next.js](https://nextjs.org/), React, TypeScript, and Tailwind CSS.
 
-First, run the development server:
+## Stack
+
+- **Framework:** Next.js 16 (App Router)
+- **UI:** React 19, Tailwind CSS 4
+- **Language:** TypeScript (strict)
+
+## Prerequisites
+
+- **Node.js** — use the version in [`.nvmrc`](.nvmrc) (see also `engines` in [`package.json`](package.json)). With [nvm](https://github.com/nvm-sh/nvm): `nvm use`.
+
+## Local setup
+
+```bash
+npm install
+```
+
+Copy environment variables (see [`.env.example`](.env.example)):
+
+```bash
+cp .env.example .env.local
+# Edit .env.local with your values
+```
+
+Start the dev server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# or: make dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Development server |
+| `npm run build` | Production build |
+| `npm run start` | Start production server |
+| `npm run lint` | ESLint |
+| `npm run format` | Format with Prettier |
+| `npm run format:check` | Check formatting |
+| `npm run typecheck` | TypeScript (`tsc --noEmit`) |
+| `npm run test` | Unit tests (Vitest) |
 
-## Learn More
+See [`Makefile`](Makefile) for shortcuts (`make lint`, `make test`, `make check`, etc.).
 
-To learn more about Next.js, take a look at the following resources:
+## Contributing
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+We welcome contributions. Please read [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) before opening a pull request.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Security
 
-## Deploy on Vercel
+To report a vulnerability privately, see [SECURITY.md](SECURITY.md).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Support
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+For questions and help, see [SUPPORT.md](SUPPORT.md).
+
+## License
+
+This project is licensed under the terms in [LICENSE](LICENSE).
+
+## Demo and screenshots
+
+- **Live demo:** _TBD — add Vercel preview or production URL when available._
+- **Screenshots:** _TBD — add key UI screenshots for contributors._
+
+## Maintainer setup (GitHub)
+
+After creating the repository:
+
+- Enable **Discussions** for community Q&A.
+- Add repository **topics**, for example: `nextjs`, `typescript`, `open-source`, `hiring`, `hr-platform`.
+- Set a short **description** and **website** URL (e.g. Vercel deployment).
+- Ensure **Dependabot** is enabled (configured via [`.github/dependabot.yml`](.github/dependabot.yml)).
