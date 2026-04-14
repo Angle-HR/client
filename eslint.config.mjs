@@ -1,7 +1,10 @@
+// For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
+
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
 import eslintConfigPrettier from "eslint-config-prettier/flat";
+import storybook from "eslint-plugin-storybook";
 
 // eslint-config-next already enables eslint-plugin-import and eslint-plugin-jsx-a11y.
 // This block adds stricter import ordering without re-registering plugins (which would error).
@@ -38,6 +41,7 @@ const eslintConfig = defineConfig([
     "coverage/**",
     "next-env.d.ts",
   ]),
+  ...storybook.configs["flat/recommended"],
 ]);
 
 export default eslintConfig;
