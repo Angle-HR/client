@@ -1,12 +1,12 @@
 ---
-description: Commits staged or selected changes with a proper commit message following the project's conventions. Use when the user wants to commit changes, save work, or create a git commit.
+description: Commits and pushes staged or selected changes with a proper commit message following the project's conventions. Use when the user wants to commit changes, save work, and share them remotely.
 ---
 
-# Commit changes (staged or selected)
+# Commit and push changes (staged or selected)
 
 ## Goal
 
-Create a **git commit** with a proper commit message following the project's conventions, either for staged changes or by selecting specific files to stage and commit.
+Create a **git commit** with a proper commit message following the project's conventions and **push** it to the remote repository, either for staged changes or by selecting specific files to stage and commit.
 
 ## Prerequisites the agent checks
 
@@ -44,11 +44,13 @@ Create a **git commit** with a proper commit message following the project's con
    git commit -m "<commit-message>"
    ```
 
-7. **Optional: Push to remote** (if user wants to share immediately):
+7. **Push to remote** to share the changes:
 
    ```bash
    git push
    ```
+
+   Verify the push succeeded and show the user the remote status.
 
 ## Commit message guidelines
 
@@ -78,9 +80,10 @@ Fixes #123 (if applicable)
 
 ## Useful variants
 
-- **Amend last commit**: `git commit --amend`
-- **Empty commit**: `git commit --allow-empty -m "chore: trigger CI"`
-- **Sign commit**: `git commit -S -m "message"` (if GPG signing enabled)
+- **Amend last commit**: `git commit --amend && git push --force-with-lease`
+- **Empty commit**: `git commit --allow-empty -m "chore: trigger CI" && git push`
+- **Sign commit**: `git commit -S -m "message" && git push` (if GPG signing enabled)
+- **Commit without push**: Use if you want to commit locally only (rare cases)
 
 ## Error handling
 
@@ -88,6 +91,8 @@ Fixes #123 (if applicable)
 2. **No changes staged** — Offer to stage changes or show how to stage
 3. **Merge conflicts** — Stop and explain how to resolve conflicts first
 4. **Identity not configured** — Guide user to set `git config user.name` and `user.email`
+5. **Push fails** — Check for network issues, authentication, or remote conflicts; suggest `git pull` if needed
+6. **Remote not configured** — Help set up remote with `git remote add origin <url>`
 
 ## Safety checks
 
