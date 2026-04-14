@@ -42,6 +42,18 @@ Create a **GitHub pull request** targeting **`main`** from the **current branch*
 
 4. Parse **`gh`** output for the **PR URL** and return it to the user.
 
+5. **Cleanup** — After successful PR creation, remove the generated PR template file:
+
+   ```bash
+   rm -f "pr_template/pr-$(git branch --show-current | sed 's/[^A-Za-z0-9._-]/-/g').md"
+   ```
+
+   Optionally remove the entire `pr_template/` directory if it's empty:
+
+   ```bash
+   rmdir pr_template 2>/dev/null || true
+   ```
+
 ### Useful variants
 
 - **Draft PR**: add **`--draft`**.
