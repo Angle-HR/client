@@ -25,7 +25,7 @@ jobs:
         run: npm ci
 
       - name: Install native bindings
-        run: npm install @rolldown/binding-linux-x64-gnu lightningcss-linux-x64-gnu
+        run: npm install @rolldown/binding-linux-x64-gnu lightningcss-linux-x64-gnu @tailwindcss/oxide-linux-x64-gnu
 
       - name: Build
         run: npm run build
