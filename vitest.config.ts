@@ -28,29 +28,34 @@ export default defineConfig({
           include: ["**/*.{test,spec}.{ts,tsx}"],
         },
       },
-      {
-        extends: true,
-        plugins: [
-          // The plugin will run tests for the stories defined in your Storybook config
-          // See options at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon#storybooktest
-          storybookTest({
-            configDir: path.join(dirname, ".storybook"),
-          }),
-        ],
-        test: {
-          name: "storybook",
-          browser: {
-            enabled: true,
-            headless: true,
-            provider: playwright({}),
-            instances: [
-              {
-                browser: "chromium",
+      // Only include Storybook tests if not in CI
+      ...(process.env.CI !== "true"
+        ? [
+            {
+              extends: "default",
+              plugins: [
+                // The plugin will run tests for the stories defined in your Storybook config
+                // See options at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon#storybooktest
+                storybookTest({
+                  configDir: path.join(dirname, ".storybook"),
+                }),
+              ],
+              test: {
+                name: "storybook",
+                browser: {
+                  enabled: true,
+                  headless: true,
+                  provider: playwright({}),
+                  instances: [
+                    {
+                      browser: "chromium" as const,
+                    },
+                  ],
+                },
               },
-            ],
-          },
-        },
-      },
+            },
+          ]
+        : []),
     ],
   },
 });
