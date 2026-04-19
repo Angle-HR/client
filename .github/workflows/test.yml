@@ -28,5 +28,12 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install
 
+      - name: Start Storybook
+        run: npm run storybook &
+        continue-on-error: true
+
+      - name: Wait for Storybook
+        run: sleep 10
+
       - name: Vitest
         run: npm run test:ci
