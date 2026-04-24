@@ -46,3 +46,5 @@ next-env.d.ts
 playwright-report/
 test-results/
 pr_template/
+*storybook.log
+storybook-static
