@@ -1,0 +1,131 @@
+@use "./primitives" as primitives;
+
+$color-background: primitives.$color-white !default;
+$color-surface: primitives.$color-white !default;
+$color-surface-muted: primitives.$color-light-grey-1 !default;
+$color-surface-tertiary: primitives.$color-light-grey-2 !default;
+$color-foreground: primitives.$color-dark-grey-1 !default;
+$color-text-primary: primitives.$color-dark-grey-1 !default;
+$color-text-secondary: primitives.$color-dark-grey-7 !default;
+$color-text-tertiary: primitives.$color-dark-grey-9 !default;
+$color-text-muted: primitives.$color-light-grey-6 !default;
+$color-text-disabled: primitives.$color-light-grey-3 !default;
+$color-text-on-primary: primitives.$color-white !default;
+$color-border: primitives.$color-light-grey-4 !default;
+$color-border-muted: primitives.$color-light-grey-5 !default;
+$color-border-subtle: primitives.$color-light-grey-6 !default;
+$color-border-transparent: primitives.$color-white-16 !default;
+$color-primary: primitives.$color-blue-7 !default;
+$color-primary-soft: primitives.$color-primary-soft !default;
+$color-success: primitives.$color-green-5 !default;
+$color-warning: primitives.$color-orange-4 !default;
+$color-danger: primitives.$color-red-7 !default;
+$color-info: primitives.$color-aqua-4 !default;
+
+$color-button-default-primary-rest: primitives.$color-light-grey-1 !default;
+$color-button-default-primary-hover: primitives.$color-black-14 !default;
+$color-button-default-primary-pressed: primitives.$color-black-12 !default;
+$color-button-default-primary-disabled: transparent !default;
+$color-button-default-primary-focus: primitives.$color-white !default;
+
+$color-button-default-secondary-rest: transparent !default;
+$color-button-default-secondary-hover: primitives.$color-black-14 !default;
+$color-button-default-secondary-pressed: primitives.$color-black-14 !default;
+$color-button-default-secondary-disabled: transparent !default;
+$color-button-default-secondary-focus: primitives.$color-white !default;
+
+$color-button-default-tertiary-rest: transparent !default;
+$color-button-default-tertiary-hover: primitives.$color-black-14 !default;
+$color-button-default-tertiary-pressed: primitives.$color-black-14 !default;
+$color-button-default-tertiary-disabled: transparent !default;
+$color-button-default-tertiary-focus: primitives.$color-white !default;
+
+$color-button-default-primary-border-rest: primitives.$color-light-grey-2 !default;
+$color-button-default-primary-border-hover: primitives.$color-black-14 !default;
+$color-button-default-primary-border-selected: primitives.$color-black-14 !default;
+$color-button-default-primary-border-disabled: primitives.$color-light-grey-3 !default;
+$color-button-default-primary-border-focus: primitives.$color-blue-7 !default;
+
+$color-button-default-secondary-border-rest: primitives.$color-light-grey-2 !default;
+$color-button-default-secondary-border-hover: primitives.$color-black-12 !default;
+$color-button-default-secondary-border-selected: primitives.$color-black-12 !default;
+$color-button-default-secondary-border-disabled: primitives.$color-light-grey-3 !default;
+$color-button-default-secondary-border-focus: primitives.$color-blue-7 !default;
+
+$color-button-default-tertiary-border-rest: transparent !default;
+$color-button-default-tertiary-border-hover: transparent !default;
+$color-button-default-tertiary-border-selected: transparent !default;
+$color-button-default-tertiary-border-disabled: transparent !default;
+$color-button-default-tertiary-border-focus: primitives.$color-blue-7 !default;
+
+$color-button-blue-primary-rest: primitives.$color-blue-7 !default;
+$color-button-blue-primary-hover: primitives.$color-blue-6 !default;
+$color-button-blue-primary-pressed: primitives.$color-blue-3 !default;
+$color-button-blue-primary-disabled: transparent !default;
+$color-button-blue-primary-focus: primitives.$color-white !default;
+
+$color-button-blue-secondary-rest: transparent !default;
+$color-button-blue-secondary-hover: primitives.$color-blue-11 !default;
+$color-button-blue-secondary-pressed: primitives.$color-blue-10 !default;
+$color-button-blue-secondary-disabled: transparent !default;
+$color-button-blue-secondary-focus: primitives.$color-white-2 !default;
+
+$color-button-blue-tertiary-rest: transparent !default;
+$color-button-blue-tertiary-hover: primitives.$color-blue-12 !default;
+$color-button-blue-tertiary-pressed: primitives.$color-blue-11 !default;
+$color-button-blue-tertiary-disabled: transparent !default;
+$color-button-blue-tertiary-focus: primitives.$color-white-2 !default;
+
+$color-button-blue-primary-border-rest: primitives.$color-black-14 !default;
+$color-button-blue-primary-border-hover: primitives.$color-black-14 !default;
+$color-button-blue-primary-border-selected: primitives.$color-black-14 !default;
+$color-button-blue-primary-border-disabled: primitives.$color-black-14 !default;
+$color-button-blue-primary-border-focus: primitives.$color-blue-7 !default;
+
+$color-button-blue-secondary-border-rest: primitives.$color-blue-9 !default;
+$color-button-blue-secondary-border-hover: primitives.$color-blue-9 !default;
+$color-button-blue-secondary-border-selected: primitives.$color-blue-9 !default;
+$color-button-blue-secondary-border-disabled: primitives.$color-blue-7 !default;
+$color-button-blue-secondary-border-focus: primitives.$color-blue-7 !default;
+
+$color-button-blue-tertiary-border-rest: transparent !default;
+$color-button-blue-tertiary-border-hover: transparent !default;
+$color-button-blue-tertiary-border-selected: transparent !default;
+$color-button-blue-tertiary-border-disabled: transparent !default;
+$color-button-blue-tertiary-border-focus: primitives.$color-blue-7 !default;
+
+$color-button-red-primary-rest: primitives.$color-red-7 !default;
+$color-button-red-primary-hover: primitives.$color-red-6 !default;
+$color-button-red-primary-pressed: primitives.$color-red-6 !default;
+$color-button-red-primary-disabled: primitives.$color-red-7 !default;
+$color-button-red-primary-focus: primitives.$color-red-7 !default;
+
+$color-button-red-secondary-rest: transparent !default;
+$color-button-red-secondary-hover: primitives.$color-red-12 !default;
+$color-button-red-secondary-pressed: primitives.$color-red-12 !default;
+$color-button-red-secondary-disabled: transparent !default;
+$color-button-red-secondary-focus: primitives.$color-red-12 !default;
+
+$color-button-red-tertiary-rest: transparent !default;
+$color-button-red-tertiary-hover: primitives.$color-red-12 !default;
+$color-button-red-tertiary-pressed: primitives.$color-red-12 !default;
+$color-button-red-tertiary-disabled: transparent !default;
+$color-button-red-tertiary-focus: primitives.$color-white-2 !default;
+
+$color-button-red-primary-border-rest: primitives.$color-black-14 !default;
+$color-button-red-primary-border-hover: primitives.$color-black-14 !default;
+$color-button-red-primary-border-selected: primitives.$color-black-14 !default;
+$color-button-red-primary-border-disabled: primitives.$color-black-14 !default;
+$color-button-red-primary-border-focus: primitives.$color-blue-7 !default;
+
+$color-button-red-secondary-border-rest: primitives.$color-red-10 !default;
+$color-button-red-secondary-border-hover: primitives.$color-red-10 !default;
+$color-button-red-secondary-border-selected: primitives.$color-red-10 !default;
+$color-button-red-secondary-border-disabled: primitives.$color-red-7 !default;
+$color-button-red-secondary-border-focus: primitives.$color-blue-7 !default;
+
+$color-button-red-tertiary-border-rest: transparent !default;
+$color-button-red-tertiary-border-hover: transparent !default;
+$color-button-red-tertiary-border-selected: transparent !default;
+$color-button-red-tertiary-border-disabled: transparent !default;
+$color-button-red-tertiary-border-focus: primitives.$color-blue-7 !default;
