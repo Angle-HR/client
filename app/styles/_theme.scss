@@ -299,7 +299,7 @@ $primitive-color-names: (
   --color-border-subtle: var(--color-light-grey-6);
   --color-border-transparent: var(--color-white-16);
   --color-primary: var(--color-blue-7);
-  --color-primary-soft: rgba(37, 99, 235, 0.12);
+  --color-primary-soft: var(--color-primary-soft);
   --color-success: var(--color-green-5);
   --color-warning: var(--color-orange-4);
   --color-danger: var(--color-red-7);
