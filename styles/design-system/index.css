@@ -1,0 +1,10 @@
+/* ==========================================================================
+   Angle Design System — Barrel Import
+   Import order matters: primitives first, then tokens that reference them.
+   ========================================================================== */
+
+@import "./primitives.css";
+@import "./tokens.css";
+@import "./typography.css";
+@import "./spacing.css";
+@import "./shadows.css";

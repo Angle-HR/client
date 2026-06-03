@@ -1,0 +1,80 @@
+/* ==========================================================================
+   Angle Design System — Spacing
+   Source: Figma spacing primitives
+
+   No token layer — primitives used directly. Three categories:
+   gap (flex/grid gaps), padding, radius (border-radius).
+   ========================================================================== */
+
+:root {
+  /* ── Gap ── */
+  --gap-0: 0px;
+  --gap-xs-2: 2px;
+  --gap-xs-3: 3px;
+  --gap-xs-4: 4px;
+  --gap-sm-6: 6px;
+  --gap-sm-7: 7px;
+  --gap-sm-8: 8px;
+  --gap-lg-10: 10px;
+  --gap-lg-12: 12px;
+  --gap-xl-14: 14px;
+  --gap-xl-16: 16px;
+  --gap-xl-18: 18px;
+  --gap-xl-20: 20px;
+  --gap-2xl-24: 24px;
+  --gap-2xl-32: 32px;
+  --gap-2xl-40: 40px;
+  --gap-3xl-44: 44px;
+
+  /* ── Gap / Negative (overlapping layouts) ── */
+  --gap-xs-2-ve: -2px;
+  --gap-xs-4-ve: -4px;
+  --gap-sm-6-ve: -6px;
+  --gap-sm-8-ve: -8px;
+  --gap-lg-10-ve: -10px;
+  --gap-lg-12-ve: -12px;
+  --gap-xl-14-ve: -14px;
+  --gap-xl-16-ve: -16px;
+  --gap-2xl-24-ve: -24px;
+
+  /* ── Padding ── */
+  --padding-xs-1: 1px;
+  --padding-xs-2: 2px;
+  --padding-xs-3: 3px;
+  --padding-xs-4: 4px;
+  --padding-xs-5: 5px;
+  --padding-xs-5_5: 5.5px;
+  --padding-sm-6: 6px;
+  --padding-sm-7: 7px;
+  --padding-8: 8px;
+  --padding-lg-10: 10px;
+  --padding-lg-12: 12px;
+  --padding-xl-14: 14px;
+  --padding-xl-16: 16px;
+  --padding-xl-18: 18px;
+  --padding-xl-20: 20px;
+  --padding-2xl-24: 24px;
+  --padding-2xl-28: 28px;
+  --padding-3xl-30: 32px;
+  --padding-3xl-40: 40px;
+  --padding-4xl-44: 44px;
+  --padding-6xl-78: 78px;
+
+  /* ── Border Radius ── */
+  --radius-xs-2: 2px;
+  --radius-xs-3: 3px;
+  --radius-xs-4: 4px;
+  --radius-sm-5: 5px;
+  --radius-sm-6: 6px;
+  --radius-sm-7: 7px;
+  --radius-sm-8: 8px;
+  --radius-lg-10: 10px;
+  --radius-lg-12: 12px;
+  --radius-xl-14: 14px;
+  --radius-xl-20: 16px;
+  --radius-2xl-20: 20px;
+  --radius-2xl-24: 24px;
+  --radius-3xl-32: 32px;
+  --radius-4xl-44: 44px;
+  --radius-all: 99px;
+}

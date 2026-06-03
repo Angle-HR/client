@@ -1,26 +1,603 @@
 @import "tailwindcss";
+@import "../styles/design-system/index.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ==========================================================================
+   Tailwind v4 Theme — ALL design tokens mapped to utility classes.
+
+   In Tailwind v4, --spacing-* drives: p-*, m-*, gap-*, w-*, h-*, etc.
+   So `p-8` = 8px, `gap-24` = 24px, `m-4` = 4px — matching design system.
+
+   Usage examples:
+     p-8  gap-12  m-16  rounded-sm-8  bg-primary  text-secondary
+     shadow-sm  font-sans  text-body-l  leading-21
+   ========================================================================== */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* ══════════════════════════════════════════════════════════════════════════
+     SPACING — unified scale for p-*, m-*, gap-*, w-*, h-*, inset-*, etc.
+     ══════════════════════════════════════════════════════════════════════════ */
+  --spacing-0: 0px;
+  --spacing-1: 1px;
+  --spacing-2: 2px;
+  --spacing-3: 3px;
+  --spacing-4: 4px;
+  --spacing-5: 5px;
+  --spacing-5_5: 5.5px;
+  --spacing-6: 6px;
+  --spacing-7: 7px;
+  --spacing-8: 8px;
+  --spacing-10: 10px;
+  --spacing-12: 12px;
+  --spacing-14: 14px;
+  --spacing-16: 16px;
+  --spacing-18: 18px;
+  --spacing-20: 20px;
+  --spacing-24: 24px;
+  --spacing-28: 28px;
+  --spacing-32: 32px;
+  --spacing-40: 40px;
+  --spacing-44: 44px;
+  --spacing-78: 78px;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* ══════════════════════════════════════════════════════════════════════════
+     BORDER RADIUS — rounded-*
+     ══════════════════════════════════════════════════════════════════════════ */
+  --radius-xs-2: var(--radius-xs-2);
+  --radius-xs-3: var(--radius-xs-3);
+  --radius-xs-4: var(--radius-xs-4);
+  --radius-sm-5: var(--radius-sm-5);
+  --radius-sm-6: var(--radius-sm-6);
+  --radius-sm-7: var(--radius-sm-7);
+  --radius-sm-8: var(--radius-sm-8);
+  --radius-lg-10: var(--radius-lg-10);
+  --radius-lg-12: var(--radius-lg-12);
+  --radius-xl-14: var(--radius-xl-14);
+  --radius-xl-20: var(--radius-xl-20);
+  --radius-2xl-20: var(--radius-2xl-20);
+  --radius-2xl-24: var(--radius-2xl-24);
+  --radius-3xl-32: var(--radius-3xl-32);
+  --radius-4xl-44: var(--radius-4xl-44);
+  --radius-all: var(--radius-all);
+
+  /* ══════════════════════════════════════════════════════════════════════════
+     FONTS
+     ══════════════════════════════════════════════════════════════════════════ */
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  /* ══════════════════════════════════════════════════════════════════════════
+     FONT SIZE — text-*  (pairs with --leading-* for line-height)
+     ══════════════════════════════════════════════════════════════════════════ */
+  --text-label: var(--text-size-9);
+  --text-caption-s: var(--text-size-10);
+  --text-caption-m: var(--text-size-11);
+  --text-body-xs: var(--text-size-12);
+  --text-body-s: var(--text-size-13);
+  --text-body-m: var(--text-size-13-8);
+  --text-body-l: var(--text-size-14);
+  --text-body-xl: var(--text-size-15-9);
+  --text-subtitle-s: var(--text-size-18-6);
+  --text-subtitle-m: var(--text-size-20-9);
+  --text-subtitle-l: var(--text-size-21-1);
+  --text-subtitle-xl: var(--text-size-21-2);
+  --text-heading-5: var(--text-size-21-4);
+  --text-heading-4: var(--text-size-25-3);
+  --text-heading-3: var(--text-size-34-9);
+  --text-heading-2: var(--text-size-41-2);
+  --text-heading-1: var(--text-size-41-7);
+
+  /* ══════════════════════════════════════════════════════════════════════════
+     LINE HEIGHT — leading-*
+     ══════════════════════════════════════════════════════════════════════════ */
+  --leading-14_4: var(--leading-14-4);
+  --leading-16: var(--leading-16);
+  --leading-17_6: var(--leading-17-6);
+  --leading-19_2: var(--leading-19-2);
+  --leading-19_5: var(--leading-19-5);
+  --leading-21: var(--leading-21);
+  --leading-23: var(--leading-23);
+  --leading-24: var(--leading-24);
+  --leading-26_5: var(--leading-26-5);
+  --leading-33_1: var(--leading-33-1);
+  --leading-39_7: var(--leading-39-7);
+  --leading-49_7: var(--leading-49-7);
+  --leading-57_6: var(--leading-57-6);
+
+  /* ══════════════════════════════════════════════════════════════════════════
+     LETTER SPACING — tracking-*
+     ══════════════════════════════════════════════════════════════════════════ */
+  --tracking-normal: 0em;
+  --tracking-tight: -0.0275rem;
+
+  /* ══════════════════════════════════════════════════════════════════════════
+     FONT WEIGHT — font-*
+     ══════════════════════════════════════════════════════════════════════════ */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-medium-550: 550;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* ══════════════════════════════════════════════════════════════════════════
+     SHADOWS — shadow-*
+     ══════════════════════════════════════════════════════════════════════════ */
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-flow-btn: var(--shadow-flow-btn);
+
+  /* ══════════════════════════════════════════════════════════════════════════
+     COLORS — Primitive palette (for edge cases, one-off overrides)
+     Usage: bg-blue-8, text-red-7, border-light-grey-3
+     ══════════════════════════════════════════════════════════════════════════ */
+
+  /* ── Black ── */
+  --color-black: var(--color-black);
+  --color-black-1: var(--color-black-1);
+  --color-black-2: var(--color-black-2);
+  --color-black-3: var(--color-black-3);
+  --color-black-4: var(--color-black-4);
+  --color-black-5: var(--color-black-5);
+  --color-black-6: var(--color-black-6);
+  --color-black-7: var(--color-black-7);
+  --color-black-8: var(--color-black-8);
+  --color-black-9: var(--color-black-9);
+  --color-black-10: var(--color-black-10);
+  --color-black-11: var(--color-black-11);
+  --color-black-12: var(--color-black-12);
+  --color-black-13: var(--color-black-13);
+  --color-black-14: var(--color-black-14);
+  --color-black-15: var(--color-black-15);
+
+  /* ── White ── */
+  --color-white: var(--color-white);
+  --color-white-1: var(--color-white-1);
+  --color-white-2: var(--color-white-2);
+  --color-white-3: var(--color-white-3);
+  --color-white-4: var(--color-white-4);
+  --color-white-5: var(--color-white-5);
+  --color-white-6: var(--color-white-6);
+  --color-white-7: var(--color-white-7);
+  --color-white-8: var(--color-white-8);
+  --color-white-9: var(--color-white-9);
+  --color-white-10: var(--color-white-10);
+  --color-white-11: var(--color-white-11);
+  --color-white-12: var(--color-white-12);
+  --color-white-13: var(--color-white-13);
+  --color-white-14: var(--color-white-14);
+  --color-white-15: var(--color-white-15);
+  --color-white-16: var(--color-white-16);
+  --color-non: var(--color-non);
+
+  /* ── Light Grey ── */
+  --color-light-grey-1: var(--color-light-grey-1);
+  --color-light-grey-2: var(--color-light-grey-2);
+  --color-light-grey-3: var(--color-light-grey-3);
+  --color-light-grey-4: var(--color-light-grey-4);
+  --color-light-grey-5: var(--color-light-grey-5);
+  --color-light-grey-6: var(--color-light-grey-6);
+  --color-light-grey-7: var(--color-light-grey-7);
+
+  /* ── Dark Grey ── */
+  --color-dark-grey-1: var(--color-dark-grey-1);
+  --color-dark-grey-2: var(--color-dark-grey-2);
+  --color-dark-grey-3: var(--color-dark-grey-3);
+  --color-dark-grey-4: var(--color-dark-grey-4);
+  --color-dark-grey-5: var(--color-dark-grey-5);
+  --color-dark-grey-6: var(--color-dark-grey-6);
+  --color-dark-grey-7: var(--color-dark-grey-7);
+  --color-dark-grey-8: var(--color-dark-grey-8);
+  --color-dark-grey-9: var(--color-dark-grey-9);
+
+  /* ── Blue ── */
+  --color-blue-1: var(--color-blue-1);
+  --color-blue-2: var(--color-blue-2);
+  --color-blue-3: var(--color-blue-3);
+  --color-blue-4: var(--color-blue-4);
+  --color-blue-5: var(--color-blue-5);
+  --color-blue-6: var(--color-blue-6);
+  --color-blue-7: var(--color-blue-7);
+  --color-blue-8: var(--color-blue-8);
+  --color-blue-9: var(--color-blue-9);
+  --color-blue-10: var(--color-blue-10);
+  --color-blue-11: var(--color-blue-11);
+  --color-blue-12: var(--color-blue-12);
+  --color-blue-13: var(--color-blue-13);
+  --color-blue-14: var(--color-blue-14);
+  --color-blue-alpha-1: var(--color-blue-alpha-1);
+  --color-blue-alpha-2: var(--color-blue-alpha-2);
+  --color-blue-alpha-3: var(--color-blue-alpha-3);
+  --color-blue-alpha-4: var(--color-blue-alpha-4);
+  --color-blue-alpha-5: var(--color-blue-alpha-5);
+
+  /* ── Red ── */
+  --color-red-1: var(--color-red-1);
+  --color-red-2: var(--color-red-2);
+  --color-red-3: var(--color-red-3);
+  --color-red-4: var(--color-red-4);
+  --color-red-5: var(--color-red-5);
+  --color-red-6: var(--color-red-6);
+  --color-red-7: var(--color-red-7);
+  --color-red-8: var(--color-red-8);
+  --color-red-9: var(--color-red-9);
+  --color-red-10: var(--color-red-10);
+  --color-red-11: var(--color-red-11);
+  --color-red-12: var(--color-red-12);
+  --color-red-alpha-1: var(--color-red-alpha-1);
+
+  /* ── Green ── */
+  --color-green-1: var(--color-green-1);
+  --color-green-2: var(--color-green-2);
+  --color-green-3: var(--color-green-3);
+  --color-green-4: var(--color-green-4);
+  --color-green-5: var(--color-green-5);
+  --color-green-6: var(--color-green-6);
+  --color-green-7: var(--color-green-7);
+  --color-green-8: var(--color-green-8);
+
+  /* ── Purple ── */
+  --color-purple-1: var(--color-purple-1);
+  --color-purple-2: var(--color-purple-2);
+  --color-purple-3: var(--color-purple-3);
+  --color-purple-4: var(--color-purple-4);
+  --color-purple-5: var(--color-purple-5);
+  --color-purple-6: var(--color-purple-6);
+  --color-purple-7: var(--color-purple-7);
+  --color-purple-8: var(--color-purple-8);
+
+  /* ── Orange ── */
+  --color-orange-1: var(--color-orange-1);
+  --color-orange-2: var(--color-orange-2);
+  --color-orange-3: var(--color-orange-3);
+  --color-orange-4: var(--color-orange-4);
+  --color-orange-5: var(--color-orange-5);
+  --color-orange-6: var(--color-orange-6);
+  --color-orange-7: var(--color-orange-7);
+
+  /* ── Yellow ── */
+  --color-yellow-1: var(--color-yellow-1);
+  --color-yellow-2: var(--color-yellow-2);
+  --color-yellow-3: var(--color-yellow-3);
+  --color-yellow-4: var(--color-yellow-4);
+  --color-yellow-5: var(--color-yellow-5);
+  --color-yellow-6: var(--color-yellow-6);
+  --color-yellow-7: var(--color-yellow-7);
+  --color-yellow-8: var(--color-yellow-8);
+  --color-yellow-9: var(--color-yellow-9);
+
+  /* ── Fuchsia ── */
+  --color-fuchsia-1: var(--color-fuchsia-1);
+  --color-fuchsia-2: var(--color-fuchsia-2);
+  --color-fuchsia-3: var(--color-fuchsia-3);
+  --color-fuchsia-4: var(--color-fuchsia-4);
+  --color-fuchsia-5: var(--color-fuchsia-5);
+  --color-fuchsia-6: var(--color-fuchsia-6);
+  --color-fuchsia-7: var(--color-fuchsia-7);
+
+  /* ── Teal ── */
+  --color-teal-1: var(--color-teal-1);
+  --color-teal-2: var(--color-teal-2);
+  --color-teal-3: var(--color-teal-3);
+  --color-teal-4: var(--color-teal-4);
+  --color-teal-5: var(--color-teal-5);
+  --color-teal-6: var(--color-teal-6);
+  --color-teal-7: var(--color-teal-7);
+  --color-teal-8: var(--color-teal-8);
+
+  /* ── Aqua ── */
+  --color-aqua-1: var(--color-aqua-1);
+  --color-aqua-2: var(--color-aqua-2);
+  --color-aqua-3: var(--color-aqua-3);
+  --color-aqua-4: var(--color-aqua-4);
+  --color-aqua-5: var(--color-aqua-5);
+  --color-aqua-6: var(--color-aqua-6);
+  --color-aqua-7: var(--color-aqua-7);
+  --color-aqua-8: var(--color-aqua-8);
+
+  /* ══════════════════════════════════════════════════════════════════════════
+     COLORS — Semantic tokens (mode-aware, auto light/dark)
+     Usage: bg-bg-primary, text-text-secondary, border-border-light
+     ══════════════════════════════════════════════════════════════════════════ */
+
+  /* ── Background / Surface ── */
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-bg-tertiary: var(--bg-tertiary);
+  --color-bg-notification: var(--bg-notification);
+  --color-bg-logo: var(--bg-logo);
+  --color-bg-danger: var(--bg-danger);
+
+  /* ── Background / Transparent ── */
+  --color-bg-transparent-light: var(--bg-transparent-light);
+  --color-bg-transparent-lighter: var(--bg-transparent-lighter);
+  --color-bg-transparent-medium: var(--bg-transparent-medium);
+  --color-bg-transparent-strong: var(--bg-transparent-strong);
+  --color-bg-transparent-blue-accent-light: var(--bg-transparent-blue-accent-light);
+  --color-bg-transparent-blue-accent-medium: var(--bg-transparent-blue-accent-medium);
+
+  /* ── Background / Default Button ── */
+  --color-bg-btn-default-pri-rest: var(--bg-btn-default-pri-rest);
+  --color-bg-btn-default-pri-hover: var(--bg-btn-default-pri-hover);
+  --color-bg-btn-default-pri-pressed: var(--bg-btn-default-pri-pressed);
+  --color-bg-btn-default-pri-disabled: var(--bg-btn-default-pri-disabled);
+  --color-bg-btn-default-pri-focus: var(--bg-btn-default-pri-focus);
+  --color-bg-btn-default-sec-rest: var(--bg-btn-default-sec-rest);
+  --color-bg-btn-default-sec-hover: var(--bg-btn-default-sec-hover);
+  --color-bg-btn-default-sec-pressed: var(--bg-btn-default-sec-pressed);
+  --color-bg-btn-default-sec-disabled: var(--bg-btn-default-sec-disabled);
+  --color-bg-btn-default-sec-focus: var(--bg-btn-default-sec-focus);
+  --color-bg-btn-default-tet-rest: var(--bg-btn-default-tet-rest);
+  --color-bg-btn-default-tet-hover: var(--bg-btn-default-tet-hover);
+  --color-bg-btn-default-tet-pressed: var(--bg-btn-default-tet-pressed);
+  --color-bg-btn-default-tet-disabled: var(--bg-btn-default-tet-disabled);
+  --color-bg-btn-default-tet-focus: var(--bg-btn-default-tet-focus);
+
+  /* ── Background / Blue Button ── */
+  --color-bg-btn-blue-pri-rest: var(--bg-btn-blue-pri-rest);
+  --color-bg-btn-blue-pri-hover: var(--bg-btn-blue-pri-hover);
+  --color-bg-btn-blue-pri-pressed: var(--bg-btn-blue-pri-pressed);
+  --color-bg-btn-blue-pri-disabled: var(--bg-btn-blue-pri-disabled);
+  --color-bg-btn-blue-pri-focus: var(--bg-btn-blue-pri-focus);
+  --color-bg-btn-blue-sec-rest: var(--bg-btn-blue-sec-rest);
+  --color-bg-btn-blue-sec-hover: var(--bg-btn-blue-sec-hover);
+  --color-bg-btn-blue-sec-pressed: var(--bg-btn-blue-sec-pressed);
+  --color-bg-btn-blue-sec-disabled: var(--bg-btn-blue-sec-disabled);
+  --color-bg-btn-blue-sec-focus: var(--bg-btn-blue-sec-focus);
+  --color-bg-btn-blue-tet-rest: var(--bg-btn-blue-tet-rest);
+  --color-bg-btn-blue-tet-hover: var(--bg-btn-blue-tet-hover);
+  --color-bg-btn-blue-tet-pressed: var(--bg-btn-blue-tet-pressed);
+  --color-bg-btn-blue-tet-disabled: var(--bg-btn-blue-tet-disabled);
+  --color-bg-btn-blue-tet-focus: var(--bg-btn-blue-tet-focus);
+
+  /* ── Background / Red Button ── */
+  --color-bg-btn-red-pri-rest: var(--bg-btn-red-pri-rest);
+  --color-bg-btn-red-pri-hover: var(--bg-btn-red-pri-hover);
+  --color-bg-btn-red-pri-pressed: var(--bg-btn-red-pri-pressed);
+  --color-bg-btn-red-pri-disabled: var(--bg-btn-red-pri-disabled);
+  --color-bg-btn-red-pri-focus: var(--bg-btn-red-pri-focus);
+  --color-bg-btn-red-sec-rest: var(--bg-btn-red-sec-rest);
+  --color-bg-btn-red-sec-hover: var(--bg-btn-red-sec-hover);
+  --color-bg-btn-red-sec-pressed: var(--bg-btn-red-sec-pressed);
+  --color-bg-btn-red-sec-disabled: var(--bg-btn-red-sec-disabled);
+  --color-bg-btn-red-sec-focus: var(--bg-btn-red-sec-focus);
+  --color-bg-btn-red-tet-rest: var(--bg-btn-red-tet-rest);
+  --color-bg-btn-red-tet-hover: var(--bg-btn-red-tet-hover);
+  --color-bg-btn-red-tet-pressed: var(--bg-btn-red-tet-pressed);
+  --color-bg-btn-red-tet-disabled: var(--bg-btn-red-tet-disabled);
+  --color-bg-btn-red-tet-focus: var(--bg-btn-red-tet-focus);
+
+  /* ── Background / Flow Button ── */
+  --color-bg-flow-btn-pri-rest: var(--bg-flow-btn-pri-rest);
+  --color-bg-flow-btn-pri-hover: var(--bg-flow-btn-pri-hover);
+  --color-bg-flow-btn-pri-pressed: var(--bg-flow-btn-pri-pressed);
+  --color-bg-flow-btn-pri-disabled: var(--bg-flow-btn-pri-disabled);
+  --color-bg-flow-btn-pri-focus: var(--bg-flow-btn-pri-focus);
+  --color-bg-flow-btn-sec-rest: var(--bg-flow-btn-sec-rest);
+  --color-bg-flow-btn-sec-hover: var(--bg-flow-btn-sec-hover);
+  --color-bg-flow-btn-sec-pressed: var(--bg-flow-btn-sec-pressed);
+  --color-bg-flow-btn-sec-disabled: var(--bg-flow-btn-sec-disabled);
+  --color-bg-flow-btn-sec-focus: var(--bg-flow-btn-sec-focus);
+
+  /* ── Background / Input ── */
+  --color-bg-input-filled: var(--bg-input-filled);
+  --color-bg-input-focus: var(--bg-input-focus);
+  --color-bg-input-hover: var(--bg-input-hover);
+  --color-bg-input-error: var(--bg-input-error);
+  --color-bg-input-placeholder: var(--bg-input-placeholder);
+  --color-bg-input-disabled: var(--bg-input-disabled);
+  --color-bg-input-focus-hover: var(--bg-input-focus-hover);
+  --color-bg-input-highlighted: var(--bg-input-highlighted);
+  --color-bg-input-hover-group-items: var(--bg-input-hover-group-items);
+
+  /* ── Background / Avatar ── */
+  --color-bg-avatar-green: var(--bg-avatar-green);
+  --color-bg-avatar-purple: var(--bg-avatar-purple);
+  --color-bg-avatar-aqua: var(--bg-avatar-aqua);
+  --color-bg-avatar-orange: var(--bg-avatar-orange);
+  --color-bg-avatar-yellow: var(--bg-avatar-yellow);
+  --color-bg-avatar-blue: var(--bg-avatar-blue);
+  --color-bg-avatar-fuchsia: var(--bg-avatar-fuchsia);
+  --color-bg-avatar-red: var(--bg-avatar-red);
+  --color-bg-avatar-grey: var(--bg-avatar-grey);
+  --color-bg-avatar-teal: var(--bg-avatar-teal);
+
+  /* ── Background / Tags ── */
+  --color-bg-tags-green: var(--bg-tags-green);
+  --color-bg-tags-purple: var(--bg-tags-purple);
+  --color-bg-tags-aqua: var(--bg-tags-aqua);
+  --color-bg-tags-orange: var(--bg-tags-orange);
+  --color-bg-tags-yellow: var(--bg-tags-yellow);
+  --color-bg-tags-blue: var(--bg-tags-blue);
+  --color-bg-tags-fuchsia: var(--bg-tags-fuchsia);
+  --color-bg-tags-red: var(--bg-tags-red);
+  --color-bg-tags-grey: var(--bg-tags-grey);
+  --color-bg-tags-teal: var(--bg-tags-teal);
+  --color-bg-tags-empty: var(--bg-tags-empty);
+  --color-bg-tags-remove-btn: var(--bg-tags-remove-btn);
+
+  /* ── Background / Gradient ── */
+  --color-bg-gradient-transparent-light: var(--bg-gradient-transparent-light);
+  --color-bg-gradient-transparent-lighter: var(--bg-gradient-transparent-lighter);
+
+  /* ── Background / Selection Controls ── */
+  --color-bg-selection-controls-empty: var(--bg-selection-controls-empty);
+  --color-bg-selection-controls-hover-rest: var(--bg-selection-controls-hover-rest);
+  --color-bg-selection-controls-hover-selected: var(--bg-selection-controls-hover-selected);
+  --color-bg-selection-controls-selected: var(--bg-selection-controls-selected);
+
+  /* ── Text / Generic ── */
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-text-light: var(--text-light);
+  --color-text-error: var(--text-error);
+  --color-text-blue-accent: var(--text-blue-accent);
+  --color-text-inverted: var(--text-inverted);
+  --color-text-non: var(--text-non);
+  --color-text-logo: var(--text-logo);
+
+  /* ── Text / Default Button ── */
+  --color-text-btn-default-primary: var(--text-btn-default-primary);
+  --color-text-btn-default-secondary: var(--text-btn-default-secondary);
+  --color-text-btn-default-tertiary: var(--text-btn-default-tertiary);
+  --color-text-btn-default-disabled: var(--text-btn-default-disabled);
+
+  /* ── Text / Blue Button ── */
+  --color-text-btn-blue-primary: var(--text-btn-blue-primary);
+  --color-text-btn-blue-secondary: var(--text-btn-blue-secondary);
+  --color-text-btn-blue-tertiary: var(--text-btn-blue-tertiary);
+
+  /* ── Text / Red Button ── */
+  --color-text-btn-red-primary: var(--text-btn-red-primary);
+  --color-text-btn-red-secondary: var(--text-btn-red-secondary);
+  --color-text-btn-red-tertiary: var(--text-btn-red-tertiary);
+
+  /* ── Text / Flow Button ── */
+  --color-text-flow-btn-primary: var(--text-flow-btn-primary);
+  --color-text-flow-btn-secondary: var(--text-flow-btn-secondary);
+  --color-text-flow-btn-tertiary: var(--text-flow-btn-tertiary);
+  --color-text-flow-btn-sec-disabled: var(--text-flow-btn-sec-disabled);
+
+  /* ── Text / Avatar ── */
+  --color-text-avatar-green: var(--text-avatar-green);
+  --color-text-avatar-purple: var(--text-avatar-purple);
+  --color-text-avatar-aqua: var(--text-avatar-aqua);
+  --color-text-avatar-orange: var(--text-avatar-orange);
+  --color-text-avatar-yellow: var(--text-avatar-yellow);
+  --color-text-avatar-blue: var(--text-avatar-blue);
+  --color-text-avatar-fuchsia: var(--text-avatar-fuchsia);
+  --color-text-avatar-red: var(--text-avatar-red);
+  --color-text-avatar-grey: var(--text-avatar-grey);
+  --color-text-avatar-teal: var(--text-avatar-teal);
+
+  /* ── Text / Input ── */
+  --color-text-input-filled: var(--text-input-filled);
+  --color-text-input-focus: var(--text-input-focus);
+  --color-text-input-error: var(--text-input-error);
+  --color-text-input-hover: var(--text-input-hover);
+  --color-text-input-placeholder: var(--text-input-placeholder);
+  --color-text-input-sec-items: var(--text-input-sec-items);
+  --color-text-input-disabled: var(--text-input-disabled);
+  --color-text-input-focus-selected: var(--text-input-focus-selected);
+  --color-text-input-icon-rest: var(--text-input-icon-rest);
+  --color-text-input-icon-hover: var(--text-input-icon-hover);
+  --color-text-input-icon-suffix: var(--text-input-icon-suffix);
+  --color-text-input-icon-suffix-error: var(--text-input-icon-suffix-error);
+
+  /* ── Text / Tags ── */
+  --color-text-tags-green: var(--text-tags-green);
+  --color-text-tags-purple: var(--text-tags-purple);
+  --color-text-tags-aqua: var(--text-tags-aqua);
+  --color-text-tags-orange: var(--text-tags-orange);
+  --color-text-tags-yellow: var(--text-tags-yellow);
+  --color-text-tags-blue: var(--text-tags-blue);
+  --color-text-tags-fuchsia: var(--text-tags-fuchsia);
+  --color-text-tags-red: var(--text-tags-red);
+  --color-text-tags-grey: var(--text-tags-grey);
+  --color-text-tags-teal: var(--text-tags-teal);
+  --color-text-tags-empty: var(--text-tags-empty);
+
+  /* ── Border / Surface ── */
+  --color-border-light: var(--border-light);
+
+  /* ── Border / Transparent ── */
+  --color-border-transparent-light: var(--border-transparent-light);
+  --color-border-transparent-lighter: var(--border-transparent-lighter);
+  --color-border-transparent-medium: var(--border-transparent-medium);
+  --color-border-transparent-strong: var(--border-transparent-strong);
+
+  /* ── Border / Default Button ── */
+  --color-border-btn-default-pri-rest: var(--border-btn-default-pri-rest);
+  --color-border-btn-default-pri-hover: var(--border-btn-default-pri-hover);
+  --color-border-btn-default-pri-pressed: var(--border-btn-default-pri-pressed);
+  --color-border-btn-default-pri-disabled: var(--border-btn-default-pri-disabled);
+  --color-border-btn-default-pri-focus: var(--border-btn-default-pri-focus);
+  --color-border-btn-default-sec-rest: var(--border-btn-default-sec-rest);
+  --color-border-btn-default-sec-hover: var(--border-btn-default-sec-hover);
+  --color-border-btn-default-sec-pressed: var(--border-btn-default-sec-pressed);
+  --color-border-btn-default-sec-disabled: var(--border-btn-default-sec-disabled);
+  --color-border-btn-default-sec-focus: var(--border-btn-default-sec-focus);
+  --color-border-btn-default-tet-rest: var(--border-btn-default-tet-rest);
+  --color-border-btn-default-tet-hover: var(--border-btn-default-tet-hover);
+  --color-border-btn-default-tet-pressed: var(--border-btn-default-tet-pressed);
+  --color-border-btn-default-tet-disabled: var(--border-btn-default-tet-disabled);
+  --color-border-btn-default-tet-focus: var(--border-btn-default-tet-focus);
+
+  /* ── Border / Blue Button ── */
+  --color-border-btn-blue-pri-rest: var(--border-btn-blue-pri-rest);
+  --color-border-btn-blue-pri-hover: var(--border-btn-blue-pri-hover);
+  --color-border-btn-blue-pri-pressed: var(--border-btn-blue-pri-pressed);
+  --color-border-btn-blue-pri-disabled: var(--border-btn-blue-pri-disabled);
+  --color-border-btn-blue-pri-focus: var(--border-btn-blue-pri-focus);
+  --color-border-btn-blue-sec-rest: var(--border-btn-blue-sec-rest);
+  --color-border-btn-blue-sec-hover: var(--border-btn-blue-sec-hover);
+  --color-border-btn-blue-sec-pressed: var(--border-btn-blue-sec-pressed);
+  --color-border-btn-blue-sec-disabled: var(--border-btn-blue-sec-disabled);
+  --color-border-btn-blue-sec-focus: var(--border-btn-blue-sec-focus);
+  --color-border-btn-blue-tet-rest: var(--border-btn-blue-tet-rest);
+  --color-border-btn-blue-tet-hover: var(--border-btn-blue-tet-hover);
+  --color-border-btn-blue-tet-disabled: var(--border-btn-blue-tet-disabled);
+  --color-border-btn-blue-tet-focus: var(--border-btn-blue-tet-focus);
+  --color-border-btn-blue-tet-selected: var(--border-btn-blue-tet-selected);
+
+  /* ── Border / Red Button ── */
+  --color-border-btn-red-pri-rest: var(--border-btn-red-pri-rest);
+  --color-border-btn-red-pri-hover: var(--border-btn-red-pri-hover);
+  --color-border-btn-red-pri-pressed: var(--border-btn-red-pri-pressed);
+  --color-border-btn-red-pri-disabled: var(--border-btn-red-pri-disabled);
+  --color-border-btn-red-pri-focus: var(--border-btn-red-pri-focus);
+  --color-border-btn-red-sec-rest: var(--border-btn-red-sec-rest);
+  --color-border-btn-red-sec-hover: var(--border-btn-red-sec-hover);
+  --color-border-btn-red-sec-pressed: var(--border-btn-red-sec-pressed);
+  --color-border-btn-red-sec-disabled: var(--border-btn-red-sec-disabled);
+  --color-border-btn-red-sec-focus: var(--border-btn-red-sec-focus);
+  --color-border-btn-red-tet-rest: var(--border-btn-red-tet-rest);
+  --color-border-btn-red-tet-hover: var(--border-btn-red-tet-hover);
+  --color-border-btn-red-tet-disabled: var(--border-btn-red-tet-disabled);
+  --color-border-btn-red-tet-focus: var(--border-btn-red-tet-focus);
+  --color-border-btn-red-tet-selected: var(--border-btn-red-tet-selected);
+
+  /* ── Border / Flow Button ── */
+  --color-border-flow-btn-pri-rest: var(--border-flow-btn-pri-rest);
+  --color-border-flow-btn-pri-hover: var(--border-flow-btn-pri-hover);
+  --color-border-flow-btn-pri-pressed: var(--border-flow-btn-pri-pressed);
+  --color-border-flow-btn-pri-disabled: var(--border-flow-btn-pri-disabled);
+  --color-border-flow-btn-pri-focus: var(--border-flow-btn-pri-focus);
+  --color-border-flow-btn-sec-rest: var(--border-flow-btn-sec-rest);
+  --color-border-flow-btn-sec-hover: var(--border-flow-btn-sec-hover);
+  --color-border-flow-btn-sec-pressed: var(--border-flow-btn-sec-pressed);
+  --color-border-flow-btn-sec-disabled: var(--border-flow-btn-sec-disabled);
+  --color-border-flow-btn-sec-focus: var(--border-flow-btn-sec-focus);
+
+  /* ── Border / Avatar ── */
+  --color-border-avatar-text: var(--border-avatar-text);
+  --color-border-avatar-image: var(--border-avatar-image);
+
+  /* ── Border / Notification ── */
+  --color-border-notification: var(--border-notification);
+  --color-border-logo: var(--border-logo);
+
+  /* ── Border / Selection Controls ── */
+  --color-border-selection-controls-rest: var(--border-selection-controls-rest);
+
+  /* ── Border / Input ── */
+  --color-border-input-filled: var(--border-input-filled);
+  --color-border-input-hover: var(--border-input-hover);
+  --color-border-input-focus: var(--border-input-focus);
+  --color-border-input-error: var(--border-input-error);
+  --color-border-input-disabled: var(--border-input-disabled);
+  --color-border-input-placeholder: var(--border-input-placeholder);
+  --color-border-input-hover-group-items: var(--border-input-hover-group-items);
+
+  /* ── Border / Tags ── */
+  --color-border-tags-empty: var(--border-tags-empty);
+
+  /* ── Other ── */
+  --color-top-nav: var(--top-nav);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
 }
