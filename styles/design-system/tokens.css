@@ -1,0 +1,619 @@
+/* ==========================================================================
+   Angle Design System — Semantic Color Tokens
+   Source: Figma variables (Tokens_.json)
+
+   Tokens are mode-aware. Components consume these — never primitives.
+   Light mode is default; dark mode overrides via [data-theme="dark"] and
+   prefers-color-scheme.
+   ========================================================================== */
+
+/* ---- Light mode (default) ---- */
+:root {
+  /* ── Background / Surface ── */
+  --bg-primary: var(--color-light-grey-2);
+  --bg-secondary: var(--color-white);
+  --bg-tertiary: var(--color-light-grey-2);
+  --bg-notification: var(--color-red-7);
+  --bg-logo: var(--color-black);
+  --bg-danger: var(--color-red-12);
+
+  /* ── Background / Transparent ── */
+  --bg-transparent-light: var(--color-black-14);
+  --bg-transparent-lighter: var(--color-black-15);
+  --bg-transparent-medium: var(--color-black-12);
+  --bg-transparent-strong: var(--color-black-9);
+  --bg-transparent-blue-accent-light: var(--color-blue-alpha-5);
+  --bg-transparent-blue-accent-medium: var(--color-blue-alpha-4);
+
+  /* ── Background / Default Button ── */
+  --bg-btn-default-pri-rest: var(--color-light-grey-2);
+  --bg-btn-default-pri-hover: var(--color-black-14);
+  --bg-btn-default-pri-pressed: var(--color-black-12);
+  --bg-btn-default-pri-disabled: var(--color-non);
+  --bg-btn-default-pri-focus: var(--color-white);
+  --bg-btn-default-sec-rest: var(--color-non);
+  --bg-btn-default-sec-hover: var(--color-black-14);
+  --bg-btn-default-sec-pressed: var(--color-black-14);
+  --bg-btn-default-sec-disabled: var(--color-non);
+  --bg-btn-default-sec-focus: var(--color-white);
+  --bg-btn-default-tet-rest: var(--color-non);
+  --bg-btn-default-tet-hover: var(--color-black-14);
+  --bg-btn-default-tet-pressed: var(--color-black-14);
+  --bg-btn-default-tet-disabled: var(--color-non);
+  --bg-btn-default-tet-focus: var(--color-white);
+
+  /* ── Background / Blue Button ── */
+  --bg-btn-blue-pri-rest: var(--color-blue-8);
+  --bg-btn-blue-pri-hover: var(--color-blue-7);
+  --bg-btn-blue-pri-pressed: var(--color-blue-6);
+  --bg-btn-blue-pri-disabled: var(--color-blue-8);
+  --bg-btn-blue-pri-focus: var(--color-blue-8);
+  --bg-btn-blue-sec-rest: var(--color-non);
+  --bg-btn-blue-sec-hover: var(--color-blue-13);
+  --bg-btn-blue-sec-pressed: var(--color-blue-12);
+  --bg-btn-blue-sec-disabled: var(--color-non);
+  --bg-btn-blue-sec-focus: var(--color-white-2);
+  --bg-btn-blue-tet-rest: var(--color-non);
+  --bg-btn-blue-tet-hover: var(--color-blue-14);
+  --bg-btn-blue-tet-pressed: var(--color-blue-13);
+  --bg-btn-blue-tet-disabled: var(--color-non);
+  --bg-btn-blue-tet-focus: var(--color-white-2);
+
+  /* ── Background / Red Button ── */
+  --bg-btn-red-pri-rest: var(--color-red-7);
+  --bg-btn-red-pri-hover: var(--color-red-6);
+  --bg-btn-red-pri-pressed: var(--color-red-6);
+  --bg-btn-red-pri-disabled: var(--color-red-7);
+  --bg-btn-red-pri-focus: var(--color-red-7);
+  --bg-btn-red-sec-rest: var(--color-non);
+  --bg-btn-red-sec-hover: var(--color-red-12);
+  --bg-btn-red-sec-pressed: var(--color-red-12);
+  --bg-btn-red-sec-disabled: var(--color-non);
+  --bg-btn-red-sec-focus: var(--color-red-12);
+  --bg-btn-red-tet-rest: var(--color-non);
+  --bg-btn-red-tet-hover: var(--color-red-12);
+  --bg-btn-red-tet-pressed: var(--color-red-12);
+  --bg-btn-red-tet-disabled: var(--color-non);
+  --bg-btn-red-tet-focus: var(--color-white-2);
+
+  /* ── Background / Flow Button ── */
+  --bg-flow-btn-pri-rest: var(--color-blue-8);
+  --bg-flow-btn-pri-hover: var(--color-blue-7);
+  --bg-flow-btn-pri-pressed: var(--color-blue-6);
+  --bg-flow-btn-pri-disabled: var(--color-blue-8);
+  --bg-flow-btn-pri-focus: var(--color-blue-8);
+  --bg-flow-btn-sec-rest: var(--color-black-15);
+  --bg-flow-btn-sec-hover: var(--color-black-14);
+  --bg-flow-btn-sec-pressed: var(--color-black-12);
+  --bg-flow-btn-sec-disabled: var(--color-non);
+  --bg-flow-btn-sec-focus: var(--color-light-grey-2);
+
+  /* ── Background / Input ── */
+  --bg-input-filled: var(--color-light-grey-1);
+  --bg-input-focus: var(--color-light-grey-1);
+  --bg-input-hover: var(--color-light-grey-1);
+  --bg-input-error: var(--color-light-grey-1);
+  --bg-input-placeholder: var(--color-light-grey-1);
+  --bg-input-disabled: var(--color-light-grey-3);
+  --bg-input-focus-hover: var(--color-blue-13);
+  --bg-input-highlighted: var(--color-blue-alpha-1);
+  --bg-input-hover-group-items: var(--color-black-13);
+
+  /* ── Background / Avatar ── */
+  --bg-avatar-green: var(--color-green-6);
+  --bg-avatar-purple: var(--color-purple-6);
+  --bg-avatar-aqua: var(--color-aqua-6);
+  --bg-avatar-orange: var(--color-orange-5);
+  --bg-avatar-yellow: var(--color-yellow-7);
+  --bg-avatar-blue: var(--color-blue-11);
+  --bg-avatar-fuchsia: var(--color-fuchsia-5);
+  --bg-avatar-red: var(--color-red-9);
+  --bg-avatar-grey: var(--color-light-grey-3);
+  --bg-avatar-teal: var(--color-teal-6);
+
+  /* ── Background / Tags ── */
+  --bg-tags-green: var(--color-green-8);
+  --bg-tags-purple: var(--color-purple-7);
+  --bg-tags-aqua: var(--color-aqua-7);
+  --bg-tags-orange: var(--color-orange-6);
+  --bg-tags-yellow: var(--color-yellow-8);
+  --bg-tags-blue: var(--color-blue-12);
+  --bg-tags-fuchsia: var(--color-fuchsia-6);
+  --bg-tags-red: var(--color-red-10);
+  --bg-tags-grey: var(--color-light-grey-3);
+  --bg-tags-teal: var(--color-teal-8);
+  --bg-tags-empty: var(--color-non);
+  --bg-tags-remove-btn: var(--color-black-15);
+
+  /* ── Background / Gradient ── */
+  --bg-gradient-transparent-light: var(--color-black-13);
+  --bg-gradient-transparent-lighter: var(--color-black-15);
+
+  /* ── Background / Selection Controls ── */
+  --bg-selection-controls-empty: var(--color-non);
+  --bg-selection-controls-hover-rest: var(--color-light-grey-3);
+  --bg-selection-controls-hover-selected: var(--color-blue-13);
+  --bg-selection-controls-selected: var(--color-blue-8);
+
+  /* ── Text / Generic ── */
+  --text-primary: var(--color-dark-grey-4);
+  --text-secondary: var(--color-dark-grey-7);
+  --text-tertiary: var(--color-dark-grey-9);
+  --text-light: var(--color-light-grey-7);
+  --text-error: var(--color-red-7);
+  --text-blue-accent: var(--color-blue-7);
+  --text-inverted: var(--color-white);
+  --text-non: var(--color-white);
+  --text-logo: var(--color-white);
+
+  /* ── Text / Default Button ── */
+  --text-btn-default-primary: var(--color-dark-grey-4);
+  --text-btn-default-secondary: var(--color-dark-grey-7);
+  --text-btn-default-tertiary: var(--color-dark-grey-9);
+  --text-btn-default-disabled: var(--color-light-grey-4);
+
+  /* ── Text / Blue Button ── */
+  --text-btn-blue-primary: var(--color-white);
+  --text-btn-blue-secondary: var(--color-blue-8);
+  --text-btn-blue-tertiary: var(--color-blue-8);
+
+  /* ── Text / Red Button ── */
+  --text-btn-red-primary: var(--color-white);
+  --text-btn-red-secondary: var(--color-red-7);
+  --text-btn-red-tertiary: var(--color-red-7);
+
+  /* ── Text / Flow Button ── */
+  --text-flow-btn-primary: var(--color-white);
+  --text-flow-btn-secondary: var(--color-dark-grey-4);
+  --text-flow-btn-tertiary: var(--color-dark-grey-9);
+  --text-flow-btn-sec-disabled: var(--color-light-grey-4);
+
+  /* ── Text / Avatar ── */
+  --text-avatar-green: var(--color-green-1);
+  --text-avatar-purple: var(--color-purple-1);
+  --text-avatar-aqua: var(--color-aqua-1);
+  --text-avatar-orange: var(--color-orange-1);
+  --text-avatar-yellow: var(--color-yellow-1);
+  --text-avatar-blue: var(--color-blue-2);
+  --text-avatar-fuchsia: var(--color-fuchsia-1);
+  --text-avatar-red: var(--color-red-1);
+  --text-avatar-grey: var(--color-dark-grey-4);
+  --text-avatar-teal: var(--color-teal-1);
+
+  /* ── Text / Input ── */
+  --text-input-filled: var(--color-dark-grey-4);
+  --text-input-focus: var(--color-dark-grey-4);
+  --text-input-error: var(--color-dark-grey-4);
+  --text-input-hover: var(--color-light-grey-7);
+  --text-input-placeholder: var(--color-light-grey-7);
+  --text-input-sec-items: var(--color-dark-grey-9);
+  --text-input-disabled: var(--color-black-8);
+  --text-input-focus-selected: var(--color-blue-7);
+  --text-input-icon-rest: var(--color-dark-grey-4);
+  --text-input-icon-hover: var(--color-blue-8);
+  --text-input-icon-suffix: var(--color-light-grey-7);
+  --text-input-icon-suffix-error: var(--color-red-7);
+  --text-input-json-txt-black: var(--color-dark-grey-4);
+  --text-input-json-txt-green: var(--color-green-4);
+
+  /* ── Text / Tags ── */
+  --text-tags-green: var(--color-green-4);
+  --text-tags-purple: var(--color-purple-4);
+  --text-tags-aqua: var(--color-aqua-4);
+  --text-tags-orange: var(--color-orange-3);
+  --text-tags-yellow: var(--color-yellow-4);
+  --text-tags-blue: var(--color-blue-7);
+  --text-tags-fuchsia: var(--color-fuchsia-4);
+  --text-tags-red: var(--color-red-5);
+  --text-tags-grey: var(--color-dark-grey-7);
+  --text-tags-teal: var(--color-teal-4);
+  --text-tags-empty: var(--color-dark-grey-7);
+
+  /* ── Border / Surface ── */
+  --border-light: var(--color-light-grey-3);
+
+  /* ── Border / Transparent ── */
+  --border-transparent-light: var(--color-black-14);
+  --border-transparent-lighter: var(--color-black-15);
+  --border-transparent-medium: var(--color-black-12);
+  --border-transparent-strong: var(--color-black-9);
+
+  /* ── Border / Default Button ── */
+  --border-btn-default-pri-rest: var(--color-light-grey-3);
+  --border-btn-default-pri-hover: var(--color-black-14);
+  --border-btn-default-pri-pressed: var(--color-black-14);
+  --border-btn-default-pri-disabled: var(--color-light-grey-4);
+  --border-btn-default-pri-focus: var(--color-blue-8);
+  --border-btn-default-sec-rest: var(--color-light-grey-3);
+  --border-btn-default-sec-hover: var(--color-black-12);
+  --border-btn-default-sec-pressed: var(--color-black-12);
+  --border-btn-default-sec-disabled: var(--color-light-grey-4);
+  --border-btn-default-sec-focus: var(--color-blue-8);
+  --border-btn-default-tet-rest: var(--color-non);
+  --border-btn-default-tet-hover: var(--color-non);
+  --border-btn-default-tet-pressed: var(--color-non);
+  --border-btn-default-tet-disabled: var(--color-non);
+  --border-btn-default-tet-focus: var(--color-blue-8);
+
+  /* ── Border / Blue Button ── */
+  --border-btn-blue-pri-rest: var(--color-black-14);
+  --border-btn-blue-pri-hover: var(--color-black-14);
+  --border-btn-blue-pri-pressed: var(--color-black-14);
+  --border-btn-blue-pri-disabled: var(--color-black-14);
+  --border-btn-blue-pri-focus: var(--color-blue-8);
+  --border-btn-blue-sec-rest: var(--color-blue-10);
+  --border-btn-blue-sec-hover: var(--color-blue-10);
+  --border-btn-blue-sec-pressed: var(--color-blue-10);
+  --border-btn-blue-sec-disabled: var(--color-blue-8);
+  --border-btn-blue-sec-focus: var(--color-blue-8);
+  --border-btn-blue-tet-rest: var(--color-non);
+  --border-btn-blue-tet-hover: var(--color-non);
+  --border-btn-blue-tet-disabled: var(--color-non);
+  --border-btn-blue-tet-focus: var(--color-blue-8);
+  --border-btn-blue-tet-selected: var(--color-non);
+
+  /* ── Border / Red Button ── */
+  --border-btn-red-pri-rest: var(--color-black-14);
+  --border-btn-red-pri-hover: var(--color-black-14);
+  --border-btn-red-pri-pressed: var(--color-black-14);
+  --border-btn-red-pri-disabled: var(--color-black-14);
+  --border-btn-red-pri-focus: var(--color-blue-8);
+  --border-btn-red-sec-rest: var(--color-red-10);
+  --border-btn-red-sec-hover: var(--color-red-10);
+  --border-btn-red-sec-pressed: var(--color-red-10);
+  --border-btn-red-sec-disabled: var(--color-red-7);
+  --border-btn-red-sec-focus: var(--color-blue-8);
+  --border-btn-red-tet-rest: var(--color-non);
+  --border-btn-red-tet-hover: var(--color-non);
+  --border-btn-red-tet-disabled: var(--color-non);
+  --border-btn-red-tet-focus: var(--color-blue-8);
+  --border-btn-red-tet-selected: var(--color-non);
+
+  /* ── Border / Flow Button ── */
+  --border-flow-btn-pri-rest: var(--color-black-14);
+  --border-flow-btn-pri-hover: var(--color-black-14);
+  --border-flow-btn-pri-pressed: var(--color-black-14);
+  --border-flow-btn-pri-disabled: var(--color-black-14);
+  --border-flow-btn-pri-focus: var(--color-blue-8);
+  --border-flow-btn-sec-rest: var(--color-black-15);
+  --border-flow-btn-sec-hover: var(--color-black-15);
+  --border-flow-btn-sec-pressed: var(--color-black-15);
+  --border-flow-btn-sec-disabled: var(--color-light-grey-4);
+  --border-flow-btn-sec-focus: var(--color-blue-8);
+
+  /* ── Border / Avatar ── */
+  --border-avatar-text: var(--color-black-14);
+  --border-avatar-image: var(--color-black-14);
+
+  /* ── Border / Notification ── */
+  --border-notification: var(--color-black-13);
+  --border-logo: var(--color-non);
+
+  /* ── Border / Selection Controls ── */
+  --border-selection-controls-rest: var(--color-dark-grey-7);
+
+  /* ── Border / Input ── */
+  --border-input-filled: var(--color-light-grey-4);
+  --border-input-hover: var(--color-black-11);
+  --border-input-focus: var(--color-blue-8);
+  --border-input-error: var(--color-red-10);
+  --border-input-disabled: var(--color-light-grey-3);
+  --border-input-placeholder: var(--color-light-grey-3);
+  --border-input-hover-group-items: var(--color-black-14);
+
+  /* ── Border / Tags ── */
+  --border-tags-empty: var(--color-light-grey-5);
+
+  /* ── Other ── */
+  --top-nav: var(--color-dark-grey-1);
+}
+
+/* ---- Dark mode ---- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* ── Background / Surface ── */
+    --bg-primary: var(--color-dark-grey-2);
+    --bg-secondary: var(--color-dark-grey-1);
+    --bg-tertiary: var(--color-dark-grey-1);
+    --bg-notification: var(--color-red-7);
+    --bg-logo: var(--color-non);
+    --bg-danger: var(--color-red-alpha-1);
+
+    /* ── Background / Transparent ── */
+    --bg-transparent-light: var(--color-white-13);
+    --bg-transparent-lighter: var(--color-white-15);
+    --bg-transparent-medium: var(--color-white-11);
+    --bg-transparent-strong: var(--color-white-9);
+    --bg-transparent-blue-accent-light: var(--color-blue-alpha-4);
+    --bg-transparent-blue-accent-medium: var(--color-blue-alpha-3);
+
+    /* ── Background / Default Button ── */
+    --bg-btn-default-pri-rest: var(--color-dark-grey-2);
+    --bg-btn-default-pri-hover: var(--color-white-14);
+    --bg-btn-default-pri-pressed: var(--color-white-12);
+    --bg-btn-default-pri-disabled: var(--color-non);
+    --bg-btn-default-pri-focus: var(--color-dark-grey-1);
+    --bg-btn-default-sec-rest: var(--color-non);
+    --bg-btn-default-sec-hover: var(--color-white-14);
+    --bg-btn-default-sec-pressed: var(--color-white-14);
+    --bg-btn-default-sec-disabled: var(--color-non);
+    --bg-btn-default-sec-focus: var(--color-dark-grey-1);
+    --bg-btn-default-tet-rest: var(--color-non);
+    --bg-btn-default-tet-hover: var(--color-white-14);
+    --bg-btn-default-tet-pressed: var(--color-white-14);
+    --bg-btn-default-tet-disabled: var(--color-non);
+    --bg-btn-default-tet-focus: var(--color-dark-grey-1);
+
+    /* ── Background / Blue Button ── */
+    --bg-btn-blue-pri-rest: var(--color-blue-8);
+    --bg-btn-blue-pri-hover: var(--color-blue-7);
+    --bg-btn-blue-pri-pressed: var(--color-blue-6);
+    --bg-btn-blue-pri-disabled: var(--color-blue-8);
+    --bg-btn-blue-pri-focus: var(--color-blue-8);
+    --bg-btn-blue-sec-rest: var(--color-non);
+    --bg-btn-blue-sec-hover: var(--color-blue-3);
+    --bg-btn-blue-sec-pressed: var(--color-blue-6);
+    --bg-btn-blue-sec-disabled: var(--color-non);
+    --bg-btn-blue-sec-focus: var(--color-black-2);
+    --bg-btn-blue-tet-rest: var(--color-non);
+    --bg-btn-blue-tet-hover: var(--color-blue-1);
+    --bg-btn-blue-tet-pressed: var(--color-blue-3);
+    --bg-btn-blue-tet-disabled: var(--color-non);
+    --bg-btn-blue-tet-focus: var(--color-black-2);
+
+    /* ── Background / Red Button ── */
+    --bg-btn-red-pri-rest: var(--color-red-7);
+    --bg-btn-red-pri-hover: var(--color-red-6);
+    --bg-btn-red-pri-pressed: var(--color-red-6);
+    --bg-btn-red-pri-disabled: var(--color-red-7);
+    --bg-btn-red-pri-focus: var(--color-red-7);
+    --bg-btn-red-sec-rest: var(--color-non);
+    --bg-btn-red-sec-hover: var(--color-red-2);
+    --bg-btn-red-sec-pressed: var(--color-red-2);
+    --bg-btn-red-sec-disabled: var(--color-non);
+    --bg-btn-red-sec-focus: var(--color-red-2);
+    --bg-btn-red-tet-rest: var(--color-non);
+    --bg-btn-red-tet-hover: var(--color-red-2);
+    --bg-btn-red-tet-pressed: var(--color-red-2);
+    --bg-btn-red-tet-disabled: var(--color-non);
+    --bg-btn-red-tet-focus: var(--color-dark-grey-1);
+
+    /* ── Background / Flow Button ── */
+    --bg-flow-btn-pri-rest: var(--color-blue-7);
+    --bg-flow-btn-pri-hover: var(--color-blue-8);
+    --bg-flow-btn-pri-pressed: var(--color-blue-6);
+    --bg-flow-btn-pri-disabled: var(--color-blue-8);
+    --bg-flow-btn-pri-focus: var(--color-blue-8);
+    --bg-flow-btn-sec-rest: var(--color-white-14);
+    --bg-flow-btn-sec-hover: var(--color-white-13);
+    --bg-flow-btn-sec-pressed: var(--color-white-12);
+    --bg-flow-btn-sec-disabled: var(--color-non);
+    --bg-flow-btn-sec-focus: var(--color-dark-grey-2);
+
+    /* ── Background / Input ── */
+    --bg-input-filled: var(--color-dark-grey-2);
+    --bg-input-focus: var(--color-dark-grey-2);
+    --bg-input-hover: var(--color-dark-grey-2);
+    --bg-input-error: var(--color-dark-grey-2);
+    --bg-input-placeholder: var(--color-dark-grey-2);
+    --bg-input-disabled: var(--color-dark-grey-3);
+    --bg-input-focus-hover: var(--color-blue-1);
+    --bg-input-highlighted: var(--color-blue-alpha-2);
+    --bg-input-hover-group-items: var(--color-dark-grey-2);
+
+    /* ── Background / Avatar ── */
+    --bg-avatar-green: var(--color-green-3);
+    --bg-avatar-purple: var(--color-purple-3);
+    --bg-avatar-aqua: var(--color-aqua-3);
+    --bg-avatar-orange: var(--color-orange-2);
+    --bg-avatar-yellow: var(--color-yellow-2);
+    --bg-avatar-blue: var(--color-blue-5);
+    --bg-avatar-fuchsia: var(--color-fuchsia-3);
+    --bg-avatar-red: var(--color-red-4);
+    --bg-avatar-grey: var(--color-dark-grey-3);
+    --bg-avatar-teal: var(--color-teal-3);
+
+    /* ── Background / Tags ── */
+    --bg-tags-green: var(--color-green-1);
+    --bg-tags-purple: var(--color-purple-2);
+    --bg-tags-aqua: var(--color-aqua-2);
+    --bg-tags-orange: var(--color-orange-1);
+    --bg-tags-yellow: var(--color-yellow-1);
+    --bg-tags-blue: var(--color-blue-4);
+    --bg-tags-fuchsia: var(--color-fuchsia-2);
+    --bg-tags-red: var(--color-red-3);
+    --bg-tags-grey: var(--color-dark-grey-2);
+    --bg-tags-teal: var(--color-teal-1);
+    --bg-tags-empty: var(--color-non);
+    --bg-tags-remove-btn: var(--color-white-15);
+
+    /* ── Background / Gradient ── */
+    --bg-gradient-transparent-light: var(--color-white-12);
+    --bg-gradient-transparent-lighter: var(--color-white-15);
+
+    /* ── Background / Selection Controls ── */
+    --bg-selection-controls-empty: var(--color-non);
+    --bg-selection-controls-hover-rest: var(--color-dark-grey-3);
+    --bg-selection-controls-hover-selected: var(--color-blue-3);
+    --bg-selection-controls-selected: var(--color-blue-8);
+
+    /* ── Text / Generic ── */
+    --text-primary: var(--color-light-grey-4);
+    --text-secondary: var(--color-light-grey-7);
+    --text-tertiary: var(--color-dark-grey-8);
+    --text-light: var(--color-dark-grey-7);
+    --text-error: var(--color-red-7);
+    --text-blue-accent: var(--color-blue-8);
+    --text-inverted: var(--color-white);
+    --text-non: var(--color-white);
+    --text-logo: var(--color-white);
+
+    /* ── Text / Default Button ── */
+    --text-btn-default-primary: var(--color-light-grey-4);
+    --text-btn-default-secondary: var(--color-light-grey-7);
+    --text-btn-default-tertiary: var(--color-dark-grey-8);
+    --text-btn-default-disabled: var(--color-dark-grey-3);
+
+    /* ── Text / Blue Button ── */
+    --text-btn-blue-primary: var(--color-white);
+    --text-btn-blue-secondary: var(--color-blue-8);
+    --text-btn-blue-tertiary: var(--color-blue-8);
+
+    /* ── Text / Red Button ── */
+    --text-btn-red-primary: var(--color-white);
+    --text-btn-red-secondary: var(--color-red-7);
+    --text-btn-red-tertiary: var(--color-red-7);
+
+    /* ── Text / Flow Button ── */
+    --text-flow-btn-primary: var(--color-white);
+    --text-flow-btn-secondary: var(--color-light-grey-4);
+    --text-flow-btn-tertiary: var(--color-dark-grey-8);
+    --text-flow-btn-sec-disabled: var(--color-dark-grey-3);
+
+    /* ── Text / Avatar ── */
+    --text-avatar-green: var(--color-green-8);
+    --text-avatar-purple: var(--color-purple-8);
+    --text-avatar-aqua: var(--color-aqua-8);
+    --text-avatar-orange: var(--color-orange-7);
+    --text-avatar-yellow: var(--color-yellow-9);
+    --text-avatar-blue: var(--color-blue-12);
+    --text-avatar-fuchsia: var(--color-fuchsia-6);
+    --text-avatar-red: var(--color-red-11);
+    --text-avatar-grey: var(--color-light-grey-4);
+    --text-avatar-teal: var(--color-teal-7);
+
+    /* ── Text / Input ── */
+    --text-input-filled: var(--color-light-grey-4);
+    --text-input-focus: var(--color-light-grey-4);
+    --text-input-error: var(--color-light-grey-4);
+    --text-input-hover: var(--color-dark-grey-6);
+    --text-input-placeholder: var(--color-dark-grey-6);
+    --text-input-sec-items: var(--color-light-grey-7);
+    --text-input-disabled: var(--color-white-8);
+    --text-input-focus-selected: var(--color-blue-8);
+    --text-input-icon-rest: var(--color-light-grey-4);
+    --text-input-icon-hover: var(--color-blue-9);
+    --text-input-icon-suffix: var(--color-dark-grey-6);
+    --text-input-icon-suffix-error: var(--color-red-7);
+    --text-input-json-txt-black: var(--color-dark-grey-9);
+    --text-input-json-txt-green: var(--color-green-5);
+
+    /* ── Text / Tags ── */
+    --text-tags-green: var(--color-green-5);
+    --text-tags-purple: var(--color-purple-5);
+    --text-tags-aqua: var(--color-aqua-5);
+    --text-tags-orange: var(--color-orange-4);
+    --text-tags-yellow: var(--color-yellow-5);
+    --text-tags-blue: var(--color-blue-9);
+    --text-tags-fuchsia: var(--color-fuchsia-4);
+    --text-tags-red: var(--color-red-8);
+    --text-tags-grey: var(--color-light-grey-7);
+    --text-tags-teal: var(--color-teal-5);
+    --text-tags-empty: var(--color-light-grey-7);
+
+    /* ── Border / Surface ── */
+    --border-light: var(--color-dark-grey-3);
+
+    /* ── Border / Transparent ── */
+    --border-transparent-light: var(--color-white-13);
+    --border-transparent-lighter: var(--color-white-15);
+    --border-transparent-medium: var(--color-white-11);
+    --border-transparent-strong: var(--color-white-9);
+
+    /* ── Border / Default Button ── */
+    --border-btn-default-pri-rest: var(--color-dark-grey-3);
+    --border-btn-default-pri-hover: var(--color-white-14);
+    --border-btn-default-pri-pressed: var(--color-white-14);
+    --border-btn-default-pri-disabled: var(--color-dark-grey-3);
+    --border-btn-default-pri-focus: var(--color-blue-8);
+    --border-btn-default-sec-rest: var(--color-dark-grey-3);
+    --border-btn-default-sec-hover: var(--color-white-12);
+    --border-btn-default-sec-pressed: var(--color-white-12);
+    --border-btn-default-sec-disabled: var(--color-dark-grey-3);
+    --border-btn-default-sec-focus: var(--color-blue-8);
+    --border-btn-default-tet-rest: var(--color-non);
+    --border-btn-default-tet-hover: var(--color-non);
+    --border-btn-default-tet-pressed: var(--color-non);
+    --border-btn-default-tet-disabled: var(--color-non);
+    --border-btn-default-tet-focus: var(--color-blue-8);
+
+    /* ── Border / Blue Button ── */
+    --border-btn-blue-pri-rest: var(--color-white-13);
+    --border-btn-blue-pri-hover: var(--color-white-14);
+    --border-btn-blue-pri-pressed: var(--color-white-14);
+    --border-btn-blue-pri-disabled: var(--color-black-14);
+    --border-btn-blue-pri-focus: var(--color-blue-8);
+    --border-btn-blue-sec-rest: var(--color-blue-6);
+    --border-btn-blue-sec-hover: var(--color-blue-6);
+    --border-btn-blue-sec-pressed: var(--color-blue-6);
+    --border-btn-blue-sec-disabled: var(--color-blue-8);
+    --border-btn-blue-sec-focus: var(--color-blue-8);
+    --border-btn-blue-tet-rest: var(--color-non);
+    --border-btn-blue-tet-hover: var(--color-non);
+    --border-btn-blue-tet-disabled: var(--color-non);
+    --border-btn-blue-tet-focus: var(--color-blue-7);
+    --border-btn-blue-tet-selected: var(--color-non);
+
+    /* ── Border / Red Button ── */
+    --border-btn-red-pri-rest: var(--color-black-14);
+    --border-btn-red-pri-hover: var(--color-black-14);
+    --border-btn-red-pri-pressed: var(--color-black-14);
+    --border-btn-red-pri-disabled: var(--color-black-14);
+    --border-btn-red-pri-focus: var(--color-blue-8);
+    --border-btn-red-sec-rest: var(--color-red-10);
+    --border-btn-red-sec-hover: var(--color-red-10);
+    --border-btn-red-sec-pressed: var(--color-red-10);
+    --border-btn-red-sec-disabled: var(--color-red-7);
+    --border-btn-red-sec-focus: var(--color-blue-8);
+    --border-btn-red-tet-rest: var(--color-non);
+    --border-btn-red-tet-hover: var(--color-non);
+    --border-btn-red-tet-disabled: var(--color-non);
+    --border-btn-red-tet-focus: var(--color-blue-8);
+    --border-btn-red-tet-selected: var(--color-non);
+
+    /* ── Border / Flow Button ── */
+    --border-flow-btn-pri-rest: var(--color-white-13);
+    --border-flow-btn-pri-hover: var(--color-white-14);
+    --border-flow-btn-pri-pressed: var(--color-white-14);
+    --border-flow-btn-pri-disabled: var(--color-black-14);
+    --border-flow-btn-pri-focus: var(--color-blue-8);
+    --border-flow-btn-sec-rest: var(--color-white-16);
+    --border-flow-btn-sec-hover: var(--color-white-14);
+    --border-flow-btn-sec-pressed: var(--color-white-14);
+    --border-flow-btn-sec-disabled: var(--color-dark-grey-3);
+    --border-flow-btn-sec-focus: var(--color-blue-8);
+
+    /* ── Border / Avatar ── */
+    --border-avatar-text: var(--color-white-16);
+    --border-avatar-image: var(--color-white-12);
+
+    /* ── Border / Notification ── */
+    --border-notification: var(--color-white-13);
+    --border-logo: var(--color-white);
+
+    /* ── Border / Selection Controls ── */
+    --border-selection-controls-rest: var(--color-light-grey-7);
+
+    /* ── Border / Input ── */
+    --border-input-filled: var(--color-dark-grey-3);
+    --border-input-hover: var(--color-white-11);
+    --border-input-focus: var(--color-blue-8);
+    --border-input-error: var(--color-red-3);
+    --border-input-disabled: var(--color-dark-grey-3);
+    --border-input-placeholder: var(--color-dark-grey-3);
+    --border-input-hover-group-items: var(--color-white-11);
+
+    /* ── Border / Tags ── */
+    --border-tags-empty: var(--color-dark-grey-5);
+
+    /* ── Other ── */
+    --top-nav: var(--color-light-grey-1);
+  }
+}
+
+/* Support explicit dark mode toggle via data attribute */
+[data-theme="dark"] {
+  /* Same as @media (prefers-color-scheme: dark) block above.
+     When explicit theme switching is implemented, duplicate the
+     dark overrides here. For now, OS preference drives the mode. */
+}
