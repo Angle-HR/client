@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 export default function Home() {
   return (
     <>
@@ -11,10 +9,8 @@ export default function Home() {
         <code className="mono-body-m-regular">code</code>
 
         {/* // Direct CSS variable access */}
-        <div
-          style={{ gap: "var(--gap-sm-8)", padding: "var(--padding-xl-16)" }}
-        ></div>
+        <div style={{ gap: 'var(--gap-sm-8)', padding: 'var(--padding-xl-16)' }}></div>
       </div>
     </>
-  );
+  )
 }
