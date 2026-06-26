@@ -1,0 +1,21 @@
+# Optional: run both services from one Dokploy "Compose" project.
+# Alternatively create two separate Dokploy "Application" services, each pointing
+# at this repo with Dockerfile = Dockerfile (app) and Dockerfile.storybook.
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    ports:
+      - '3000:3000'
+
+  storybook:
+    build:
+      context: .
+      dockerfile: Dockerfile.storybook
+    restart: unless-stopped
+    ports:
+      - '8080:80'
