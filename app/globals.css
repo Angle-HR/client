@@ -483,6 +483,8 @@
   --color-text-input-icon-hover: var(--text-input-icon-hover);
   --color-text-input-icon-suffix: var(--text-input-icon-suffix);
   --color-text-input-icon-suffix-error: var(--text-input-icon-suffix-error);
+  --color-text-input-json-txt-black: var(--text-input-json-txt-black);
+  --color-text-input-json-txt-green: var(--text-input-json-txt-green);
 
   /* ── Text / Tags ── */
   --color-text-tags-green: var(--text-tags-green);

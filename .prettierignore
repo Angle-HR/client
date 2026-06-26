@@ -9,3 +9,10 @@ yarn.lock
 .next
 .vercel
 *.tsbuildinfo
+
+# Design-system CSS is hand-authored (double-quoted font/import strings that the
+# token tests assert) — keep Prettier out of it.
+*.css
+
+# Exported reference docs, not source we maintain
+updated-docs
