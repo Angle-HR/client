@@ -13,6 +13,9 @@ interface ListItemDefaultProps {
   withIcon?: boolean
   iconContainer?: boolean
   icon?: ReactNode
+  /** A leading visual (e.g. a flag) rendered before the content, outside the
+   * square icon slot so non-square artwork isn't clipped. */
+  leadingVisual?: ReactNode
   danger?: boolean
   state?: ListItemDefaultState
   disabled?: boolean
@@ -28,6 +31,7 @@ const ListItemDefault = forwardRef<HTMLLIElement, ListItemDefaultProps>(function
     withIcon = true,
     iconContainer = false,
     icon,
+    leadingVisual,
     danger = false,
     state,
     disabled = false,
@@ -49,6 +53,7 @@ const ListItemDefault = forwardRef<HTMLLIElement, ListItemDefaultProps>(function
 
   const classes = [
     'flex items-center w-[200px] h-[32px] rounded-sm-8 px-[6px] transition-colors cursor-pointer',
+    leadingVisual ? 'gap-[8px]' : '',
     resolvedState === 'disabled' ? 'opacity-40 pointer-events-none' : '',
     bgClass,
     className,
@@ -63,6 +68,7 @@ const ListItemDefault = forwardRef<HTMLLIElement, ListItemDefaultProps>(function
       onClick={disabled ? undefined : onClick}
       className={classes}
     >
+      {leadingVisual && <span className="inline-flex shrink-0 items-center">{leadingVisual}</span>}
       <ListItemContent
         mainText={mainText}
         subText={subText}

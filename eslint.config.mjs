@@ -34,7 +34,16 @@ const eslintConfig = defineConfig([
     },
   },
   eslintConfigPrettier,
-  globalIgnores(['.next/**', 'out/**', 'build/**', 'coverage/**', 'next-env.d.ts']),
+  globalIgnores([
+    '.next/**',
+    'out/**',
+    'build/**',
+    'coverage/**',
+    'storybook-static/**',
+    'playwright-report/**',
+    'test-results/**',
+    'next-env.d.ts',
+  ]),
   ...storybook.configs['flat/recommended'],
 ])
 
