@@ -13,6 +13,8 @@ interface SelectionFieldProps extends Omit<
   state?: SelectionFieldState
   showPrefixIcon?: boolean
   prefixIcon?: ReactNode
+  /** Leading visual (e.g. the selected country's flag) shown before the value. */
+  leadingVisual?: ReactNode
   withSelection?: boolean
   tags?: ReactNode[]
   placeholder?: string
@@ -63,6 +65,7 @@ const SelectionField = forwardRef<HTMLButtonElement, SelectionFieldProps>(functi
     state,
     showPrefixIcon = false,
     prefixIcon,
+    leadingVisual,
     withSelection = false,
     tags,
     placeholder,
@@ -109,10 +112,15 @@ const SelectionField = forwardRef<HTMLButtonElement, SelectionFieldProps>(functi
           )}
         </span>
       ) : (
-        <span
-          className={`flex-1 truncate text-body-s ${hasValue ? 'text-text-input-filled' : 'text-text-input-placeholder'}`}
-        >
-          {value || placeholder}
+        <span className="flex flex-1 items-center gap-[8px] min-w-0">
+          {value && leadingVisual && (
+            <span className="inline-flex shrink-0 items-center">{leadingVisual}</span>
+          )}
+          <span
+            className={`flex-1 truncate text-body-s ${hasValue ? 'text-text-input-filled' : 'text-text-input-placeholder'}`}
+          >
+            {value || placeholder}
+          </span>
         </span>
       )}
       <ChevronDown className={`${config.icon} shrink-0 text-text-input-icon-rest`} />
