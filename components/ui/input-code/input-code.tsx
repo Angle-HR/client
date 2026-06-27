@@ -77,7 +77,7 @@ const InputCode = forwardRef<HTMLTextAreaElement, InputCodeProps>(function Input
       {showLabel && label && (
         <label
           htmlFor={fieldId}
-          className="text-label font-medium text-text-secondary h-[9px] leading-none pl-[2px]"
+          className="text-body-xs font-medium-550 text-text-secondary h-[9px] leading-none pl-[2px]"
         >
           {label}
           {required && (

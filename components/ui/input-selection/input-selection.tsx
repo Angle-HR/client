@@ -12,6 +12,8 @@ import { SelectionField } from './selection-field'
 interface SelectOption {
   value: string
   label: string
+  /** Optional leading visual (e.g. a CountryFlag) shown in the trigger and rows. */
+  icon?: ReactNode
 }
 
 interface InputSelectionProps {
@@ -133,7 +135,7 @@ function InputSelection({
         <label
           id={labelId}
           htmlFor={fieldId}
-          className="text-label font-medium text-text-secondary h-[9px] leading-none pl-[2px]"
+          className="text-body-xs font-medium-550 text-text-secondary h-[9px] leading-none pl-[2px]"
         >
           {label}
           {required && (
@@ -153,6 +155,9 @@ function InputSelection({
         prefixIcon={prefixIcon}
         withSelection={withSelection}
         placeholder={placeholder}
+        leadingVisual={
+          !withSelection ? options.find((o) => o.value === selectedArray[0])?.icon : undefined
+        }
         value={!withSelection ? (selectedArray[0] ? labelFor(selectedArray[0]) : '') : undefined}
         tags={
           withSelection
@@ -196,6 +201,7 @@ function InputSelection({
                 key={opt.value}
                 mainText={opt.label}
                 withIcon={false}
+                leadingVisual={opt.icon}
                 state={isSelected ? 'hover' : 'rest'}
                 onClick={() => selectOption(opt.value)}
               />

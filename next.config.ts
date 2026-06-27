@@ -1,6 +1,8 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
+  // Self-contained server bundle (.next/standalone) for a small Docker image on Dokploy.
+  output: 'standalone',
   // Allow remote images when you connect to a CDN or API; add hostnames as needed.
   // images: {
   //   remotePatterns: [

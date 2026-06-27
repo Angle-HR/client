@@ -51,7 +51,7 @@ const GroupInput = forwardRef<HTMLDivElement, GroupInputProps>(function GroupInp
       {showLabel && label && (
         <label
           htmlFor={groupId}
-          className="text-label font-medium text-text-secondary h-[9px] leading-none"
+          className="text-body-xs font-medium-550 text-text-secondary h-[9px] leading-none"
         >
           {label}
         </label>

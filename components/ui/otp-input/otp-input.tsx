@@ -100,7 +100,7 @@ function OTPInput({
     <div className={`flex flex-col gap-[6px] ${className}`}>
       {showLabel && label && (
         <span
-          className="text-label font-medium text-text-secondary leading-none pl-[2px]"
+          className="text-body-xs font-medium-550 text-text-secondary leading-none pl-[2px]"
           id={`${groupId}-label`}
         >
           {label}

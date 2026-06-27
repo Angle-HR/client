@@ -9,6 +9,9 @@ interface IconButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: IconButtonVariant
   size?: IconButtonSize
   icon: ReactNode
+  /** Icon box size in px. Defaults to 14 (Figma spec); some contexts (e.g.
+   * social footers) use a larger 20px glyph. */
+  iconSize?: number
   showCounter?: boolean
   counter?: number
   'aria-label': string
@@ -57,6 +60,7 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconB
     variant = 'primary',
     size = 'md',
     icon,
+    iconSize = 14,
     showCounter = false,
     counter,
     disabled,
@@ -82,9 +86,14 @@ const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconB
 
   return (
     <button ref={ref} type={type} disabled={disabled} className={classes} {...props}>
-      <span className="inline-flex h-[14px] w-[14px] items-center justify-center">{icon}</span>
+      <span
+        className="inline-flex items-center justify-center"
+        style={{ height: iconSize, width: iconSize }}
+      >
+        {icon}
+      </span>
       {badgeVisible && (
-        <span className="absolute -top-[2px] -right-[2px] flex h-[12px] min-w-[12px] items-center justify-center rounded-full bg-bg-notification px-[2px] text-[8px] font-medium leading-none text-text-inverted">
+        <span className="absolute -top-[2px] -right-[2px] flex h-[12px] min-w-[12px] items-center justify-center rounded-full bg-blue-8 px-[2px] text-[8px] font-medium leading-none text-text-inverted">
           {displayCounter}
         </span>
       )}
