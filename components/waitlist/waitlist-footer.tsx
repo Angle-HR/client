@@ -6,7 +6,7 @@ import { LinkedInIcon, XIcon } from './icons'
 // over a centred legal link row. Legal text: body-xs / weight 500 /
 // text-secondary. Gap 14 between rows, gap 10 within the legal row.
 const legalLinks = [
-  { label: '©2026 OpenHR', href: '#' },
+  { label: '©2026 OpenHR' },
   { label: 'Privacy Policy', href: '#' },
   { label: 'Terms & Conditions', href: '#' },
 ]
@@ -35,7 +35,9 @@ function WaitlistFooter() {
           <a
             key={link.label}
             href={link.href}
-            className="text-body-xs font-medium leading-19_2 text-text-secondary"
+            className={`text-body-xs font-medium leading-19_2 text-text-secondary ${
+              link.href ? 'underline' : 'no-underline'
+            }`}
           >
             {link.label}
           </a>

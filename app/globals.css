@@ -1,6 +1,11 @@
 @import "tailwindcss";
 @import "../styles/design-system/index.css";
 
+* {
+  -webkit-font-smoothing: antialiased;
+  -text-rendering: optimizelegibility;
+}
+
 /* ==========================================================================
    Tailwind v4 Theme — ALL design tokens mapped to utility classes.
 
