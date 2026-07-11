@@ -3,9 +3,9 @@
 // tightly tracked.
 function WaitlistLogo() {
   return (
-    <div className="inline-flex items-center gap-[4px] text-text-primary" aria-label="Open HR">
+    <div className="inline-flex items-center text-text-primary" aria-label="Open HR">
       <svg
-        className="h-[24px] w-[24px]"
+        className="h-24 w-24"
         viewBox="0 0 24 24"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -22,7 +22,7 @@ function WaitlistLogo() {
           fill="currentColor"
         />
       </svg>
-      <span className="inline-flex items-center rounded-sm-6 border-[0.5px] border-[#000000] px-[4px] py-[4px]">
+      <span className="inline-flex items-center rounded-sm-6 border-[0.5px] border-bg-transparent-strong px-4 py-[4.4px]">
         <span className="text-body-s font-semibold leading-none tracking-tight">OPEN&nbsp;HR</span>
       </span>
     </div>

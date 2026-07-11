@@ -32,14 +32,14 @@ function StepIntro({ onSubmit }: StepIntroProps) {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-[448px] flex-col gap-[32px] md:gap-[44px]">
+    <div className="mx-auto flex w-full max-w-[448px] flex-col gap-32 md:gap-44">
       {/* Hero — left-aligned on mobile, centred on desktop (Frame 1, gap 28) */}
-      <header className="flex flex-col gap-[28px] md:items-center md:text-center">
-        <div className="flex flex-col gap-[20px] md:items-center">
-          <span className="text-body-s font-semibold leading-21 text-text-primary">
+      <header className="flex flex-col gap-28 md:items-center md:text-center">
+        <div className="flex flex-col gap-20 md:items-center">
+          <span className="text-body-s font-semibold tracking-[3px] leading-21 text-text-primary">
             INTRODUCING OPEN HR
           </span>
-          <h1 className="text-heading-4 font-semibold leading-39_7 text-text-primary md:text-heading-2 md:leading-49_7">
+          <h1 className="text-heading-4 font-semibold leading-39.7 text-text-primary md:text-heading-2 md:leading-49.7">
             Built for Startups &amp; Small Businesses
           </h1>
         </div>
@@ -50,11 +50,11 @@ function StepIntro({ onSubmit }: StepIntroProps) {
       </header>
 
       {/* Form + actions — Frame 103 (gap 40) */}
-      <form onSubmit={handleSubmit} className="flex flex-col gap-[40px]">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-40">
         {/* Inputs — Frame 104 (gap 18) */}
-        <div className="flex flex-col gap-[18px]">
+        <div className="flex flex-col gap-18">
           {/* Name + email — Frame 1400001788 (gap 18) */}
-          <div className="flex flex-col gap-[18px]">
+          <div className="flex flex-col gap-18">
             <TextInput
               label="Full name"
               placeholder="Title"
@@ -81,7 +81,7 @@ function StepIntro({ onSubmit }: StepIntroProps) {
         </div>
 
         {/* Button + consent — Frame 1400001799 (gap 10) */}
-        <div className="flex flex-col gap-[10px]">
+        <div className="flex flex-col gap-10">
           <FlowButton
             type="submit"
             variant="primary"
@@ -91,7 +91,7 @@ function StepIntro({ onSubmit }: StepIntroProps) {
           >
             Join the waitlist
           </FlowButton>
-          <p className="text-center text-body-xs leading-19_2 text-text-secondary">
+          <p className="text-center text-body-xs leading-19.2 text-text-secondary">
             By continuing, you agree to our{' '}
             <a href="#" className="underline underline-offset-2">
               Terms &amp; Conditions
