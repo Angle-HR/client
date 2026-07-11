@@ -1,16 +1,22 @@
-export default function Home() {
-  return (
-    <>
-      {/* // Tailwind utilities (auto light/dark) */}
-      <div className="bg-bg-primary text-text-primary border border-border-light rounded-lg shadow-sm">
-        {/* // Typography classes from design system */}
-        <h1 className="heading-h1-semibold">Title</h1>
-        <p className="body-l-regular">Body text</p>
-        <code className="mono-body-m-regular">code</code>
+'use client'
 
-        {/* // Direct CSS variable access */}
-        <div style={{ gap: 'var(--gap-sm-8)', padding: 'var(--padding-xl-16)' }}></div>
-      </div>
-    </>
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+
+import { StepIntro } from '@/components/waitlist/steps/step-intro'
+import { StepSuccess } from '@/components/waitlist/steps/step-success'
+import { WaitlistShell } from '@/components/waitlist/waitlist-shell'
+
+// Landing page: the intro form → success card. "Get involved" continues to the
+// survey, which lives on its own route (/survey).
+export default function Home() {
+  const [step, setStep] = useState<'intro' | 'success'>('intro')
+  const router = useRouter()
+
+  return (
+    <WaitlistShell step={step}>
+      {step === 'intro' && <StepIntro onSubmit={() => setStep('success')} />}
+      {step === 'success' && <StepSuccess onContinue={() => router.push('/survey')} />}
+    </WaitlistShell>
   )
 }

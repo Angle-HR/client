@@ -116,6 +116,7 @@ function StepQuestionnaire({
     }
     onContinue?.({
       groups: answers.map((a) => (typeof a === 'string' ? a : [...a])),
+      othersOn,
       other: othersOn ? otherText.trim() : undefined,
     })
   }

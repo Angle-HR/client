@@ -7,14 +7,20 @@ import { Button, ListItemMultiSelect } from '@/components/ui'
 import { ArrowRightIcon } from '../icons'
 
 interface StepEarlyAccessProps {
+  defaultEarlyAccess?: boolean
+  defaultUserTesting?: boolean
   onSubmit?: (answers: { earlyAccess: boolean; userTesting: boolean }) => void
 }
 
 // Final pre-thanks screen: two independent opt-in checkboxes + Submit. The
 // "user testing" answer decides which thank-you variant shows next.
-function StepEarlyAccess({ onSubmit }: StepEarlyAccessProps) {
-  const [earlyAccess, setEarlyAccess] = useState(false)
-  const [userTesting, setUserTesting] = useState(false)
+function StepEarlyAccess({
+  defaultEarlyAccess = false,
+  defaultUserTesting = false,
+  onSubmit,
+}: StepEarlyAccessProps) {
+  const [earlyAccess, setEarlyAccess] = useState(defaultEarlyAccess)
+  const [userTesting, setUserTesting] = useState(defaultUserTesting)
 
   return (
     <div className="mx-auto w-full max-w-[472px]">

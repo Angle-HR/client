@@ -1,7 +1,7 @@
+import { WaitlistStep } from '@/lib/types'
+
 import { WaitlistFooter } from './waitlist-footer'
 import { WaitlistLogo } from './waitlist-logo'
-
-import { WaitlistStep } from '@/lib/types'
 
 import type { ReactNode } from 'react'
 
