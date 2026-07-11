@@ -13,7 +13,7 @@ interface WaitlistShellProps {
 // max-w-448 column, footer bottom-centre.
 function WaitlistShell({ children }: WaitlistShellProps) {
   return (
-    <div className="flex min-h-dvh flex-col bg-bg-primary px-[20px] py-[18px]">
+    <div className="flex min-h-dvh flex-col bg-bg-tertiary px-[20px] py-[18px]">
       <header className="flex shrink-0 md:justify-center">
         <WaitlistLogo />
       </header>

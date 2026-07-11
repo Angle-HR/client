@@ -50,21 +50,22 @@ function StepIndustry({ onContinue }: StepIndustryProps) {
 
   return (
     <div className="mx-auto w-full max-w-[472px]">
-      <div className="rounded-lg-12 border border-border-light bg-bg-secondary px-[6px] pb-[6px] pt-[12px]">
-        <div className="flex flex-col items-center gap-[28px] rounded-sm-7 bg-bg-primary px-[24px] py-[32px]">
+      {/* Outer ring: black @2% (bg/transparent/lighter) over the page; inner panel is white. */}
+      <div className="rounded-lg-12 bg-bg-transparent-lighter p-6 pt-12">
+        <div className="flex flex-col items-center gap-28 rounded-sm-7 bg-bg-tertiary px-24 py-32">
           {/* Header */}
-          <div className="flex w-full flex-col gap-[12px]">
+          <div className="flex w-full flex-col gap-12">
             <span className="text-body-l font-medium leading-21 text-text-secondary">
               Tell us a bit about your team
             </span>
-            <h1 className="text-heading-5 font-semibold leading-33_1 text-text-primary">
+            <h1 className="text-heading-5 font-semibold leading-33.1 text-text-primary">
               What industry do you work
             </h1>
           </div>
 
           {/* Options */}
-          <div className="flex w-full flex-col gap-[10px]">
-            <ul className="flex flex-col">
+          <div className="flex w-full flex-col">
+            <ul className="flex flex-col pb-10 border-b-[1.5px] border-border-notification border-dashed">
               {industries.map((value) => (
                 <ListItemMultiSelect
                   key={value}
@@ -75,10 +76,7 @@ function StepIndustry({ onContinue }: StepIndustryProps) {
                 />
               ))}
             </ul>
-
-            <div className="border-t border-dashed border-border-light" />
-
-            <div className="flex flex-col gap-[2px]">
+            <div className="flex flex-col pt-10 border-t-[1.5px] border-border-notification border-dashed gap-[2px]">
               <ListItemMultiSelect
                 mainText="Others"
                 withIcon={false}

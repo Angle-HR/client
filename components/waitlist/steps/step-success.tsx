@@ -111,22 +111,19 @@ function CelebrationGlasses() {
 function StepSuccess({ onContinue }: StepSuccessProps) {
   return (
     <div className="mx-auto w-full max-w-[472px]">
-      <div className="overflow-hidden rounded-lg-12 border border-border-light bg-bg-secondary">
+      <div className="bg-bg-transparent-lighter flex flex-col gap-2 rounded-lg-12">
         {/* Top — icon + heading */}
-        <div className="flex flex-col items-center gap-[14px] px-[6px] pb-[10px] pt-[26px]">
+        <div className="flex flex-col p-6 pb-44 border-b-[1.5px] border-border-notification border-dashed items-center pt-20">
           <CelebrationGlasses />
           <h1 className="text-center text-heading-5 font-semibold leading-33_1 text-text-primary">
             Congrats, you&apos;re on the list.
           </h1>
         </div>
 
-        {/* Dashed divider */}
-        <div className="border-t border-dashed border-border-light" />
-
         {/* Bottom — message + action, inset bg/primary panel */}
-        <div className="px-[6px] pb-[6px] pt-[12px]">
-          <div className="flex flex-col items-center gap-[32px] rounded-sm-7 bg-bg-primary px-[40px] py-[32px]">
-            <p className="text-center text-body-xl font-medium leading-24 text-text-secondary">
+        <div className="border-t-[1.5px] p-6 pt-12 border-border-notification border-dashed">
+          <div className="flex flex-col items-center gap-32 rounded-sm-7 bg-bg-tertiary py-32">
+            <p className="text-center text-body-xl font-medium max-w-[380px] mx-auto leading-24 text-text-secondary">
               We&apos;re building Open HR around Teams like yours, help us get it right.
             </p>
             <Button
