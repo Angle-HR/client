@@ -88,7 +88,7 @@ class ApiError extends Error {
   }
 }
 
-const baseUrl = 'https://internal-server.0110100001110010.org/api/v1/'
+const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
 
 async function joinWaitlist(payload: WaitlistPayload): Promise<WaitlistResponse> {
   if (!baseUrl) {
