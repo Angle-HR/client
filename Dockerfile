@@ -11,6 +11,12 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
+# NEXT_PUBLIC_* vars are inlined into the client bundle at build time, so they
+# must arrive as a build ARG here — setting them as a runtime env var on the
+# container (e.g. Dokploy's "Environment" tab) has no effect on already-built
+# client JS. Pass this as a build argument in Dokploy/compose, not a runtime var.
+ARG NEXT_PUBLIC_API_BASE_URL
+ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
 RUN bun run build
 
 # run: minimal Node image serving the standalone server

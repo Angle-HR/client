@@ -6,6 +6,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        # NEXT_PUBLIC_* vars are inlined at build time — must be passed as a
+        # build arg, not just a runtime `environment:` var (see Dockerfile).
+        - NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
     restart: unless-stopped
     environment:
       - NODE_ENV=production
