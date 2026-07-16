@@ -1,6 +1,6 @@
 'use client'
 
-import { type ReactNode, useState } from 'react'
+import { type ReactNode, useEffect, useRef, useState } from 'react'
 
 import { Button, ListItemMultiSelect, RadioButton, Textarea, TextInput } from '@/components/ui'
 
@@ -78,6 +78,11 @@ function StepQuestionnaire({
   const [othersOn, setOthersOn] = useState(defaultAnswers?.othersOn ?? false)
   const [otherText, setOtherText] = useState(defaultAnswers?.other ?? '')
   const [error, setError] = useState(false)
+  const otherFieldRef = useRef<HTMLInputElement & HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    if (othersOn) otherFieldRef.current?.focus()
+  }, [othersOn])
 
   function clearError() {
     setError(false)
@@ -197,6 +202,7 @@ function StepQuestionnaire({
                 />
                 {others.input === 'textarea' ? (
                   <Textarea
+                    ref={otherFieldRef}
                     showLabel={false}
                     showHelper={false}
                     showToolbar={false}
@@ -208,6 +214,7 @@ function StepQuestionnaire({
                   />
                 ) : (
                   <TextInput
+                    ref={otherFieldRef}
                     showLabel={false}
                     showHelper={false}
                     placeholder={others.placeholder}

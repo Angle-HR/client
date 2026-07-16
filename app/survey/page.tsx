@@ -1,21 +1,17 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
-import {
-  getHiringFrustrations,
-  getHiringTools,
-  getIndustries,
-  getRoles,
-  getTeamSizes,
-  submitOnboarding,
-} from '@/api/waitlist'
 import { Button } from '@/components/ui'
-import { buildSurveyQuestions, type SurveyQuestion } from '@/components/waitlist/questions'
+import { buildSurveyQuestions } from '@/components/waitlist/questions'
+import { SurveyQuestionSkeleton } from '@/components/waitlist/skeletons/survey-question-skeleton'
 import { StepEarlyAccess } from '@/components/waitlist/steps/step-early-access'
 import { StepQuestionnaire } from '@/components/waitlist/steps/step-questionnaire'
 import { StepThanks } from '@/components/waitlist/steps/step-thanks'
 import { WaitlistShell } from '@/components/waitlist/waitlist-shell'
+import { applyApiError } from '@/lib/api-error'
+import { useSubmitOnboarding } from '@/lib/mutations'
+import { useSurveyOptions } from '@/lib/queries'
 
 import type { QuestionnaireAnswers } from '@/components/waitlist/steps/step-questionnaire'
 import type { WaitlistStep } from '@/lib/types'
@@ -47,10 +43,9 @@ function toId(value: string | string[] | undefined): string {
  * prior selections.
  */
 export default function SurveyPage() {
-  const [surveyQuestions, setSurveyQuestions] = useState<SurveyQuestion[] | null>(null)
-  const [questionsLoading, setQuestionsLoading] = useState(true)
-  const [questionsError, setQuestionsError] = useState(false)
-  const [retryCount, setRetryCount] = useState(0)
+  const surveyOptions = useSurveyOptions()
+  const submitOnboarding = useSubmitOnboarding()
+
   const [index, setIndex] = useState(0)
   const [answers, setAnswers] = useState<(QuestionnaireAnswers | undefined)[]>(() =>
     Array(QUESTION_COUNT).fill(undefined),
@@ -66,8 +61,7 @@ export default function SurveyPage() {
     }
     return stored ?? ''
   })
-  const [submitting, setSubmitting] = useState(false)
-  const [submitError, setSubmitError] = useState<string>()
+  const [fallbackError, setFallbackError] = useState<string>()
 
   // Seed the current history entry so Back from step 0 exits to the landing page,
   // and Back/Forward within the survey move between steps.
@@ -81,44 +75,24 @@ export default function SurveyPage() {
     return () => window.removeEventListener('popstate', onPop)
   }, [])
 
-  // Load the survey's question options from the API. No static fallback —
-  // while this is in flight or if it fails, the loading/error states below
-  // are shown instead of the questionnaire.
-  useEffect(() => {
-    let cancelled = false
-
-    Promise.all([
-      getIndustries(),
-      getHiringTools(),
-      getHiringFrustrations(),
-      getRoles(),
-      getTeamSizes(),
-    ])
-      .then(([industries, hiringTools, hiringFrustrations, roles, teamSizes]) => {
-        if (cancelled) return
-        setSurveyQuestions(
-          buildSurveyQuestions({ industries, hiringTools, hiringFrustrations, roles, teamSizes }),
-        )
-      })
-      .catch((err) => {
-        if (cancelled) return
-        console.error('Failed to load survey questions', err)
-        setQuestionsError(true)
-      })
-      .finally(() => {
-        if (!cancelled) setQuestionsLoading(false)
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [retryCount])
-
-  function handleRetryQuestions() {
-    setQuestionsLoading(true)
-    setQuestionsError(false)
-    setRetryCount((c) => c + 1)
-  }
+  const surveyQuestions = useMemo(() => {
+    if (surveyOptions.isLoading || surveyOptions.isError) return null
+    return buildSurveyQuestions({
+      industries: surveyOptions.industries.data ?? [],
+      hiringTools: surveyOptions.hiringTools.data ?? [],
+      hiringFrustrations: surveyOptions.hiringFrustrations.data ?? [],
+      roles: surveyOptions.roles.data ?? [],
+      teamSizes: surveyOptions.teamSizes.data ?? [],
+    })
+  }, [
+    surveyOptions.isLoading,
+    surveyOptions.isError,
+    surveyOptions.industries.data,
+    surveyOptions.hiringTools.data,
+    surveyOptions.hiringFrustrations.data,
+    surveyOptions.roles.data,
+    surveyOptions.teamSizes.data,
+  ])
 
   function goTo(next: number) {
     window.history.pushState({ ...window.history.state, wlStep: next }, '')
@@ -137,11 +111,10 @@ export default function SurveyPage() {
   async function handleEarlySubmit(vals: EarlyAccessState) {
     const [industryAnswers, toolAnswers, frustrationAnswers, roleAnswers] = answers
 
-    setSubmitError(undefined)
-    setSubmitting(true)
+    setFallbackError(undefined)
 
     try {
-      await submitOnboarding({
+      await submitOnboarding.mutateAsync({
         token,
         industry_ids: toIds(industryAnswers?.groups[0]),
         tool_ids: toIds(toolAnswers?.groups[0]),
@@ -157,15 +130,14 @@ export default function SurveyPage() {
       setEarly(vals)
       goTo(THANKS)
     } catch (err) {
-      console.error('Failed to submit onboarding form', err)
-      setSubmitError('Something went wrong submitting your answers. Please try again.')
-    } finally {
-      setSubmitting(false)
+      setFallbackError(
+        applyApiError(err, undefined, {}, 'Something went wrong submitting your answers. Please try again.'),
+      )
     }
   }
 
   const isQuestionStep = index < QUESTION_COUNT
-  const question = !questionsLoading && !questionsError ? surveyQuestions?.[index] : undefined
+  const question = surveyQuestions?.[index]
   const thanksHeading = early.userTesting
     ? "Thanks, we'll keep you posted."
     : 'Thanks, your feedback means a lot.'
@@ -175,19 +147,13 @@ export default function SurveyPage() {
 
   return (
     <WaitlistShell step={shellStep}>
-      {isQuestionStep && questionsLoading && (
-        <div className="mx-auto flex w-full max-w-[472px] items-center justify-center rounded-sm-7 bg-bg-tertiary py-32">
-          <span className="text-body-l font-medium text-text-secondary">
-            Loading your survey...
-          </span>
-        </div>
-      )}
-      {isQuestionStep && questionsError && (
+      {isQuestionStep && surveyOptions.isLoading && <SurveyQuestionSkeleton />}
+      {isQuestionStep && surveyOptions.isError && (
         <div className="mx-auto flex w-full max-w-[472px] flex-col items-center gap-16 rounded-sm-7 bg-bg-tertiary py-32">
           <span className="text-body-l font-medium text-text-error" role="alert">
             Failed to load the survey. Please try again.
           </span>
-          <Button accent="blue" variant="secondary" size="md" onClick={handleRetryQuestions}>
+          <Button accent="blue" variant="secondary" size="md" onClick={surveyOptions.refetch}>
             Try again
           </Button>
         </div>
@@ -204,8 +170,8 @@ export default function SurveyPage() {
         <StepEarlyAccess
           defaultEarlyAccess={early.earlyAccess}
           defaultUserTesting={early.userTesting}
-          submitting={submitting}
-          errorText={submitError}
+          submitting={submitOnboarding.isPending}
+          errorText={fallbackError}
           onSubmit={handleEarlySubmit}
         />
       )}

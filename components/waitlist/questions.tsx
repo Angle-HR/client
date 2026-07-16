@@ -20,7 +20,7 @@ import type {
   Industry,
   Role,
   TeamSize,
-} from '@/api/waitlist'
+} from '@/lib/types'
 
 // Survey question definitions. Shaped like the props StepQuestionnaire takes, so
 // they can later be fetched from the backend and passed straight through.

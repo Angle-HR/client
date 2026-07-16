@@ -89,7 +89,7 @@ const SelectionField = forwardRef<HTMLButtonElement, SelectionFieldProps>(functi
       ? 'bg-bg-input-error border-border-input-error'
       : disabled
         ? 'bg-bg-input-disabled border-border-input-disabled pointer-events-none opacity-60'
-        : 'bg-bg-input-placeholder border-border-input-placeholder hover:border-border-input-hover focus-visible:border-border-input-focus focus-visible:outline-none cursor-pointer',
+        : 'bg-bg-input-placeholder border-border-input-placeholder hover:border-border-input-hover focus-visible:border-border-input-focus! focus-visible:outline-none cursor-pointer',
     className,
   ].join(' ')
 

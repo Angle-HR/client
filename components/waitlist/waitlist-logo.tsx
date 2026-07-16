@@ -1,9 +1,12 @@
 // OPEN HR wordmark. Figma `logo`: the mark (#333333 → text-primary) next to a
 // pill (radius sm-6, 0.5px border) holding "OPEN HR" at body-s / weight 600,
+
+import Link from 'next/link'
+
 // tightly tracked.
 function WaitlistLogo() {
   return (
-    <div className="inline-flex items-center text-text-primary" aria-label="Open HR">
+    <Link href="/" className="inline-flex items-center text-text-primary" aria-label="Open HR">
       <svg
         className="h-24 w-24"
         viewBox="0 0 24 24"
@@ -25,7 +28,7 @@ function WaitlistLogo() {
       <span className="inline-flex items-center rounded-sm-6 border-[0.5px] border-bg-transparent-strong px-4 py-[4.4px]">
         <span className="text-body-s font-semibold leading-none tracking-tight">OPEN&nbsp;HR</span>
       </span>
-    </div>
+    </Link>
   )
 }
 

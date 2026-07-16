@@ -61,13 +61,13 @@ const ListItemMultiSelect = forwardRef<HTMLLIElement, ListItemMultiSelectProps>(
     ref,
   ) {
     const classes = [
-      'flex items-center gap-[8px] w-full h-[32px] rounded-sm-8 px-[6px] transition-colors cursor-pointer',
+      'flex items-center gap-[8px] w-full h-[32px] rounded-sm-8 px-[6px] transition-colors duration-[50ms] cursor-pointer',
       state === 'hover' ? 'bg-bg-transparent-light' : 'hover:bg-bg-transparent-light',
       className,
     ].join(' ')
 
     const checkboxClasses = [
-      'h-[15px] w-[15px] rounded-sm-5 border flex items-center justify-center shrink-0 transition-colors',
+      'h-[15px] w-[15px] rounded-sm-5 border flex items-center justify-center shrink-0 transition-colors duration-[50ms]',
       selected
         ? 'bg-bg-selection-controls-selected border-bg-selection-controls-selected text-text-inverted'
         : 'border-border-selection-controls-rest bg-bg-selection-controls-empty',

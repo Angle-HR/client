@@ -72,7 +72,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       ? 'bg-bg-input-error border-border-input-error'
       : disabled
         ? 'bg-bg-input-disabled border-border-input-disabled pointer-events-none opacity-60'
-        : 'bg-bg-input-placeholder border-border-input-placeholder hover:border-border-input-hover hover:bg-bg-input-hover focus-within:border-border-input-focus focus-within:bg-bg-input-focus',
+        : 'bg-bg-input-placeholder border-border-input-placeholder hover:border-border-input-hover hover:bg-bg-input-hover focus-within:border-border-input-focus! focus-within:bg-bg-input-focus!',
     className,
   ].join(' ')
 

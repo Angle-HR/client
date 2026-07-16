@@ -1,9 +1,12 @@
 'use client'
 
-import { useEffect, useState, type FormEvent } from 'react'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import { z } from 'zod'
 
-import { getCountries, joinWaitlist } from '@/api/waitlist'
 import {
+  BannerSmall,
   CountryFlag,
   FlowButton,
   InputSelection,
@@ -11,10 +14,14 @@ import {
   type CountryFlagProps,
   type SelectOption,
 } from '@/components/ui'
+import { applyApiError } from '@/lib/api-error'
+import { useJoinWaitlist } from '@/lib/mutations'
+import { useCountries } from '@/lib/queries'
 
 import { ArrowRightIcon } from '../icons'
+import { CountrySelectSkeleton } from '../skeletons/country-select-skeleton'
 
-import type { WaitlistResponse } from '@/api/waitlist'
+import type { WaitlistResponse } from '@/lib/types'
 
 interface StepIntroProps {
   onSubmit?: (result: WaitlistResponse) => void
@@ -32,71 +39,57 @@ const iconKeyToFlagCountry: Record<string, FlagCountry> = {
   'flag-za': 'South Africa',
 }
 
+const waitlistSchema = z.object({
+  fullName: z.string().trim().min(1, 'Please enter your full name.'),
+  email: z
+    .string()
+    .trim()
+    .min(1, 'Please enter your email.')
+    .email('Enter a valid email address.'),
+  countryId: z.string().min(1, 'Please select your region.'),
+})
+
+type WaitlistFormValues = z.infer<typeof waitlistSchema>
+
 function StepIntro({ onSubmit }: StepIntroProps) {
-  const [regionOptions, setRegionOptions] = useState<SelectOption[]>([])
-  const [countriesLoading, setCountriesLoading] = useState(true)
-  const [countriesError, setCountriesError] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
-  const [submitError, setSubmitError] = useState<string>()
+  const { data: countries, isLoading: countriesLoading, isError: countriesError } = useCountries()
+  const joinWaitlist = useJoinWaitlist()
+  const [fallbackError, setFallbackError] = useState<string>()
 
-  useEffect(() => {
-    let cancelled = false
+  const {
+    register,
+    control,
+    handleSubmit,
+    setError,
+    formState: { errors },
+  } = useForm<WaitlistFormValues>({
+    resolver: zodResolver(waitlistSchema),
+    defaultValues: { fullName: '', email: '', countryId: '' },
+  })
 
-    getCountries()
-      .then((countries) => {
-        if (cancelled) return
-        setRegionOptions(
-          countries.map((country) => ({
-            value: country.id,
-            label: country.name,
-            icon: (
-              <CountryFlag
-                country={iconKeyToFlagCountry[country.icon_key] ?? 'Africa'}
-                width={24}
-                height={16}
-              />
-            ),
-          })),
-        )
-      })
-      .catch((err) => {
-        if (cancelled) return
-        console.error('Failed to load countries', err)
-        setCountriesError(true)
-      })
-      .finally(() => {
-        if (!cancelled) setCountriesLoading(false)
-      })
+  const regionOptions: SelectOption[] = (countries ?? []).map((country) => ({
+    value: country.id,
+    label: country.name,
+    icon: (
+      <CountryFlag
+        country={iconKeyToFlagCountry[country.icon_key] ?? 'Africa'}
+        width={24}
+        height={16}
+      />
+    ),
+  }))
 
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-
-    const formData = new FormData(e.currentTarget)
-    const fullName = String(formData.get('fullName') ?? '').trim()
-    const email = String(formData.get('email') ?? '').trim()
-    const countryId = String(formData.get('countryId') ?? '')
-
-    if (!fullName || !email || !countryId) {
-      setSubmitError('Please fill in your name, email, and region.')
-      return
-    }
-
-    setSubmitError(undefined)
-    setSubmitting(true)
-
+  async function onFormSubmit(values: WaitlistFormValues) {
+    setFallbackError(undefined)
     try {
-      const result = await joinWaitlist({ full_name: fullName, email, country_id: countryId })
+      const result = await joinWaitlist.mutateAsync({
+        full_name: values.fullName,
+        email: values.email,
+        country_id: values.countryId,
+      })
       onSubmit?.(result)
     } catch (err) {
-      console.error('Failed to join waitlist', err)
-      setSubmitError('Something went wrong. Please try again.')
-    } finally {
-      setSubmitting(false)
+      setFallbackError(applyApiError(err, setError, { CONFLICT: 'email' }))
     }
   }
 
@@ -119,7 +112,7 @@ function StepIntro({ onSubmit }: StepIntroProps) {
       </header>
 
       {/* Form + actions — Frame 103 (gap 40) */}
-      <form onSubmit={handleSubmit} className="flex flex-col gap-[40px]">
+      <form onSubmit={handleSubmit(onFormSubmit)} className="flex flex-col gap-[40px]">
         {/* Inputs — Frame 104 (gap 18) */}
         <div className="flex flex-col gap-[18px]">
           {/* Name + email — Frame 1400001788 (gap 18) */}
@@ -128,46 +121,61 @@ function StepIntro({ onSubmit }: StepIntroProps) {
               label="Full name"
               placeholder="Title"
               size="md"
-              name="fullName"
               autoComplete="name"
+              errorText={errors.fullName?.message}
+              {...register('fullName')}
             />
             <TextInput
               label="Email address"
               placeholder="Title"
               type="email"
               size="md"
-              name="email"
               autoComplete="email"
+              errorText={errors.email?.message}
+              {...register('email')}
             />
           </div>
           {/* Region — Frame 1400001789 */}
-          <InputSelection
-            label="Region/Country"
-            placeholder="Search for an option..."
-            size="md"
-            name="countryId"
-            options={regionOptions}
-            disabled={countriesLoading}
-            errorText={countriesError ? 'Failed to load countries. Please try again.' : undefined}
-          />
+          {countriesLoading ? (
+            <CountrySelectSkeleton />
+          ) : (
+            <Controller
+              control={control}
+              name="countryId"
+              render={({ field }) => (
+                <InputSelection
+                  label="Region/Country"
+                  placeholder="Search for an option..."
+                  size="md"
+                  options={regionOptions}
+                  value={field.value}
+                  onChange={field.onChange}
+                  errorText={
+                    errors.countryId?.message ??
+                    (countriesError ? 'Failed to load countries. Please try again.' : undefined)
+                  }
+                />
+              )}
+            />
+          )}
         </div>
 
         {/* Button + consent — Frame 1400001799 (gap 10) */}
         <div className="flex flex-col gap-[10px]">
-          {submitError && (
-            <span className="text-body-xs text-text-error" role="alert">
-              {submitError}
-            </span>
+          {fallbackError && (
+            <BannerSmall state="error" showCloseButton={false}>
+              {fallbackError}
+            </BannerSmall>
           )}
           <FlowButton
             type="submit"
             variant="primary"
             size="md"
             className="w-full"
-            disabled={countriesLoading || countriesError || submitting}
+            disabled={countriesLoading || countriesError || joinWaitlist.isPending}
             iconSuffix={<ArrowRightIcon />}
           >
-            {submitting ? 'Joining...' : 'Join the waitlist'}
+            {joinWaitlist.isPending ? 'Joining...' : 'Join the waitlist'}
           </FlowButton>
           <p className="text-center text-body-xs leading-19_2 text-text-secondary">
             By continuing, you agree to our{' '}

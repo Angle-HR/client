@@ -6,6 +6,20 @@
   -text-rendering: optimizelegibility;
 }
 
+/* Browser autofill (Chrome/Safari) paints its own opaque background via
+   -webkit-autofill, ignoring our dark input styling. Force it back to the
+   design system's input tokens instead of the browser's default. The huge
+   transition delay is the standard trick to stop Chrome's yellow flash. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-text-fill-color: var(--text-input-filled);
+  -webkit-box-shadow: 0 0 0px 1000px var(--bg-input-filled) inset;
+  box-shadow: 0 0 0px 1000px var(--bg-input-filled) inset;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
 /* ==========================================================================
    Tailwind v4 Theme — ALL design tokens mapped to utility classes.
 
