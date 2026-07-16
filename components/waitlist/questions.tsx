@@ -14,110 +14,113 @@ import {
 } from './brand-icons'
 
 import type { StepQuestionnaireProps } from './steps/step-questionnaire'
+import type {
+  HiringFrustration,
+  HiringTool,
+  Industry,
+  Role,
+  TeamSize,
+} from '@/api/waitlist'
 
 // Survey question definitions. Shaped like the props StepQuestionnaire takes, so
 // they can later be fetched from the backend and passed straight through.
 type SurveyQuestion = Omit<StepQuestionnaireProps, 'onContinue'>
 
-const slug = (label: string) =>
-  label
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
+interface SurveyData {
+  industries: Industry[]
+  hiringTools: HiringTool[]
+  hiringFrustrations: HiringFrustration[]
+  roles: Role[]
+  teamSizes: TeamSize[]
+}
 
-const opt = (label: string, icon?: React.ReactNode) => ({ value: slug(label), label, icon })
+const withEmoji = (emoji: string | undefined, text: string) => (emoji ? `${emoji} ${text}` : text)
 
-export const surveyQuestions: SurveyQuestion[] = [
-  {
-    question: 'What industry do you work',
-    groups: [
-      {
-        mode: 'multi',
-        columns: 1,
-        options: [
-          '⌨️ Tech',
-          '♻️ Energy',
-          '🌴 Green',
-          '💸 Fintech',
-          '💪 Health',
-          '📚 Education',
-          '🔒 Security',
-          '🏗️ Construction',
-          '🛠️ Hard ware',
-        ].map((l) => opt(l)),
-      },
-    ],
-    others: { input: 'text', placeholder: 'Enter your industry' },
-  },
-  {
-    question: 'Which of these do you currently use for hiring?',
-    hint: 'Select all that apply',
-    groups: [
-      {
-        mode: 'multi',
-        columns: 2,
-        options: [
-          opt('Notion', <NotionIcon />),
-          opt('Calendly / Cal.com', <CalendlyIcon />),
-          opt('Google Forms', <GoogleFormsIcon />),
-          opt('Typeform', <TypeformIcon />),
-          opt('Excel / Spreed Sheet', <ExcelIcon />),
-          opt('Gmail / Outlook', <GmailIcon />),
-          opt('Slack', <SlackIcon />),
-          opt('DocuSign', <DocuSignIcon />),
-          opt('Google Docs', <GoogleDocsIcon />),
-          opt('Zoom / Google Meet', <ZoomIcon />),
-          opt('Airtable', <AirtableIcon />),
-          opt('Other ATS tools', <OtherATSIcon />),
-        ],
-      },
-    ],
-    others: { input: 'text', placeholder: 'List them...' },
-  },
-  {
-    question: 'What are the biggest frustrations with your current hiring process?',
-    hint: 'Select all that apply',
-    groups: [
-      {
-        mode: 'multi',
-        columns: 1,
-        options: [
-          'Finding the right candidates',
-          'Tracking and Managing applications',
-          'No clear hiring pipeline',
-          'Following up with candidates',
-          'No easy way to collect feedback',
-          'Manual onboarding and paperwork',
-        ].map((l) => opt(l)),
-      },
-    ],
-    others: { input: 'textarea', placeholder: 'Tell us more ...' },
-  },
-  {
-    question: "What's your role, and team size?",
-    errorText: 'Please select a role and Team size to continue.',
-    groups: [
-      {
-        mode: 'single',
-        columns: 2,
-        options: [
-          '🧑‍💼 Founder/CEO',
-          '👥 HR / People',
-          '👨‍💻 Engineer/ Designer',
-          '🫂 Customer Support',
-          '📣 Marketing',
-          '⚙️ Operations',
-          '💼 Product',
-          'Others',
-        ].map((l) => opt(l)),
-      },
-      {
-        mode: 'single',
-        columns: 2,
-        options: ['Just me', '10-20', '2-10', '20+'].map((l) => opt(l)),
-      },
-    ],
-  },
-]
+// Local brand icons, keyed by the API's `name` (lowercased) — the API's own
+// `icon_url` is currently a shared placeholder for every tool, so these give
+// each option a distinct mark until real per-tool icons are seeded.
+const toolIconByName: Record<string, React.ReactNode> = {
+  notion: <NotionIcon />,
+  calendly: <CalendlyIcon />,
+  'google forms': <GoogleFormsIcon />,
+  typeform: <TypeformIcon />,
+  excel: <ExcelIcon />,
+  gmail: <GmailIcon />,
+  slack: <SlackIcon />,
+  docusign: <DocuSignIcon />,
+  'google docs': <GoogleDocsIcon />,
+  zoom: <ZoomIcon />,
+  airtable: <AirtableIcon />,
+  'other ats tools': <OtherATSIcon />,
+}
 
-export type { SurveyQuestion }
+// Builds the live survey from API data. Question copy, hints, and "Others"
+// config stay static — only each group's options come from the backend.
+function buildSurveyQuestions(data: SurveyData): SurveyQuestion[] {
+  return [
+    {
+      question: 'What industry do you work',
+      groups: [
+        {
+          mode: 'multi',
+          columns: 1,
+          options: data.industries.map((i) => ({
+            value: i.id,
+            label: withEmoji(i.emoji, i.name),
+          })),
+        },
+      ],
+      others: { input: 'text', placeholder: 'Enter your industry' },
+    },
+    {
+      question: 'Which of these do you currently use for hiring?',
+      hint: 'Select all that apply',
+      groups: [
+        {
+          mode: 'multi',
+          columns: 2,
+          options: data.hiringTools.map((t) => ({
+            value: t.id,
+            label: t.name,
+            icon: toolIconByName[t.name.trim().toLowerCase()],
+          })),
+        },
+      ],
+      others: { input: 'text', placeholder: 'List them...' },
+    },
+    {
+      question: 'What are the biggest frustrations with your current hiring process?',
+      hint: 'Select all that apply',
+      groups: [
+        {
+          mode: 'multi',
+          columns: 1,
+          options: data.hiringFrustrations.map((f) => ({
+            value: f.id,
+            label: withEmoji(f.emoji, f.description),
+          })),
+        },
+      ],
+      others: { input: 'textarea', placeholder: 'Tell us more ...' },
+    },
+    {
+      question: "What's your role, and team size?",
+      errorText: 'Please select a role and Team size to continue.',
+      groups: [
+        {
+          mode: 'single',
+          columns: 2,
+          options: data.roles.map((r) => ({ value: r.id, label: withEmoji(r.emoji, r.name) })),
+        },
+        {
+          mode: 'single',
+          columns: 2,
+          options: data.teamSizes.map((s) => ({ value: s.id, label: s.label })),
+        },
+      ],
+    },
+  ]
+}
+
+export { buildSurveyQuestions }
+export type { SurveyQuestion, SurveyData }

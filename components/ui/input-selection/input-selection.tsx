@@ -198,6 +198,7 @@ function InputSelection({
               />
             ) : (
               <ListItemDefault
+                className="w-full!"
                 key={opt.value}
                 mainText={opt.label}
                 withIcon={false}
