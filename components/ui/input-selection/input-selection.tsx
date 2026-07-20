@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 
 import { HelperText, type HelperTextState } from '../input/helper-text'
 import { ListItemDefault } from '../list/list-item-default'
@@ -74,6 +74,7 @@ function InputSelection({
 
   const wrapperRef = useRef<HTMLDivElement>(null)
   const [open, setOpen] = useState(false)
+  const [dropUp, setDropUp] = useState(false)
   const [internalValue, setInternalValue] = useState<string | string[]>(
     defaultValue ?? (multiple ? [] : ''),
   )
@@ -85,6 +86,18 @@ function InputSelection({
 
   const selectedArray = Array.isArray(value) ? value : value ? [value] : []
   const labelFor = (v: string) => options.find((o) => o.value === v)?.label ?? v
+
+  // Flip the listbox above the trigger when there isn't enough room below,
+  // but only if there's actually more room above — otherwise keep the default
+  // (a short list near the bottom of a tall page shouldn't flip needlessly).
+  useLayoutEffect(() => {
+    if (!open || !wrapperRef.current) return
+    const rect = wrapperRef.current.getBoundingClientRect()
+    const spaceBelow = window.innerHeight - rect.bottom
+    const spaceAbove = rect.top
+    const listboxSpace = 244 // max-h-[240px] + the 4px gap to the trigger
+    setDropUp(spaceBelow < listboxSpace && spaceAbove > spaceBelow)
+  }, [open])
 
   useEffect(() => {
     if (!open) return
@@ -184,7 +197,7 @@ function InputSelection({
           id={listboxId}
           role="listbox"
           aria-multiselectable={multiple || undefined}
-          className="absolute z-10 left-0 right-0 top-full mt-[4px] max-h-[240px] overflow-y-auto flex flex-col gap-[2px] p-[4px] rounded-sm-8 border border-border-light bg-bg-secondary shadow-md"
+          className={`absolute z-10 left-0 right-0 max-h-[240px] overflow-y-auto flex flex-col gap-[2px] p-[4px] rounded-sm-8 border border-border-light bg-bg-secondary shadow-md ${dropUp ? 'bottom-full mb-[4px]' : 'top-full mt-[4px]'}`}
         >
           {options.map((opt) => {
             const isSelected = selectedArray.includes(opt.value)

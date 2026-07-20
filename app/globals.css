@@ -32,6 +32,10 @@ input:-webkit-autofill:active {
    ========================================================================== */
 
 @theme inline {
+  /* Bare `transition-colors` / `transition-all` etc. (no explicit duration-*)
+     use this instead of Tailwind's 150ms default. */
+  --default-transition-duration: 0.05s;
+
   /* ══════════════════════════════════════════════════════════════════════════
      SPACING — unified scale for p-*, m-*, gap-*, w-*, h-*, inset-*, etc.
      ══════════════════════════════════════════════════════════════════════════ */

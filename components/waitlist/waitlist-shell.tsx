@@ -26,7 +26,7 @@ function WaitlistShell({ children, step }: WaitlistShellProps) {
         {children}
       </main>
       <div className="shrink-0">
-        <WaitlistFooter />
+        <WaitlistFooter step={step} />
       </div>
     </div>
   )

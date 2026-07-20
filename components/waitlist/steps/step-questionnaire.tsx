@@ -25,6 +25,10 @@ interface OthersConfig {
   label?: string
   input?: 'text' | 'textarea'
   placeholder: string
+  /** The backend's own "Others" catalog entry id, when the option list already
+   * seeds one — its id is merged into the group's selection so the checkbox
+   * reports a real option instead of only the freeform text. */
+  optionId?: string
 }
 
 interface QuestionnaireAnswers {
@@ -120,7 +124,14 @@ function StepQuestionnaire({
       return
     }
     onContinue?.({
-      groups: answers.map((a) => (typeof a === 'string' ? a : [...a])),
+      // `others` (when present) always describes groups[0] — every question
+      // that has one only ever has a single group.
+      groups: answers.map((a, i) => {
+        if (typeof a === 'string') return a
+        const withOthers =
+          othersOn && others?.optionId && i === 0 ? new Set(a).add(others.optionId) : a
+        return [...withOthers]
+      }),
       othersOn,
       other: othersOn ? otherText.trim() : undefined,
     })
