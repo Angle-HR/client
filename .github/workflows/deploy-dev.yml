@@ -11,4 +11,11 @@ jobs:
       - name: Trigger Dokploy webhook
         env:
           WEBHOOK_URL: ${{ secrets.DOKPLOY_DEV_WEBHOOK_URL }}
-        run: curl --silent --fail -X POST "$WEBHOOK_URL"
+        run: |
+          status=$(curl --silent --output response.txt --write-out "%{http_code}" -X POST "$WEBHOOK_URL")
+          echo "HTTP status: $status"
+          echo "Response body:"
+          cat response.txt
+          if [ "$status" -ge 400 ]; then
+            exit 1
+          fi
