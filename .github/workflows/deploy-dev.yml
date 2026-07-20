@@ -1,0 +1,14 @@
+name: Deploy to staging
+
+on:
+  push:
+    branches: [dev]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Dokploy webhook
+        env:
+          WEBHOOK_URL: ${{ secrets.DOKPLOY_DEV_WEBHOOK_URL }}
+        run: curl --silent --fail -X POST "$WEBHOOK_URL"
