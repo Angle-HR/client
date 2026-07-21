@@ -3,7 +3,7 @@
 
 * {
   -webkit-font-smoothing: antialiased;
-  -text-rendering: optimizelegibility;
+  text-rendering: optimizelegibility;
 }
 
 /* Browser autofill (Chrome/Safari) paints its own opaque background via
