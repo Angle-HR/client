@@ -1,18 +1,18 @@
 'use client'
 
+import Link from 'next/link'
+
 import { IconButton } from '@/components/ui'
 
 import { LinkedInIcon, XIcon } from './icons'
-
-import type { WaitlistStep } from '@/lib/types'
 
 // Figma footer (Frame 60): centred social IconButtons (transparent, no counter)
 // over a centred legal link row. Legal text: body-xs / weight 500 /
 // text-secondary. Gap 14 between rows, gap 10 within the legal row.
 const legalLinks = [
   { label: '©2026 OpenHR' },
-  { label: 'Privacy Policy', href: '#' },
-  { label: 'Terms & Conditions', href: '#' },
+  { label: 'Privacy Policy', href: '/privacy-policy' },
+  { label: 'Terms & Conditions', href: '/terms' },
 ]
 
 const socialLinks = [
@@ -25,19 +25,18 @@ const socialLinks = [
 ]
 
 interface WaitlistFooterProps {
-  step: WaitlistStep
+  /** The intro step already shows its own "By continuing… Terms & Conditions"
+   * line above the submit button, so the footer's copy would be a second,
+   * redundant one stacked right below it on mobile. Callers pass this only
+   * where that's true — everywhere else relies on the footer as the sole
+   * legal link. */
+  hideTermsOnMobile?: boolean
 }
 
-function WaitlistFooter({ step }: WaitlistFooterProps) {
-  // The intro step already shows its own "By continuing… Terms & Conditions"
-  // line above the submit button, so the footer's copy would be a second,
-  // redundant one stacked right below it on mobile. Hide it there only; every
-  // other step relies on the footer as the sole legal link.
-  const hideTermsOnMobile = step === 'intro'
-
+function WaitlistFooter({ hideTermsOnMobile = false }: WaitlistFooterProps) {
   return (
-    <footer className="flex flex-col items-center gap-[14px] py-[5px]">
-      <div className="flex items-center gap-[8px] text-text-secondary">
+    <footer className="flex flex-col items-center gap-14 py-5">
+      <div className="flex items-center gap-8 text-text-secondary">
         {socialLinks.map((social) => (
           <IconButton
             key={social.label}
@@ -50,18 +49,30 @@ function WaitlistFooter({ step }: WaitlistFooterProps) {
           />
         ))}
       </div>
-      <nav className="flex items-center justify-center gap-[10px]">
-        {legalLinks.map((link) => (
-          <a
-            key={link.label}
-            href={link.href}
-            className={`text-body-xs font-medium leading-19_2 text-text-secondary ${
-              link.href ? 'underline' : 'no-underline'
-            } ${link.label === 'Terms & Conditions' && hideTermsOnMobile ? 'hidden md:inline' : ''}`}
-          >
-            {link.label}
-          </a>
-        ))}
+      <nav className="flex items-center justify-center gap-10">
+        {legalLinks.map((link) => {
+          const className = `text-body-xs font-medium leading-19.2 text-text-secondary ${
+            link.href ? 'underline' : 'no-underline'
+          } ${link.label === 'Terms & Conditions' && hideTermsOnMobile ? 'hidden md:inline' : ''}`
+
+          if (!link.href) {
+            return (
+              <span key={link.label} className={className}>
+                {link.label}
+              </span>
+            )
+          }
+
+          return link.href.startsWith('/') ? (
+            <Link key={link.label} href={link.href} className={className}>
+              {link.label}
+            </Link>
+          ) : (
+            <a key={link.label} href={link.href} className={className}>
+              {link.label}
+            </a>
+          )
+        })}
       </nav>
     </footer>
   )

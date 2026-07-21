@@ -1,6 +1,7 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
+import Link from 'next/link'
 import { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -179,9 +180,9 @@ function StepIntro({ onSubmit }: StepIntroProps) {
           </FlowButton>
           <p className="text-center text-body-xs leading-19_2 text-text-secondary">
             By continuing, you agree to our{' '}
-            <a href="#" className="underline underline-offset-2">
+            <Link href="/terms" className="underline underline-offset-2">
               Terms &amp; Conditions
-            </a>
+            </Link>
           </p>
         </div>
       </form>

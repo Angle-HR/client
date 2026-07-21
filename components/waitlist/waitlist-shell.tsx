@@ -16,17 +16,17 @@ interface WaitlistShellProps {
 // max-w-448 column, footer bottom-centre.
 function WaitlistShell({ children, step }: WaitlistShellProps) {
   return (
-    <div className="flex min-h-dvh flex-col bg-bg-tertiary px-[20px] py-[18px]">
+    <div className="flex min-h-dvh flex-col bg-bg-tertiary px-20 py-18">
       <header className="flex shrink-0 md:justify-center">
         <WaitlistLogo />
       </header>
       <main
-        className={`mt-[52px] flex flex-1 flex-col gap-8  md:mt-0 ${step === 'success' || step === 'thanks' ? 'justify-center' : 'md:justify-center'}`}
+        className={`mt-13 flex flex-1 flex-col gap-8  md:mt-0 ${step === 'success' || step === 'thanks' ? 'justify-center' : 'md:justify-center'}`}
       >
         {children}
       </main>
       <div className="shrink-0">
-        <WaitlistFooter step={step} />
+        <WaitlistFooter hideTermsOnMobile={step === 'intro'} />
       </div>
     </div>
   )
