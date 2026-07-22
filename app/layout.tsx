@@ -20,8 +20,9 @@ const firaCode = Fira_Code({
 })
 
 export const metadata: Metadata = {
-  title: 'Angle HR',
-  description: 'Open source HR system',
+  title: 'OpenHR',
+  description:
+    'Open HR lets you create jobs, track applications, and manage your team. Built so any founder or small team can start hiring in minutes, with zero delay.',
 }
 
 export default function RootLayout({

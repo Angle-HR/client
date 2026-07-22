@@ -2,9 +2,10 @@ import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Angle HR',
-    short_name: 'Angle HR',
-    description: 'Open source HR system',
+    name: 'OpenHR',
+    short_name: 'OpenHR',
+    description:
+      'Open HR lets you create jobs, track applications, and manage your team. Built so any founder or small team can start hiring in minutes, with zero delay.',
     theme_color: '#ffffff',
     background_color: '#ffffff',
     display: 'standalone',
