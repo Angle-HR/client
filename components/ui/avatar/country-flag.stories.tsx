@@ -6,7 +6,8 @@ const meta: Meta<typeof CountryFlag> = {
   title: 'UI/Avatar/CountryFlag',
   component: CountryFlag,
   args: {
-    country: 'Nigeria',
+    code: 'NG',
+    name: 'Nigeria',
   },
 }
 
@@ -18,30 +19,25 @@ export const Default: Story = {}
 export const MultipleFlags: Story = {
   render: () => (
     <div className="flex items-center gap-[8px]">
-      {(
-        [
-          'Nigeria',
-          'United States',
-          'United Kingdom',
-          'Canada',
-          'France',
-          'Japan',
-          'Brazil',
-          'India',
-        ] as const
-      ).map((country) => (
-        <CountryFlag key={country} country={country} />
+      {(['NG', 'US', 'GB', 'CA', 'FR', 'JP', 'BR', 'IN', 'DE', 'KE'] as const).map((code) => (
+        <CountryFlag key={code} code={code} />
       ))}
     </div>
   ),
 }
 
-export const Fallback: Story = {
+// `EU` is the only region the backend returns today; `UK` is aliased to `GB`.
+export const RegionsAndAliases: Story = {
   render: () => (
     <div className="flex items-center gap-[8px]">
-      {(['Africa', 'Scotland', 'United Nations'] as const).map((country) => (
-        <CountryFlag key={country} country={country} />
+      {(['EU', 'UK', 'UN', 'scotland'] as const).map((code) => (
+        <CountryFlag key={code} code={code} />
       ))}
     </div>
   ),
+}
+
+// An unknown code renders the neutral placeholder instead of a wrong flag.
+export const Fallback: Story = {
+  args: { code: 'ZZ', name: 'Unknown' },
 }

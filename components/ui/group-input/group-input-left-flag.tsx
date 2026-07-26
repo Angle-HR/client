@@ -2,6 +2,8 @@
 
 import { forwardRef, type ButtonHTMLAttributes } from 'react'
 
+import { CountryFlag } from '../avatar/country-flag'
+
 type GroupInputLeftFlagSize = 'sm' | 'md' | 'lg'
 
 interface GroupInputLeftFlagProps extends Omit<
@@ -21,14 +23,6 @@ const sizeConfig: Record<GroupInputLeftFlagSize, { panel: string; padding: strin
   lg: { panel: 'h-[40px]', padding: 'pl-[12px] pr-[6px]' },
 }
 
-function FlagEmoji({ code }: { code: string }) {
-  const codePoints = code
-    .toUpperCase()
-    .split('')
-    .map((c) => 127397 + c.charCodeAt(0))
-  return <span className="text-[12px] leading-none">{String.fromCodePoint(...codePoints)}</span>
-}
-
 const GroupInputLeftFlag = forwardRef<HTMLButtonElement, GroupInputLeftFlagProps>(
   function GroupInputLeftFlag({ countryCode, height = 'md', className = '', ...props }, ref) {
     const config = sizeConfig[height]
@@ -41,9 +35,8 @@ const GroupInputLeftFlag = forwardRef<HTMLButtonElement, GroupInputLeftFlagProps
         aria-label={props['aria-label'] || 'Select country'}
         {...props}
       >
-        <span className="inline-flex h-[12px] w-[18px] items-center justify-center overflow-hidden">
-          <FlagEmoji code={countryCode} />
-        </span>
+        {/* Decorative: the button already carries the country in its label. */}
+        <CountryFlag code={countryCode} width={18} height={12} decorative />
         <svg
           className="h-[12px] w-[12px] text-text-secondary shrink-0"
           viewBox="0 0 12 12"

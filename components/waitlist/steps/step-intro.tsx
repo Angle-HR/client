@@ -12,7 +12,6 @@ import {
   FlowButton,
   InputSelection,
   TextInput,
-  type CountryFlagProps,
   type SelectOption,
 } from '@/components/ui'
 import { applyApiError } from '@/lib/api-error'
@@ -22,31 +21,24 @@ import { useCountries } from '@/lib/queries'
 import { ArrowRightIcon } from '../icons'
 import { CountrySelectSkeleton } from '../skeletons/country-select-skeleton'
 
-import type { WaitlistResponse } from '@/lib/types'
+import type { Country, WaitlistResponse } from '@/lib/types'
 
 interface StepIntroProps {
   onSubmit?: (result: WaitlistResponse) => void
 }
 
-type FlagCountry = CountryFlagProps['country']
-
-// API `icon_key` → the CountryFlag component's country name.
-const iconKeyToFlagCountry: Record<string, FlagCountry> = {
-  'flag-uk': 'United Kingdom',
-  'flag-eu': 'EU',
-  'flag-us': 'United States',
-  'flag-ng': 'Nigeria',
-  'flag-ke': 'Kenya',
-  'flag-za': 'South Africa',
+// The API's `icon_key` is `flag-<code>`, where `<code>` is an ISO 3166-1
+// alpha-2 country code (`flag-ng`) or a region code (`flag-eu` — the European
+// Union is the only region supported today). CountryFlag resolves both, so
+// new countries need no change here. Falls back to the country `slug` for
+// rows that arrive without an `icon_key`.
+function flagCodeFor(country: Pick<Country, 'icon_key' | 'slug'>): string {
+  return country.icon_key?.replace(/^flag-/, '') || country.slug
 }
 
 const waitlistSchema = z.object({
   fullName: z.string().trim().min(1, 'Please enter your full name.'),
-  email: z
-    .string()
-    .trim()
-    .min(1, 'Please enter your email.')
-    .email('Enter a valid email address.'),
+  email: z.string().trim().min(1, 'Please enter your email.').email('Enter a valid email address.'),
   countryId: z.string().min(1, 'Please select your region.'),
 })
 
@@ -71,13 +63,7 @@ function StepIntro({ onSubmit }: StepIntroProps) {
   const regionOptions: SelectOption[] = (countries ?? []).map((country) => ({
     value: country.id,
     label: country.name,
-    icon: (
-      <CountryFlag
-        country={iconKeyToFlagCountry[country.icon_key] ?? 'Africa'}
-        width={24}
-        height={16}
-      />
-    ),
+    icon: <CountryFlag code={flagCodeFor(country)} name={country.name} width={24} height={16} />,
   }))
 
   async function onFormSubmit(values: WaitlistFormValues) {

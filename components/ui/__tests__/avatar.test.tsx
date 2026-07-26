@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
 
 import { Avatar, getInitials } from '../avatar/avatar'
@@ -187,13 +187,34 @@ describe('NotificationBadge', () => {
 })
 
 describe('CountryFlag', () => {
-  it('renders the named country flag with an accessible label', () => {
-    render(<CountryFlag country="Nigeria" />)
+  it('renders the flag artwork for an ISO code with an accessible label', () => {
+    const { container } = render(<CountryFlag code="NG" name="Nigeria" />)
     expect(screen.getByRole('img', { name: 'Nigeria flag' })).toBeInTheDocument()
+    expect(container.querySelector('img')).toHaveAttribute('src', '/flags/ng.svg')
   })
 
-  it('falls back to a neutral placeholder for variants with no vector flag', () => {
-    render(<CountryFlag country="Scotland" />)
-    expect(screen.getByRole('img', { name: 'Scotland flag' })).toBeInTheDocument()
+  it('resolves the EU region and the non-ISO UK alias', () => {
+    const { container: eu } = render(<CountryFlag code="EU" name="European Union" />)
+    expect(eu.querySelector('img')).toHaveAttribute('src', '/flags/eu.svg')
+
+    const { container: uk } = render(<CountryFlag code="UK" name="United Kingdom" />)
+    expect(uk.querySelector('img')).toHaveAttribute('src', '/flags/gb.svg')
+  })
+
+  it('labels with the code when no name is given', () => {
+    render(<CountryFlag code="DE" />)
+    expect(screen.getByRole('img', { name: 'DE flag' })).toBeInTheDocument()
+  })
+
+  it('hides the flag from assistive tech when decorative', () => {
+    render(<CountryFlag code="NG" name="Nigeria" decorative />)
+    expect(screen.queryByRole('img', { name: 'Nigeria flag' })).not.toBeInTheDocument()
+  })
+
+  it('falls back to a neutral placeholder when the artwork fails to load', () => {
+    const { container } = render(<CountryFlag code="ZZ" name="Unknown" />)
+    fireEvent.error(container.querySelector('img')!)
+    expect(container.querySelector('img')).toBeNull()
+    expect(screen.getByRole('img', { name: 'Unknown flag' })).toBeInTheDocument()
   })
 })
