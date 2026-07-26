@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from 'react'
 
+import { CountryFlag } from './country-flag'
 import { NotificationBadge, type BadgeSize } from './notification-badge'
 
 type AvatarSize = 12 | 14 | 16 | 18 | 20 | 24 | 32 | 44
@@ -185,14 +186,7 @@ function Avatar({
         <span
           className={`${sizeClasses[size]} ${shapeClass} flex items-center justify-center overflow-hidden bg-bg-avatar-grey`}
         >
-          <span className="text-[calc(100%*0.7)]" role="img" aria-label={countryCode}>
-            {String.fromCodePoint(
-              ...countryCode
-                .toUpperCase()
-                .split('')
-                .map((c) => 127397 + c.charCodeAt(0)),
-            )}
-          </span>
+          <CountryFlag code={countryCode} name={countryCode} width={size} height={size} />
         </span>
       )}
 

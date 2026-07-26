@@ -41,6 +41,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# flag artwork copied out of `flag-icons` by scripts/copy-flags.mjs
+/public/flags
+
 # tooling / e2e
 .eslintcache
 playwright-report/
