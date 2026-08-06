@@ -1,6 +1,7 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
+import { sendGAEvent } from '@next/third-parties/google'
 import Link from 'next/link'
 import { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
@@ -75,6 +76,7 @@ function StepIntro({ onSubmit }: StepIntroProps) {
         country_id: values.countryId,
       })
       sessionStorage.setItem('waitlistToken', result.token)
+      sendGAEvent('event', 'waitlist_signup', { value: 'submitted' })
       onSubmit?.(result)
     } catch (err) {
       setFallbackError(applyApiError(err, setError, { CONFLICT: 'email' }))
