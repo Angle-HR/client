@@ -14,7 +14,7 @@ interface QuestionOption {
   /** Optional leading brand icon; when omitted the label may carry an emoji. */
   icon?: ReactNode
 }
-
+ 
 interface QuestionGroup {
   options: QuestionOption[]
   mode?: SelectMode

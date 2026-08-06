@@ -51,13 +51,16 @@ export default function SurveyPage() {
     Array(QUESTION_COUNT).fill(undefined),
   )
   const [early, setEarly] = useState<EarlyAccessState>({ earlyAccess: false, userTesting: false })
-  // The join-waitlist call (on the landing page) stashes its token in
-  // sessionStorage; this ties the onboarding submission to that signup.
+  // Two ways in, so two token sources. `?token=` is how the survey link in the
+  // signup email arrives; sessionStorage is set by the join-waitlist call when
+  // the survey is reached straight from the landing page. Either way the token
+  // ties this onboarding submission to that signup.
   const [token] = useState(() => {
     if (typeof window === 'undefined') return ''
-    const stored = sessionStorage.getItem('waitlistToken')
+    const fromUrl = new URLSearchParams(window.location.search).get('token')?.trim()
+    const stored = fromUrl || sessionStorage.getItem('waitlistToken')
     if (!stored) {
-      console.error('No waitlist token found in sessionStorage; onboarding submission may fail.')
+      console.error('No waitlist token in the URL or sessionStorage; onboarding submission may fail.')
     }
     return stored ?? ''
   })

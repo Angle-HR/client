@@ -74,6 +74,7 @@ function StepIntro({ onSubmit }: StepIntroProps) {
         email: values.email,
         country_id: values.countryId,
       })
+      sessionStorage.setItem('waitlistToken', result.token)
       onSubmit?.(result)
     } catch (err) {
       setFallbackError(applyApiError(err, setError, { CONFLICT: 'email' }))
