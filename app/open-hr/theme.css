@@ -1,0 +1,185 @@
+/* Scoped dark palette for the OpenHR landing page.
+   This marketing page is always-dark by design (see Figma), independent of
+   the visitor's OS color-scheme preference. Rather than touch the shared
+   design-system tokens (styles/design-system/tokens.css) or force dark mode
+   site-wide, we re-declare the same semantic token values the dark-mode
+   media query already defines, scoped under .open-hr so the reused Button
+   and Input components render correctly here regardless of system theme. */
+
+.open-hr {
+  /* Page-specific palette. This page intentionally doesn't use the shared
+     design system, so its own two text colors get named custom properties
+     instead of the hex values being repeated across every component. */
+  --oh-text-primary: #ebebeb;
+  --oh-text-secondary: #b3b3b3;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+
+  --bg-btn-default-pri-rest: var(--color-dark-grey-2);
+  --bg-btn-default-pri-hover: var(--color-white-14);
+  --bg-btn-default-pri-pressed: var(--color-white-12);
+  --bg-btn-default-pri-disabled: var(--color-non);
+  --bg-btn-default-pri-focus: var(--color-dark-grey-1);
+  --bg-btn-default-sec-rest: var(--color-non);
+  --bg-btn-default-sec-hover: var(--color-white-14);
+  --bg-btn-default-sec-pressed: var(--color-white-14);
+  --bg-btn-default-sec-disabled: var(--color-non);
+  --bg-btn-default-sec-focus: var(--color-dark-grey-1);
+  --bg-btn-default-tet-rest: var(--color-non);
+  --bg-btn-default-tet-hover: var(--color-white-14);
+  --bg-btn-default-tet-pressed: var(--color-white-14);
+  --bg-btn-default-tet-disabled: var(--color-non);
+  --bg-btn-default-tet-focus: var(--color-dark-grey-1);
+
+  --bg-btn-blue-pri-rest: var(--color-blue-8);
+  --bg-btn-blue-pri-hover: var(--color-blue-7);
+  --bg-btn-blue-pri-pressed: var(--color-blue-6);
+  --bg-btn-blue-pri-disabled: var(--color-blue-8);
+  --bg-btn-blue-pri-focus: var(--color-blue-8);
+
+  --bg-flow-btn-pri-rest: var(--color-blue-7);
+  --bg-flow-btn-pri-hover: var(--color-blue-8);
+  --bg-flow-btn-pri-pressed: var(--color-blue-6);
+  --bg-flow-btn-pri-disabled: var(--color-blue-8);
+  --bg-flow-btn-pri-focus: var(--color-blue-8);
+  --bg-flow-btn-sec-rest: var(--color-white-14);
+  --bg-flow-btn-sec-hover: var(--color-white-13);
+  --bg-flow-btn-sec-pressed: var(--color-white-12);
+  --bg-flow-btn-sec-disabled: var(--color-non);
+  --bg-flow-btn-sec-focus: var(--color-dark-grey-2);
+
+  --bg-input-filled: var(--color-dark-grey-2);
+  --bg-input-focus: var(--color-dark-grey-2);
+  --bg-input-hover: var(--color-dark-grey-2);
+  --bg-input-error: var(--color-dark-grey-2);
+  --bg-input-placeholder: var(--color-dark-grey-2);
+  --bg-input-disabled: var(--color-dark-grey-3);
+
+  --bg-transparent-light: var(--color-white-13);
+  --bg-transparent-lighter: var(--color-white-15);
+  --bg-transparent-medium: var(--color-white-11);
+  --bg-transparent-strong: var(--color-white-9);
+
+  --text-primary: var(--color-light-grey-4);
+  --text-secondary: var(--color-light-grey-7);
+  --text-btn-default-primary: var(--color-light-grey-4);
+  --text-btn-default-secondary: var(--color-light-grey-7);
+  --text-btn-default-tertiary: var(--color-dark-grey-8);
+  --text-btn-default-disabled: var(--color-dark-grey-3);
+  --text-btn-blue-primary: var(--color-white);
+  --text-flow-btn-primary: var(--color-white);
+  --text-flow-btn-secondary: var(--color-light-grey-4);
+  --text-flow-btn-tertiary: var(--color-dark-grey-8);
+  --text-flow-btn-sec-disabled: var(--color-dark-grey-3);
+  --text-input-filled: var(--color-light-grey-4);
+  --text-input-placeholder: var(--color-dark-grey-6);
+  --text-input-disabled: var(--color-white-8);
+  --text-input-icon-rest: var(--color-light-grey-4);
+  --text-input-icon-suffix: var(--color-dark-grey-6);
+  --text-input-icon-suffix-error: var(--color-red-7);
+
+  --border-btn-default-pri-rest: var(--color-dark-grey-3);
+  --border-btn-default-pri-hover: var(--color-white-14);
+  --border-btn-default-pri-pressed: var(--color-white-14);
+  --border-btn-default-pri-disabled: var(--color-dark-grey-3);
+  --border-btn-default-pri-focus: var(--color-blue-8);
+  --border-btn-default-sec-rest: var(--color-dark-grey-3);
+  --border-btn-default-sec-hover: var(--color-white-12);
+  --border-btn-default-sec-disabled: var(--color-dark-grey-3);
+  --border-btn-default-sec-focus: var(--color-blue-8);
+  --border-btn-default-tet-rest: var(--color-non);
+  --border-btn-default-tet-focus: var(--color-blue-8);
+
+  --border-flow-btn-pri-rest: var(--color-white-13);
+  --border-flow-btn-pri-hover: var(--color-white-14);
+  --border-flow-btn-pri-pressed: var(--color-white-14);
+  --border-flow-btn-pri-disabled: var(--color-black-14);
+  --border-flow-btn-pri-focus: var(--color-blue-8);
+  --border-flow-btn-sec-rest: var(--color-white-16);
+  --border-flow-btn-sec-hover: var(--color-white-14);
+  --border-flow-btn-sec-pressed: var(--color-white-14);
+  --border-flow-btn-sec-disabled: var(--color-dark-grey-3);
+  --border-flow-btn-sec-focus: var(--color-blue-8);
+
+  --border-input-filled: var(--color-dark-grey-3);
+  --border-input-hover: var(--color-white-11);
+  --border-input-focus: var(--color-blue-8);
+  --border-input-error: var(--color-red-3);
+  --border-input-disabled: var(--color-dark-grey-3);
+  --border-input-placeholder: var(--color-dark-grey-3);
+
+  --bg-selection-controls-selected: var(--color-blue-8);
+}
+
+/* Mobile touch handling for every interactive control on this page: skip the
+   double-tap-to-zoom delay and replace the browser's default grey tap flash
+   with the design's own hover/active states. */
+.open-hr button,
+.open-hr a,
+.open-hr input {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Tailwind's Preflight resets native <button> cursor to `default`, so every
+   button on this page needs it restored explicitly — one shared rule
+   instead of a `cursor-pointer` class repeated (and inevitably missed) at
+   each usage site. Links keep their native pointer; inputs keep `text`. */
+.open-hr button:not(:disabled) {
+  cursor: pointer;
+}
+
+/* FAQ accordion: height is measured in JS and transitioned to a concrete
+   pixel value (never `auto`, which can't be animated), then opacity fades
+   alongside it so the reveal doesn't feel purely mechanical. */
+.faq-answer {
+  overflow: hidden;
+  transition:
+    height 200ms var(--ease-out),
+    opacity 200ms var(--ease-out);
+}
+
+/* The two bars that make up the +/- toggle. The vertical bar rotates onto
+   the horizontal one instead of the icon being swapped outright. */
+.faq-icon-bar {
+  transition: transform 200ms var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .faq-answer,
+  .faq-icon-bar {
+    transition-duration: 0.01ms;
+  }
+}
+
+/* Sticky nav: slides down + fades in once the hero product preview has
+   scrolled out of view, reverses the same way scrolling back up. Transform
+   + opacity only so it costs nothing on scroll. */
+.sticky-nav {
+  transition:
+    transform 250ms var(--ease-out),
+    opacity 250ms var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sticky-nav {
+    transition-duration: 0.01ms;
+  }
+}
+
+/* Matches the Figma export: a solid scrim fading to transparent at the
+   bottom edge, so the nav blends into the page instead of ending on a hard
+   line. */
+.oh-nav-scrim {
+  background: linear-gradient(to bottom, #000000 0%, #000000 45%, transparent 100%);
+}
+
+/* Static Header's scrim — used where the background image behind it (e.g.
+   the success page) would otherwise fight with the logo/nav text. */
+.oh-header-scrim {
+  background: linear-gradient(180deg, #000 46.07%, rgba(0, 0, 0, 0.2) 100%);
+  background: linear-gradient(
+    180deg,
+    color(display-p3 0 0 0) 46.07%,
+    color(display-p3 0 0 0 / 0.2) 100%
+  );
+}
