@@ -9,6 +9,12 @@ const nextConfig: NextConfig = {
   //     { protocol: "https", hostname: "example.com", pathname: "/media/**" },
   //   ],
   // },
+  async redirects() {
+    return [
+      { source: '/open-hr', destination: '/', permanent: true },
+      { source: '/open-hr/success', destination: '/success', permanent: true },
+    ]
+  },
   async headers() {
     return [
       {

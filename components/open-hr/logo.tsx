@@ -14,7 +14,7 @@ import Link from 'next/link'
 function Logo({ tabIndex }: { tabIndex?: number }) {
   return (
     <Link
-      href="/open-hr"
+      href="/"
       tabIndex={tabIndex}
       aria-label="OpenHR home"
       className="inline-flex rounded-sm-6 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bg-selection-controls-selected"

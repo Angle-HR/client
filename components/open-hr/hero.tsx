@@ -21,7 +21,7 @@ function Hero() {
     // Disables the form immediately (prevents a duplicate submit while the
     // route transition is in flight) before navigating to the success page.
     setStatus('success')
-    router.push('/open-hr/success')
+    router.push('/success')
   }
 
   // The email field is the only (and therefore last) control in this form,
