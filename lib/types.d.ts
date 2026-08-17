@@ -1,9 +1,12 @@
 export type WaitlistStep = 'intro' | 'success' | 'survey' | 'early-access' | 'thanks'
 
 export interface WaitlistPayload {
-  full_name: string
   email: string
-  country_id: string
+  // PENDING BACKEND: the OpenHR landing hero collects an email and nothing else,
+  // so these are optional here. `POST /waitlist` still requires them today and
+  // will reject an email-only signup until it is changed to accept one.
+  full_name?: string
+  country_id?: string
 }
 
 export interface WaitlistResponse {

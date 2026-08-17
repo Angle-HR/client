@@ -1,27 +1,55 @@
 'use client'
 
+import { sendGAEvent } from '@next/third-parties/google'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useState, type FormEvent, type KeyboardEvent } from 'react'
 
 import { FlowButton } from '@/components/ui/button/flow-button'
 import { Input } from '@/components/ui/input/input'
+import { applyApiError } from '@/lib/api-error'
+import { useJoinWaitlist } from '@/lib/mutations'
+import { storeWaitlistToken } from '@/lib/waitlist-token'
+
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const INVALID_EMAIL_MESSAGE = 'Enter a valid email address.'
 
 function Hero() {
   const router = useRouter()
+  const joinWaitlist = useJoinWaitlist()
   const [email, setEmail] = useState('')
-  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [error, setError] = useState<string>()
+  // Latched once the join succeeds, and never cleared — keeps the form disabled
+  // through the route transition so it can't be submitted twice.
+  const [joined, setJoined] = useState(false)
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  const pending = joinWaitlist.isPending || joined
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setStatus('error')
+    if (pending) return
+
+    const value = email.trim()
+    if (!EMAIL_PATTERN.test(value)) {
+      setError(INVALID_EMAIL_MESSAGE)
       return
     }
-    // Disables the form immediately (prevents a duplicate submit while the
-    // route transition is in flight) before navigating to the success page.
-    setStatus('success')
-    router.push('/success')
+
+    setError(undefined)
+    try {
+      const result = await joinWaitlist.mutateAsync({ email: value })
+      // Ties a later /survey submission back to this signup. The survey link in
+      // the confirmation email carries the same token as `?token=`, so the two
+      // entry points agree.
+      storeWaitlistToken(result.token)
+      sendGAEvent('event', 'waitlist_signup', { method: 'landing_hero' })
+      setJoined(true)
+      router.push('/success')
+    } catch (err) {
+      // A known API code (e.g. CONFLICT for an email already on the list) comes
+      // back as the server's own message; anything else uses the fallback.
+      setError(applyApiError(err))
+    }
   }
 
   // The email field is the only (and therefore last) control in this form,
@@ -85,13 +113,13 @@ function Hero() {
                   value={email}
                   onChange={(event) => {
                     setEmail(event.target.value)
-                    if (status === 'error') setStatus('idle')
+                    if (error) setError(undefined)
                   }}
                   onKeyDown={handleEnterSubmit}
                   autoFocus
-                  disabled={status === 'success'}
+                  disabled={pending}
                   aria-label="Email address"
-                  aria-invalid={status === 'error'}
+                  aria-invalid={Boolean(error)}
                   prefixIcon={<Image src="/open-hr/icon-mail.svg" alt="" width={13} height={10} />}
                   className="md:rounded-tr-none! md:rounded-br-none! md:border-r-0"
                 />
@@ -100,23 +128,25 @@ function Hero() {
                 type="submit"
                 variant="primary"
                 size="md"
-                disabled={status === 'success'}
+                disabled={pending}
                 className="w-full md:w-auto md:rounded-tl-none! md:rounded-bl-none!"
                 iconSuffix={
                   <Image src="/open-hr/icon-arrow-right.svg" alt="" width={11} height={9} />
                 }
               >
-                Get early access
+                {joinWaitlist.isPending ? 'Joining...' : 'Get early access'}
               </FlowButton>
             </form>
             {/* Always rendered (space reserved via leading-[19.2px]) so
-                showing/hiding the validation message never shifts the
-                product preview below. */}
+                showing/hiding the message never shifts the product preview
+                below. Holds the last error — client-side validation or the
+                API's own message — and is hidden, not emptied, when there
+                is none. */}
             <p
-              className={`text-[0.8125rem] leading-[19.2px] text-[#e5484d] ${status === 'error' ? 'visible' : 'invisible'}`}
+              className={`text-[0.8125rem] leading-[19.2px] text-[#e5484d] ${error ? 'visible' : 'invisible'}`}
               aria-live="polite"
             >
-              Enter a valid email address.
+              {error ?? INVALID_EMAIL_MESSAGE}
             </p>
           </div>
         </div>
