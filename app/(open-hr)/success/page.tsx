@@ -6,7 +6,8 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: "You're on the list — Open HR",
-  description: 'Thanks for joining the Open HR waitlist — check your inbox for a confirmation email.',
+  description:
+    'Thanks for joining the Open HR waitlist — check your inbox for a confirmation email.',
 }
 
 export default function OpenHrSuccessPage() {

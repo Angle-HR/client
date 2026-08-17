@@ -67,10 +67,7 @@ function StickyNav() {
           <div className="flex flex-1 items-center justify-start">
             <Logo tabIndex={tabIndex} />
           </div>
-          <nav
-            aria-label="Sticky"
-            className="flex flex-1 items-center justify-center gap-[10px]"
-          >
+          <nav aria-label="Sticky" className="flex flex-1 items-center justify-center gap-[10px]">
             <NavLinks tabIndex={tabIndex} />
           </nav>
           <div className="flex flex-1 items-center justify-end">
@@ -83,7 +80,9 @@ function StickyNav() {
               size="md"
               tabIndex={tabIndex}
               onClick={scrollToHeroForm}
-              iconSuffix={<Image src="/open-hr/icon-arrow-right.svg" alt="" width={11} height={9} />}
+              iconSuffix={
+                <Image src="/open-hr/icon-arrow-right.svg" alt="" width={11} height={9} />
+              }
             >
               Get early access
             </Button>

@@ -9,7 +9,6 @@ import { FlowButton } from '@/components/ui/button/flow-button'
 import { Input } from '@/components/ui/input/input'
 import { applyApiError } from '@/lib/api-error'
 import { useJoinWaitlist } from '@/lib/mutations'
-import { storeWaitlistToken } from '@/lib/waitlist-token'
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const INVALID_EMAIL_MESSAGE = 'Enter a valid email address.'
@@ -37,11 +36,9 @@ function Hero() {
 
     setError(undefined)
     try {
-      const result = await joinWaitlist.mutateAsync({ email: value })
-      // Ties a later /survey submission back to this signup. The survey link in
-      // the confirmation email carries the same token as `?token=`, so the two
-      // entry points agree.
-      storeWaitlistToken(result.token)
+      await joinWaitlist.mutateAsync({ email: value })
+      // No token comes back from the join — the survey link in the confirmation
+      // email carries it as `?token=`, and that's the only way into /survey.
       sendGAEvent('event', 'waitlist_signup', { method: 'landing_hero' })
       setJoined(true)
       router.push('/success')

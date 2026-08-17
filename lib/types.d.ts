@@ -2,9 +2,9 @@ export type WaitlistStep = 'intro' | 'success' | 'survey' | 'early-access' | 'th
 
 export interface WaitlistPayload {
   email: string
-  // PENDING BACKEND: the OpenHR landing hero collects an email and nothing else,
-  // so these are optional here. `POST /waitlist` still requires them today and
-  // will reject an email-only signup until it is changed to accept one.
+  // LEGACY: `POST /waitlist` takes `email` alone. These stay optional only so
+  // the retired StepIntro form (no longer routed) still compiles — the API
+  // ignores them. Don't send them from new code.
   full_name?: string
   country_id?: string
 }
@@ -12,7 +12,6 @@ export interface WaitlistPayload {
 export interface WaitlistResponse {
   message: string
   region: string
-  token: string
 }
 
 export interface Country {
@@ -76,19 +75,24 @@ export interface OnboardingResponse {
   message: string
 }
 
+// Envelope `meta`. `request_id` is always present; the cursor fields only carry
+// meaning on paginated collections, so they're optional here.
+export interface ApiMeta {
+  request_id: string
+  has_more?: boolean
+  next_cursor?: string
+}
+
 export interface ApiResponse<T> {
   data: T
-  meta: {
-    request_id: string
-  }
+  meta: ApiMeta
 }
 
 export interface ApiErrorBody {
   error: {
     code: string
     message: string
+    details?: Record<string, unknown>
   }
-  meta?: {
-    request_id: string
-  }
+  meta?: ApiMeta
 }
