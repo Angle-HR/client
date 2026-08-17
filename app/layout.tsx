@@ -24,6 +24,13 @@ export const metadata: Metadata = {
   title: 'OpenHR',
   description:
     'Open HR lets you create jobs, track applications, and manage your team. Built so any founder or small team can start hiring in minutes, with zero delay.',
+  icons: {
+    icon: [
+      { url: '/favicon-light.png', media: '(prefers-color-scheme: light)' },
+      { url: '/favicon-dark.png', media: '(prefers-color-scheme: dark)' },
+    ],
+    shortcut: '/favicon-dark.png',
+  },
 }
 
 export default function RootLayout({

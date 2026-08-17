@@ -44,6 +44,12 @@ next-env.d.ts
 # flag artwork copied out of `flag-icons` by scripts/copy-flags.mjs
 /public/flags
 
+# local agent tooling — machine-specific, and `.claude/skills/*` are symlinks
+# out of the repo. `.claude/launch.json` stays tracked (shared dev-server config).
+/.agents/
+/.claude/skills/
+/skills-lock.json
+
 # tooling / e2e
 .eslintcache
 playwright-report/

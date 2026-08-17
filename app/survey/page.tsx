@@ -12,7 +12,7 @@ import { WaitlistShell } from '@/components/waitlist/waitlist-shell'
 import { applyApiError } from '@/lib/api-error'
 import { useSubmitOnboarding } from '@/lib/mutations'
 import { useSurveyOptions } from '@/lib/queries'
-import { resolveWaitlistToken } from '@/lib/waitlist-token'
+import { resolveWaitlistToken, stripWaitlistTokenFromUrl } from '@/lib/waitlist-token'
 
 import type { QuestionnaireAnswers } from '@/components/waitlist/steps/step-questionnaire'
 import type { WaitlistStep } from '@/lib/types'
@@ -60,6 +60,8 @@ export default function SurveyPage() {
   // Seed the current history entry so Back from step 0 exits to the landing page,
   // and Back/Forward within the survey move between steps.
   useEffect(() => {
+    // Before the seed below, which keeps whatever URL is current at the time.
+    stripWaitlistTokenFromUrl()
     window.history.replaceState({ ...window.history.state, wlStep: 0 }, '')
     const onPop = (e: PopStateEvent) => {
       const step = e.state?.wlStep
