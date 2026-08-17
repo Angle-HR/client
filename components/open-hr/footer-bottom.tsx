@@ -9,13 +9,13 @@ function FooterBottom() {
         <div className="order-2 flex flex-wrap items-center justify-center gap-[10px] text-center text-[0.8125rem] leading-[19.5px] text-[color:var(--oh-text-secondary)] md:order-1">
           <span>©2026 OpenHR</span>
           <a
-            href="#"
+            href="/privacy-policy"
             className="rounded-sm-6 underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bg-selection-controls-selected"
           >
             Privacy Policy
           </a>
           <a
-            href="#"
+            href="/terms"
             className="rounded-sm-6 underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bg-selection-controls-selected"
           >
             Terms and Conditions

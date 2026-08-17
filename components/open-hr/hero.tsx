@@ -3,12 +3,14 @@
 import { sendGAEvent } from '@next/third-parties/google'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { useState, type FormEvent, type KeyboardEvent } from 'react'
+import { useEffect, useState, type FormEvent, type KeyboardEvent } from 'react'
 
 import { FlowButton } from '@/components/ui/button/flow-button'
 import { Input } from '@/components/ui/input/input'
 import { applyApiError } from '@/lib/api-error'
 import { useJoinWaitlist } from '@/lib/mutations'
+
+import { SCROLL_FLAG, scrollToHeroForm } from './scroll-to-hero-form'
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const INVALID_EMAIL_MESSAGE = 'Enter a valid email address.'
@@ -23,6 +25,15 @@ function Hero() {
   const [joined, setJoined] = useState(false)
 
   const pending = joinWaitlist.isPending || joined
+
+  // Set by useGoToHeroForm() when "Get early access" is clicked from a page
+  // that doesn't have this form (Privacy Policy, Terms & Conditions) — it
+  // navigates here first, then this finishes the scroll+focus once mounted.
+  useEffect(() => {
+    if (!sessionStorage.getItem(SCROLL_FLAG)) return
+    sessionStorage.removeItem(SCROLL_FLAG)
+    scrollToHeroForm()
+  }, [])
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()

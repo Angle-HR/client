@@ -4,7 +4,7 @@ import Image from 'next/image'
 
 import { FlowButton, type FlowButtonProps } from '@/components/ui/button/flow-button'
 
-import { scrollToHeroForm } from './scroll-to-hero-form'
+import { useGoToHeroForm } from './scroll-to-hero-form'
 
 interface GetEarlyAccessButtonProps {
   size: FlowButtonProps['size']
@@ -18,12 +18,13 @@ interface GetEarlyAccessButtonProps {
 // it's structurally different (type="submit", no onClick, joined-pill
 // corner rounding).
 function GetEarlyAccessButton({ size, tabIndex, className }: GetEarlyAccessButtonProps) {
+  const goToHeroForm = useGoToHeroForm()
   return (
     <FlowButton
       variant="primary"
       size={size}
       tabIndex={tabIndex}
-      onClick={scrollToHeroForm}
+      onClick={goToHeroForm}
       className={className}
       iconSuffix={<Image src="/open-hr/icon-arrow-right.svg" alt="" width={11} height={9} />}
     >
