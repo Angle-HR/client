@@ -46,7 +46,9 @@ const TERMS_SECTIONS: LegalSection[] = [
         children: (
           <>
             <strong className="font-bold">{'"Open HR" '}</strong>
-            {'/ "the Platform" means the human resources management software developed and maintained by Angle Open Source Ltd.'}
+            {
+              '/ "the Platform" means the human resources management software developed and maintained by Angle Open Source Ltd.'
+            }
           </>
         ),
       },
@@ -55,7 +57,9 @@ const TERMS_SECTIONS: LegalSection[] = [
         children: (
           <>
             <strong className="font-bold">{'"Service"'}</strong>
-            {' means the hosted version of Open HR operated by Angle Open Source Ltd, currently available to waitlist and early-access users.'}
+            {
+              ' means the hosted version of Open HR operated by Angle Open Source Ltd, currently available to waitlist and early-access users.'
+            }
           </>
         ),
       },
@@ -64,7 +68,9 @@ const TERMS_SECTIONS: LegalSection[] = [
         children: (
           <>
             <strong className="font-bold">{'"Customer"'}</strong>
-            {' means the organisation (employer) that has registered for or been granted access to the Platform.'}
+            {
+              ' means the organisation (employer) that has registered for or been granted access to the Platform.'
+            }
           </>
         ),
       },
@@ -73,7 +79,9 @@ const TERMS_SECTIONS: LegalSection[] = [
         children: (
           <>
             <strong className="font-bold">{'"Employee User"'}</strong>
-            {" means an individual employee, contractor, or worker invited to access the Platform by a Customer under the Customer's account."}
+            {
+              " means an individual employee, contractor, or worker invited to access the Platform by a Customer under the Customer's account."
+            }
           </>
         ),
       },
@@ -91,8 +99,8 @@ const TERMS_SECTIONS: LegalSection[] = [
         children: (
           <>
             <strong className="font-bold">{'"Customer Data" '}</strong>
-            means all data, records, and information uploaded to or processed through the Service by a Customer or
-            its Employee Users.
+            means all data, records, and information uploaded to or processed through the Service by
+            a Customer or its Employee Users.
           </>
         ),
       },
@@ -101,7 +109,9 @@ const TERMS_SECTIONS: LegalSection[] = [
         children: (
           <>
             <strong className="font-bold">{'"DPA"'}</strong>
-            {' means the Data Processing Agreement governing how Angle Open Source Ltd processes personal data on behalf of Customers. Acceptance of the DPA is a mandatory gate before any employee or applicant data can be entered into the Platform.'}
+            {
+              ' means the Data Processing Agreement governing how Angle Open Source Ltd processes personal data on behalf of Customers. Acceptance of the DPA is a mandatory gate before any employee or applicant data can be entered into the Platform.'
+            }
           </>
         ),
       },
@@ -110,8 +120,8 @@ const TERMS_SECTIONS: LegalSection[] = [
         children: (
           <>
             <strong className="font-bold">{'"DSAR" '}</strong>
-            means a Data Subject Access Request, a request from an individual to access, correct, or delete their
-            personal data.
+            means a Data Subject Access Request, a request from an individual to access, correct, or
+            delete their personal data.
           </>
         ),
       },
@@ -120,7 +130,9 @@ const TERMS_SECTIONS: LegalSection[] = [
         children: (
           <>
             <strong className="font-bold">{'"Documentation"'}</strong>
-            {' means user guides, help articles, and technical specifications published by Angle Open Source Ltd at tryopenhr.com.'}
+            {
+              ' means user guides, help articles, and technical specifications published by Angle Open Source Ltd at tryopenhr.com.'
+            }
           </>
         ),
       },
@@ -129,7 +141,9 @@ const TERMS_SECTIONS: LegalSection[] = [
         children: (
           <>
             <strong className="font-bold">{'"Active Markets"'}</strong>
-            {' means the jurisdictions in which Angle Open Source Ltd currently makes the Service available: the United Kingdom, European Union member states (including Germany), the United States, Nigeria, India, and Kenya.'}
+            {
+              ' means the jurisdictions in which Angle Open Source Ltd currently makes the Service available: the United Kingdom, European Union member states (including Germany), the United States, Nigeria, India, and Kenya.'
+            }
           </>
         ),
       },
@@ -153,10 +167,10 @@ const TERMS_SECTIONS: LegalSection[] = [
         children: (
           <>
             <strong className="font-bold">DPA gate: </strong>
-            No employee or applicant data may be entered into the Platform until the Customer has accepted the Data
-            Processing Agreement. This is a hard technical gate enforced at account creation — it cannot be skipped
-            or deferred. The acceptance timestamp, DPA version, and account ID are retained for the duration of the
-            account plus seven years.
+            No employee or applicant data may be entered into the Platform until the Customer has
+            accepted the Data Processing Agreement. This is a hard technical gate enforced at
+            account creation — it cannot be skipped or deferred. The acceptance timestamp, DPA
+            version, and account ID are retained for the duration of the account plus seven years.
           </>
         ),
       },
@@ -175,7 +189,9 @@ const TERMS_SECTIONS: LegalSection[] = [
         children: (
           <>
             <strong className="font-bold">Current stage:</strong>
-            {' The Platform is currently in early access. Features available to early-access users are described at tryopenhr.com. Not all features described in the Documentation may be available during the early-access period. Angle Open Source Ltd will communicate feature availability changes to registered users by email.'}
+            {
+              ' The Platform is currently in early access. Features available to early-access users are described at tryopenhr.com. Not all features described in the Documentation may be available during the early-access period. Angle Open Source Ltd will communicate feature availability changes to registered users by email.'
+            }
           </>
         ),
       },
@@ -184,7 +200,9 @@ const TERMS_SECTIONS: LegalSection[] = [
         children: (
           <>
             <strong className="font-bold">Compliance by design:</strong>
-            {" The Platform includes a jurisdiction-aware compliance engine. When an employer creates a job or manages employee data, the Platform surfaces jurisdiction-specific requirements, such as EU Pay Transparency Directive salary disclosure, works council consultation notices in Germany, Kenya DPA Section 50 data localisation warnings, Nigeria NDPA cross-border transfer requirements, and India DPDP Act employment legitimate-use notices, as gates and inline warnings within the product workflow. This compliance layer supports the employer's own obligations; it does not replace the employer's obligation to obtain independent legal advice."}
+            {
+              " The Platform includes a jurisdiction-aware compliance engine. When an employer creates a job or manages employee data, the Platform surfaces jurisdiction-specific requirements, such as EU Pay Transparency Directive salary disclosure, works council consultation notices in Germany, Kenya DPA Section 50 data localisation warnings, Nigeria NDPA cross-border transfer requirements, and India DPDP Act employment legitimate-use notices, as gates and inline warnings within the product workflow. This compliance layer supports the employer's own obligations; it does not replace the employer's obligation to obtain independent legal advice."
+            }
           </>
         ),
       },
@@ -193,7 +211,9 @@ const TERMS_SECTIONS: LegalSection[] = [
         children: (
           <>
             <strong className="font-bold">Data residency:</strong>
-            {" Candidate and employee data is routed to a regional storage bucket based on the candidate's or employee's location, not the employer's headquarters. An employer in London hiring a candidate in Lagos routes that candidate's application data to the Africa-region storage infrastructure."}
+            {
+              " Candidate and employee data is routed to a regional storage bucket based on the candidate's or employee's location, not the employer's headquarters. An employer in London hiring a candidate in Lagos routes that candidate's application data to the Africa-region storage infrastructure."
+            }
           </>
         ),
       },
@@ -217,11 +237,12 @@ const TERMS_SECTIONS: LegalSection[] = [
         children: (
           <>
             <strong className="font-bold">Account creation flow: </strong>
-            Registration requires: (a) email entry; (b) OTP verification, a 6-digit code sent to the registered
-            email, valid for 15 minutes, single-use; (c) account type selection (Individual, Team/Business, or
-            Employee); (d) for Team/Business accounts, company setup including country of operation, which
-            determines data residency routing and applicable compliance gates; and (e) DPA acceptance before any
-            employee data pipeline is accessible.
+            Registration requires: (a) email entry; (b) OTP verification, a 6-digit code sent to the
+            registered email, valid for 15 minutes, single-use; (c) account type selection
+            (Individual, Team/Business, or Employee); (d) for Team/Business accounts, company setup
+            including country of operation, which determines data residency routing and applicable
+            compliance gates; and (e) DPA acceptance before any employee data pipeline is
+            accessible.
           </>
         ),
       },
@@ -230,7 +251,9 @@ const TERMS_SECTIONS: LegalSection[] = [
         children: (
           <>
             <strong className="font-bold">Employee accounts:</strong>
-            {" Employee Users join via an employer-issued invitation link valid for 7 days. If the verified email matches an active invitation, the employee path is pre-selected. Employee Users are not required to accept the DPA independently, that obligation belongs to the employer-Customer."}
+            {
+              ' Employee Users join via an employer-issued invitation link valid for 7 days. If the verified email matches an active invitation, the employee path is pre-selected. Employee Users are not required to accept the DPA independently, that obligation belongs to the employer-Customer.'
+            }
           </>
         ),
       },
@@ -241,8 +264,9 @@ const TERMS_SECTIONS: LegalSection[] = [
           'Maintaining the confidentiality and security of its account credentials.',
           'All activity occurring under its account, whether by administrators or Employee Users.',
           <>
-            Promptly notifying Angle Open Source Ltd at <LegalLink href={`mailto:${EMAIL}`}>{EMAIL}</LegalLink> upon
-            suspecting unauthorised access.
+            Promptly notifying Angle Open Source Ltd at{' '}
+            <LegalLink href={`mailto:${EMAIL}`}>{EMAIL}</LegalLink> upon suspecting unauthorised
+            access.
           </>,
           'Keeping Employee User access permissions current as employment relationships change.',
         ],
@@ -282,7 +306,8 @@ const TERMS_SECTIONS: LegalSection[] = [
     blocks: [
       {
         kind: 'p',
-        children: 'Customers and all Users must use Open HR only for lawful purposes. The following are prohibited:',
+        children:
+          'Customers and all Users must use Open HR only for lawful purposes. The following are prohibited:',
       },
       {
         kind: 'list',
@@ -309,7 +334,10 @@ const TERMS_SECTIONS: LegalSection[] = [
   {
     heading: '8. Customer Responsibilities',
     blocks: [
-      { kind: 'p', children: 'Customers are responsible for their own legal compliance, including:' },
+      {
+        kind: 'p',
+        children: 'Customers are responsible for their own legal compliance, including:',
+      },
       {
         kind: 'list',
         items: [
@@ -347,7 +375,11 @@ const TERMS_SECTIONS: LegalSection[] = [
         children:
           'Aggregated, anonymised, and non-identifiable statistical data (e.g. feature usage counts) may be used to improve the Service, provided no Customer or individual can be identified.',
       },
-      { kind: 'p', children: 'This restriction is in addition to, and not in place of, the obligations in the DPA.' },
+      {
+        kind: 'p',
+        children:
+          'This restriction is in addition to, and not in place of, the obligations in the DPA.',
+      },
     ],
   },
   {
@@ -358,7 +390,9 @@ const TERMS_SECTIONS: LegalSection[] = [
         children: (
           <>
             <strong className="font-bold">Platform IP:</strong>
-            {' All intellectual property rights in the Service, including its software, architecture, design, Documentation, and branding, are owned by Angle Open Source Ltd or its licensors. These Terms grant a limited, non-exclusive, non-transferable right to access and use the Service while access is granted.'}
+            {
+              ' All intellectual property rights in the Service, including its software, architecture, design, Documentation, and branding, are owned by Angle Open Source Ltd or its licensors. These Terms grant a limited, non-exclusive, non-transferable right to access and use the Service while access is granted.'
+            }
           </>
         ),
       },
@@ -372,7 +406,9 @@ const TERMS_SECTIONS: LegalSection[] = [
         children: (
           <>
             <strong className="font-bold">Open source code:</strong>
-            {' The Open HR codebase will be made available as open-source software in due course. Details of the applicable licence will be published at tryopenhr.com when available. These Terms govern use of the hosted Service only.'}
+            {
+              ' The Open HR codebase will be made available as open-source software in due course. Details of the applicable licence will be published at tryopenhr.com when available. These Terms govern use of the hosted Service only.'
+            }
           </>
         ),
       },
@@ -381,7 +417,9 @@ const TERMS_SECTIONS: LegalSection[] = [
         children: (
           <>
             <strong className="font-bold">Feedback:</strong>
-            {' Angle Open Source Ltd may use any feedback, suggestions, or improvement ideas provided by Customers or Employee Users freely and without compensation. This clause does not grant Angle Open Source Ltd any rights to Customer Data.'}
+            {
+              ' Angle Open Source Ltd may use any feedback, suggestions, or improvement ideas provided by Customers or Employee Users freely and without compensation. This clause does not grant Angle Open Source Ltd any rights to Customer Data.'
+            }
           </>
         ),
       },
@@ -413,20 +451,26 @@ const TERMS_SECTIONS: LegalSection[] = [
         children:
           'DPA gate: Customers must accept the DPA before any employee data pipeline is accessible. The DPA is available at tryopenhr.com/legal/dpa.',
       },
-      { kind: 'p', children: 'DSAR routing: When an individual exercises data subject rights, two routes exist:' },
+      {
+        kind: 'p',
+        children:
+          'DSAR routing: When an individual exercises data subject rights, two routes exist:',
+      },
       {
         kind: 'list',
         items: [
           <>
             <strong className="font-bold">Route 1 – via the employer: </strong>
-            Employee Users and applicants should contact their employer (the Customer) directly. The Customer, as
-            data controller, is responsible for responding within applicable statutory timeframes.
+            Employee Users and applicants should contact their employer (the Customer) directly. The
+            Customer, as data controller, is responsible for responding within applicable statutory
+            timeframes.
           </>,
           <>
             <strong className="font-bold">Route 2 – via Angle Open Source Ltd directly: </strong>
-            Where an individual contacts Angle Open Source Ltd directly, we will verify identity, determine whether
-            we are the controller or processor for the relevant data, and for processor data redirect the
-            individual to their employer. For data where we are the controller, we will respond within 30 days.
+            Where an individual contacts Angle Open Source Ltd directly, we will verify identity,
+            determine whether we are the controller or processor for the relevant data, and for
+            processor data redirect the individual to their employer. For data where we are the
+            controller, we will respond within 30 days.
           </>,
         ],
       },
@@ -437,7 +481,8 @@ const TERMS_SECTIONS: LegalSection[] = [
       },
       {
         kind: 'p',
-        children: 'Full details of data processing are set out in the Privacy Policy at tryopenhr.com/privacy.',
+        children:
+          'Full details of data processing are set out in the Privacy Policy at tryopenhr.com/privacy.',
       },
     ],
   },
@@ -474,11 +519,11 @@ const TERMS_SECTIONS: LegalSection[] = [
         children: (
           <>
             Customers may close their account at any time by contacting{' '}
-            <LegalLink href={`mailto:${EMAIL}`}>{EMAIL}</LegalLink>. On closure or termination, Customer Data is
-            retained for 30 days during which a full export in CSV or JSON format is available on request at no
-            charge. After 30 days, Customer Data is deleted from production systems; written confirmation is
-            available on request. Anonymised or aggregated data from which no individual can be identified may be
-            retained.
+            <LegalLink href={`mailto:${EMAIL}`}>{EMAIL}</LegalLink>. On closure or termination,
+            Customer Data is retained for 30 days during which a full export in CSV or JSON format
+            is available on request at no charge. After 30 days, Customer Data is deleted from
+            production systems; written confirmation is available on request. Anonymised or
+            aggregated data from which no individual can be identified may be retained.
           </>
         ),
       },
@@ -546,15 +591,16 @@ const TERMS_SECTIONS: LegalSection[] = [
         kind: 'p',
         children: (
           <>
-            If you have a complaint, email <LegalLink href={`mailto:${EMAIL}`}>{EMAIL}</LegalLink> with the subject
-            line &quot;Complaint&quot;. We will acknowledge within 5 business days and respond substantively within
-            30 days. Data-related complaints from UK users will be acknowledged within 30 days in line with the
-            Data (Use and Access) Act 2025 from 19 June 2026. If unresolved, UK users may escalate to the ICO at
-            ico.org.uk; EU users to their national supervisory authority listed at edpb.europa.eu (German users may
-            contact the BfDI or the relevant Landesbehörde); US users to the FTC or their state attorney general;
-            Nigerian users to the NDPC at ndpc.gov.ng or the FCCPC at fccpc.gov.ng; Indian users to the Data
-            Protection Board of India when established; and Kenyan users to the ODPC at odpc.go.ke or the
-            Competition Authority of Kenya.
+            If you have a complaint, email <LegalLink href={`mailto:${EMAIL}`}>{EMAIL}</LegalLink>{' '}
+            with the subject line &quot;Complaint&quot;. We will acknowledge within 5 business days
+            and respond substantively within 30 days. Data-related complaints from UK users will be
+            acknowledged within 30 days in line with the Data (Use and Access) Act 2025 from 19 June
+            2026. If unresolved, UK users may escalate to the ICO at ico.org.uk; EU users to their
+            national supervisory authority listed at edpb.europa.eu (German users may contact the
+            BfDI or the relevant Landesbehörde); US users to the FTC or their state attorney
+            general; Nigerian users to the NDPC at ndpc.gov.ng or the FCCPC at fccpc.gov.ng; Indian
+            users to the Data Protection Board of India when established; and Kenyan users to the
+            ODPC at odpc.go.ke or the Competition Authority of Kenya.
           </>
         ),
       },
@@ -582,14 +628,16 @@ const TERMS_SECTIONS: LegalSection[] = [
         kind: 'p',
         children: (
           <>
-            These Terms, together with the Privacy Policy and DPA, are the entire agreement between the parties and
-            supersede all prior representations. If any provision is found invalid, the remainder continues in full
-            force. Failure to enforce any provision is not a waiver of future enforcement. The Customer may not
-            assign its rights without our prior written consent; we may assign ours to a successor entity provided
-            the successor is bound by these Terms. Formal legal notices must be sent in writing to our registered
-            office; day-to-day communications may go to <LegalLink href={`mailto:${EMAIL}`}>{EMAIL}</LegalLink>.
-            Neither party is liable for failure to perform due to circumstances beyond their reasonable control,
-            provided prompt notice is given. The parties are independent contractors — nothing in these Terms
+            These Terms, together with the Privacy Policy and DPA, are the entire agreement between
+            the parties and supersede all prior representations. If any provision is found invalid,
+            the remainder continues in full force. Failure to enforce any provision is not a waiver
+            of future enforcement. The Customer may not assign its rights without our prior written
+            consent; we may assign ours to a successor entity provided the successor is bound by
+            these Terms. Formal legal notices must be sent in writing to our registered office;
+            day-to-day communications may go to{' '}
+            <LegalLink href={`mailto:${EMAIL}`}>{EMAIL}</LegalLink>. Neither party is liable for
+            failure to perform due to circumstances beyond their reasonable control, provided prompt
+            notice is given. The parties are independent contractors — nothing in these Terms
             creates a partnership, agency, or employment relationship.
           </>
         ),
@@ -603,9 +651,9 @@ const TERMS_SECTIONS: LegalSection[] = [
         kind: 'p',
         children: (
           <>
-            We are committed to making Open HR accessible and target WCAG 2.1 Level AA compliance. We maintain
-            business insurance including public liability, professional indemnity, and cyber liability cover.
-            Certificates of insurance are available on written request to{' '}
+            We are committed to making Open HR accessible and target WCAG 2.1 Level AA compliance.
+            We maintain business insurance including public liability, professional indemnity, and
+            cyber liability cover. Certificates of insurance are available on written request to{' '}
             <LegalLink href={`mailto:${EMAIL}`}>{EMAIL}</LegalLink>.
           </>
         ),
@@ -614,9 +662,7 @@ const TERMS_SECTIONS: LegalSection[] = [
   },
   {
     heading: 'Legal Disclaimer',
-    blocks: [
-      { kind: 'p', children: 'These Terms were last reviewed pre-launch on 21 July 2026.' },
-    ],
+    blocks: [{ kind: 'p', children: 'These Terms were last reviewed pre-launch on 21 July 2026.' }],
   },
 ]
 

@@ -31,7 +31,8 @@ const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
         kind: 'p',
         children: (
           <>
-            For any privacy question, email us at <LegalLink href={`mailto:${EMAIL}`}>{EMAIL}</LegalLink>.
+            For any privacy question, email us at{' '}
+            <LegalLink href={`mailto:${EMAIL}`}>{EMAIL}</LegalLink>.
           </>
         ),
       },
@@ -81,8 +82,9 @@ const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
         kind: 'p',
         children: (
           <>
-            When you (as an employer) use Open HR to store and manage employee records, applicant data, or team
-            information, you are the <strong className="font-bold">data controller</strong> and we are the{' '}
+            When you (as an employer) use Open HR to store and manage employee records, applicant
+            data, or team information, you are the{' '}
+            <strong className="font-bold">data controller</strong> and we are the{' '}
             <strong className="font-bold">data processor.</strong> We process that data only:
           </>
         ),
@@ -115,7 +117,7 @@ const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
       {
         kind: 'p',
         children:
-          "If your employer uses Open HR and has entered your personal data into the platform, contact your employer directly to:",
+          'If your employer uses Open HR and has entered your personal data into the platform, contact your employer directly to:',
       },
       {
         kind: 'list',
@@ -238,11 +240,11 @@ const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
         kind: 'p',
         children: (
           <>
-            <strong className="font-bold">A note for German employers</strong>: if your organisation has a works
-            council (Betriebsrat), German law requires you to get their agreement before switching on any Open HR
-            feature that could be used to monitor employees, things like attendance tracking or activity logs. This
-            sits alongside your GDPR obligations, not instead of them, and it&apos;s something we can&apos;t handle
-            on your behalf.
+            <strong className="font-bold">A note for German employers</strong>: if your organisation
+            has a works council (Betriebsrat), German law requires you to get their agreement before
+            switching on any Open HR feature that could be used to monitor employees, things like
+            attendance tracking or activity logs. This sits alongside your GDPR obligations, not
+            instead of them, and it&apos;s something we can&apos;t handle on your behalf.
           </>
         ),
       },
@@ -280,8 +282,9 @@ const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
         kind: 'p',
         children: (
           <>
-            To exercise any of these rights, email <LegalLink href={`mailto:${EMAIL}`}>{EMAIL}</LegalLink> and let us
-            know what you&apos;d like.
+            To exercise any of these rights, email{' '}
+            <LegalLink href={`mailto:${EMAIL}`}>{EMAIL}</LegalLink> and let us know what you&apos;d
+            like.
           </>
         ),
       },
@@ -355,10 +358,11 @@ const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
         kind: 'p',
         children: (
           <>
-            We use reasonable technical and organisational measures to protect personal data, including encrypting
-            data in transit and at rest, hashing passwords so they&apos;re never stored in plain text, limiting
-            access to people who need it, logging access to sensitive data, and expiring sessions and one-time
-            tokens automatically. If you find a security vulnerability in Open HR, please report it to{' '}
+            We use reasonable technical and organisational measures to protect personal data,
+            including encrypting data in transit and at rest, hashing passwords so they&apos;re
+            never stored in plain text, limiting access to people who need it, logging access to
+            sensitive data, and expiring sessions and one-time tokens automatically. If you find a
+            security vulnerability in Open HR, please report it to{' '}
             <LegalLink href={`mailto:${EMAIL}`}>{EMAIL}</LegalLink>.
           </>
         ),
@@ -377,9 +381,11 @@ const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
         kind: 'p',
         children: (
           <>
-            Open HR is built for business operators and HR professionals, not for children. We don&apos;t knowingly
-            collect data from anyone under 18. If you think we&apos;ve accidentally collected data from a child,
-            email <LegalLink href={`mailto:${EMAIL}`}>{EMAIL}</LegalLink> and we&apos;ll delete it promptly.
+            Open HR is built for business operators and HR professionals, not for children. We
+            don&apos;t knowingly collect data from anyone under 18. If you think we&apos;ve
+            accidentally collected data from a child, email{' '}
+            <LegalLink href={`mailto:${EMAIL}`}>{EMAIL}</LegalLink> and we&apos;ll delete it
+            promptly.
           </>
         ),
       },
@@ -412,10 +418,10 @@ const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
         children: (
           <>
             If you have a concern about how we&apos;ve handled your data, please contact us first at{' '}
-            <LegalLink href={`mailto:${EMAIL}`}>{EMAIL}</LegalLink>. We&apos;ll acknowledge your complaint within 5
-            working days and aim to resolve it within 30 days. From 19 June 2026, UK individuals have a legal right
-            to complain to us directly before going to the regulator, and we&apos;ll follow the same 30-day
-            acknowledgement window.
+            <LegalLink href={`mailto:${EMAIL}`}>{EMAIL}</LegalLink>. We&apos;ll acknowledge your
+            complaint within 5 working days and aim to resolve it within 30 days. From 19 June 2026,
+            UK individuals have a legal right to complain to us directly before going to the
+            regulator, and we&apos;ll follow the same 30-day acknowledgement window.
           </>
         ),
       },
@@ -434,8 +440,8 @@ const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
         children: (
           <>
             For any privacy question, rights request, or security report, email{' '}
-            <LegalLink href={`mailto:${EMAIL}`}>{EMAIL}</LegalLink>. You can also write to us at Data Protection,
-            Angle Open Source Ltd, 71–75 Shelton Street, London, England, WC2H 9JQ.
+            <LegalLink href={`mailto:${EMAIL}`}>{EMAIL}</LegalLink>. You can also write to us at
+            Data Protection, Angle Open Source Ltd, 71–75 Shelton Street, London, England, WC2H 9JQ.
           </>
         ),
       },
