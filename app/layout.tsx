@@ -1,3 +1,4 @@
+import { GoogleAnalytics } from '@next/third-parties/google'
 import { Inter, Fira_Code } from 'next/font/google'
 
 import { Providers } from '@/providers'
@@ -30,10 +31,12 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>): React.ReactElement {
+  const gaId = process.env.NEXT_PUBLIC_GA_ID
   return (
     <html lang="en" className={`${inter.variable} ${firaCode.variable}`}>
       <body>
         <Providers>{children}</Providers>
+        {gaId && <GoogleAnalytics gaId={gaId} />}
       </body>
     </html>
   )
