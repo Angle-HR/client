@@ -8,13 +8,24 @@ import { Button } from '@/components/ui/button/button'
 import { GetEarlyAccessButton } from './get-early-access-button'
 import { Logo } from './logo'
 import { NavLinks } from './nav-links'
-import { scrollToHeroForm } from './scroll-to-hero-form'
+import { useGoToHeroForm } from './scroll-to-hero-form'
 
-function StickyNav() {
+interface StickyNavProps {
+  // The element whose scroll position triggers reveal — defaults to the
+  // landing page's own product screenshot section. Pages without that
+  // section (Privacy Policy, Terms & Conditions) pass their own sentinel.
+  sentinelId?: string
+  // Forwarded to NavLinks — see its own doc comment. Unset on the landing
+  // page itself, "/" everywhere else.
+  basePath?: string
+}
+
+function StickyNav({ sentinelId = 'product-preview', basePath }: StickyNavProps) {
   const [visible, setVisible] = useState(false)
+  const goToHeroForm = useGoToHeroForm()
 
   useEffect(() => {
-    const sentinel = document.getElementById('product-preview')
+    const sentinel = document.getElementById(sentinelId)
     if (!sentinel) return
 
     const observer = new IntersectionObserver(
@@ -38,7 +49,7 @@ function StickyNav() {
 
     observer.observe(sentinel)
     return () => observer.disconnect()
-  }, [])
+  }, [sentinelId])
 
   const tabIndex = visible ? undefined : -1
 
@@ -68,7 +79,7 @@ function StickyNav() {
             <Logo tabIndex={tabIndex} />
           </div>
           <nav aria-label="Sticky" className="flex flex-1 items-center justify-center gap-[10px]">
-            <NavLinks tabIndex={tabIndex} />
+            <NavLinks tabIndex={tabIndex} basePath={basePath} />
           </nav>
           <div className="flex flex-1 items-center justify-end">
             {/* Unlike the mobile CTA (and the hero/footer CTAs), Figma's
@@ -79,7 +90,7 @@ function StickyNav() {
               accent="default"
               size="md"
               tabIndex={tabIndex}
-              onClick={scrollToHeroForm}
+              onClick={goToHeroForm}
               iconSuffix={
                 <Image src="/open-hr/icon-arrow-right.svg" alt="" width={11} height={9} />
               }
