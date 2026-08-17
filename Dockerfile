@@ -17,6 +17,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # client JS. Pass this as a build argument in Dokploy/compose, not a runtime var.
 ARG NEXT_PUBLIC_API_BASE_URL
 ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
+ARG NEXT_PUBLIC_GA_ID
+ENV NEXT_PUBLIC_GA_ID=$NEXT_PUBLIC_GA_ID
 RUN bun run build
 
 # run: minimal Node image serving the standalone server

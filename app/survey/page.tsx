@@ -12,6 +12,7 @@ import { WaitlistShell } from '@/components/waitlist/waitlist-shell'
 import { applyApiError } from '@/lib/api-error'
 import { useSubmitOnboarding } from '@/lib/mutations'
 import { useSurveyOptions } from '@/lib/queries'
+import { resolveWaitlistToken } from '@/lib/waitlist-token'
 
 import type { QuestionnaireAnswers } from '@/components/waitlist/steps/step-questionnaire'
 import type { WaitlistStep } from '@/lib/types'
@@ -51,19 +52,9 @@ export default function SurveyPage() {
     Array(QUESTION_COUNT).fill(undefined),
   )
   const [early, setEarly] = useState<EarlyAccessState>({ earlyAccess: false, userTesting: false })
-  // Two ways in, so two token sources. `?token=` is how the survey link in the
-  // signup email arrives; sessionStorage is set by the join-waitlist call when
-  // the survey is reached straight from the landing page. Either way the token
-  // ties this onboarding submission to that signup.
-  const [token] = useState(() => {
-    if (typeof window === 'undefined') return ''
-    const fromUrl = new URLSearchParams(window.location.search).get('token')?.trim()
-    const stored = fromUrl || sessionStorage.getItem('waitlistToken')
-    if (!stored) {
-      console.error('No waitlist token in the URL or sessionStorage; onboarding submission may fail.')
-    }
-    return stored ?? ''
-  })
+  // Ties this onboarding submission to the signup — from the emailed `?token=`
+  // link or from sessionStorage when the survey follows the landing page form.
+  const [token] = useState(resolveWaitlistToken)
   const [fallbackError, setFallbackError] = useState<string>()
 
   // Seed the current history entry so Back from step 0 exits to the landing page,
@@ -134,7 +125,12 @@ export default function SurveyPage() {
       goTo(THANKS)
     } catch (err) {
       setFallbackError(
-        applyApiError(err, undefined, {}, 'Something went wrong submitting your answers. Please try again.'),
+        applyApiError(
+          err,
+          undefined,
+          {},
+          'Something went wrong submitting your answers. Please try again.',
+        ),
       )
     }
   }

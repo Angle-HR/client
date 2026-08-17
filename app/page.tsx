@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { StepIntro } from '@/components/waitlist/steps/step-intro'
 import { StepSuccess } from '@/components/waitlist/steps/step-success'
 import { WaitlistShell } from '@/components/waitlist/waitlist-shell'
+import { storeWaitlistToken } from '@/lib/waitlist-token'
 
 // Landing page: the intro form → success card. "Get involved" continues to the
 // survey, which lives on its own route (/survey). The join call's token is
@@ -20,7 +21,7 @@ export default function Home() {
       {step === 'intro' && (
         <StepIntro
           onSubmit={(result) => {
-            sessionStorage.setItem('waitlistToken', result.token)
+            storeWaitlistToken(result.token)
             setStep('success')
           }}
         />
