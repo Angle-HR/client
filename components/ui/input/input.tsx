@@ -34,7 +34,7 @@ const sizeConfig: Record<
   md: {
     height: 'h-[32px]',
     padding: 'px-[8px]',
-    radius: 'rounded-sm-7',
+    radius: 'rounded-sm-8',
     iconSize: 'h-[14px] w-[14px]',
   },
   lg: {
@@ -89,7 +89,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         ref={ref}
         disabled={disabled}
         readOnly={readOnly}
-        className="flex-1 bg-transparent text-body-s text-text-input-filled placeholder:text-text-input-placeholder outline-none min-w-0 disabled:text-text-input-disabled"
+        className="flex-1 bg-transparent text-body-m text-text-input-filled placeholder:text-text-input-placeholder outline-none min-w-0 disabled:text-text-input-disabled"
         {...props}
       />
       {suffix === 'icon' && suffixIcon && (

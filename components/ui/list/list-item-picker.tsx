@@ -54,7 +54,7 @@ const ListItemPicker = forwardRef<HTMLButtonElement, ListItemPickerProps>(functi
   const layoutClasses =
     layout === 'horizontal'
       ? 'flex-col items-center text-center w-[120px] py-[18px] gap-[12px]'
-      : 'flex-row items-center w-[188px] px-[18px] py-[14px] gap-[8px]'
+      : 'flex-row items-start w-[188px] px-[18px] py-[14px] gap-[8px]'
 
   const classes = [
     'inline-flex border rounded-lg-12 overflow-clip transition-colors',
@@ -87,7 +87,15 @@ const ListItemPicker = forwardRef<HTMLButtonElement, ListItemPickerProps>(functi
       <span className={`flex flex-col py-[4px] ${layout === 'vertical' ? 'gap-[12px]' : ''}`}>
         {showTitle && <span className="body-xs-semibold">{title}</span>}
         {layout === 'vertical' && showSubtext && subText && (
-          <span className="text-body-xs w-[127px] text-text-secondary">{subText}</span>
+          <span
+            className={`text-body-xs w-[127px] font-regular ${
+              resolvedState === 'selected' || resolvedState === 'selected-hover'
+                ? 'text-inherit'
+                : 'text-text-secondary'
+            }`}
+          >
+            {subText}
+          </span>
         )}
       </span>
     </button>

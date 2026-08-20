@@ -14,6 +14,8 @@ interface OTPInputProps {
   onChange?: (value: string) => void
   onComplete?: (value: string) => void
   state?: OTPInputState
+  /** Number of OTP cells. Defaults to 4; signup uses 6. */
+  length?: number
   label?: string
   showLabel?: boolean
   helperText?: string
@@ -29,7 +31,7 @@ interface OTPInputProps {
   className?: string
 }
 
-const LENGTH = 4
+const DEFAULT_LENGTH = 4
 
 function OTPInput({
   value: controlledValue,
@@ -37,6 +39,7 @@ function OTPInput({
   onChange,
   onComplete,
   state = 'rest',
+  length = DEFAULT_LENGTH,
   label,
   showLabel = true,
   helperText,
@@ -55,7 +58,7 @@ function OTPInput({
   const helperId = `${groupId}-helper`
   const [internalValue, setInternalValue] = useState(defaultValue)
   const value = controlledValue ?? internalValue
-  const digits = value.padEnd(LENGTH).slice(0, LENGTH).split('')
+  const digits = value.padEnd(length).slice(0, length).split('')
   const cellRefs = useRef<(HTMLInputElement | null)[]>([])
 
   const hasError = !!errorText || state === 'error'
@@ -64,17 +67,17 @@ function OTPInput({
   const displayHelperText = hasError ? errorText : helperText
 
   function commit(next: string) {
-    const trimmed = next.replace(/\s/g, '').slice(0, LENGTH)
+    const trimmed = next.replace(/\s/g, '').slice(0, length)
     if (controlledValue === undefined) setInternalValue(trimmed)
     onChange?.(trimmed)
-    if (trimmed.length === LENGTH && autoSubmit) onComplete?.(trimmed)
+    if (trimmed.length === length && autoSubmit) onComplete?.(trimmed)
   }
 
   function handleChange(index: number, char: string) {
-    const arr = value.padEnd(LENGTH).split('')
+    const arr = value.padEnd(length).split('')
     arr[index] = char || ' '
     commit(arr.join('').replace(/\s+$/g, ''))
-    if (char && index < LENGTH - 1) cellRefs.current[index + 1]?.focus()
+    if (char && index < length - 1) cellRefs.current[index + 1]?.focus()
   }
 
   function handleKeyDown(index: number, e: KeyboardEvent<HTMLInputElement>) {
@@ -85,9 +88,9 @@ function OTPInput({
 
   function handlePaste(e: ClipboardEvent<HTMLInputElement>) {
     e.preventDefault()
-    const pasted = e.clipboardData.getData('text').replace(/\s/g, '').slice(0, LENGTH)
+    const pasted = e.clipboardData.getData('text').replace(/\s/g, '').slice(0, length)
     commit(pasted)
-    cellRefs.current[Math.min(pasted.length, LENGTH - 1)]?.focus()
+    cellRefs.current[Math.min(pasted.length, length - 1)]?.focus()
   }
 
   const cellState = (index: number): OTPCellState => {
@@ -112,13 +115,13 @@ function OTPInput({
         aria-describedby={showHelper || hasError ? helperId : props['aria-describedby']}
         className="inline-flex items-center gap-[4px]"
       >
-        {Array.from({ length: LENGTH }).map((_, i) => (
+        {Array.from({ length }).map((_, i) => (
           <OTPCell
             key={i}
             ref={(el) => {
               cellRefs.current[i] = el
             }}
-            position={(i + 1) as 1 | 2 | 3 | 4}
+            position={i + 1}
             value={(digits[i] ?? '').trim()}
             state={cellState(i)}
             disabled={disabled}

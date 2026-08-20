@@ -96,3 +96,147 @@ export interface ApiErrorBody {
   }
   meta?: ApiMeta
 }
+
+/** Product auth — POST /auth/signup, PATCH /auth/signup, resend */
+export interface AuthSignupPayload {
+  email: string
+  password: string
+}
+
+export interface AuthSignupPatchPayload {
+  email: string
+  verification_session_id: string
+}
+
+export interface AuthSignupData {
+  email: string
+  verification_session_id: string
+  code_expires_in_seconds: number
+  resend_available_in_seconds: number
+}
+
+export interface AuthVerifyEmailPayload {
+  code: string
+  verification_session_id: string
+}
+
+export interface AuthResendVerificationPayload {
+  verification_session_id: string
+}
+
+export interface AuthLoginPayload {
+  email: string
+  password: string
+}
+
+export interface AuthRefreshPayload {
+  refresh_token: string
+}
+
+export interface AuthRefreshData {
+  access_token: string
+  expires_in: number
+}
+
+export type OnboardingStatusValue = 'in_progress' | 'completed'
+
+export interface OnboardingProgressSummary {
+  status: OnboardingStatusValue
+  current_step?: string
+  next_step?: string
+  completed_steps?: string[]
+}
+
+export interface AuthTokenData {
+  access_token: string
+  refresh_token: string
+  expires_in: number
+  onboarding?: OnboardingProgressSummary
+}
+
+export type AccountTypeApi = 'individual' | 'business'
+export type AddressEntryMode = 'search' | 'manual'
+export type AddressVerificationStatus = 'unverified' | 'verified' | 'failed'
+
+export interface ProductProfilePayload {
+  account_type: AccountTypeApi
+  first_name?: string
+  last_name?: string
+  country_id?: string
+  legal_business_name?: string
+  legal_full_name?: string
+  company_role_id?: string
+}
+
+export interface ProductProfileData extends ProductProfilePayload {
+  region?: string
+  onboarding?: OnboardingProgressSummary
+}
+
+export interface ProductAddressPayload {
+  country_id: string
+  entry_mode: AddressEntryMode
+  formatted_address?: string
+  line_1?: string
+  line_2?: string
+  city?: string
+  post_code?: string
+  state_or_county?: string
+}
+
+export interface ProductAddressData extends ProductAddressPayload {
+  verification_status?: AddressVerificationStatus
+  onboarding?: OnboardingProgressSummary
+}
+
+export interface ProductBusinessPayload {
+  business_type_id: string
+  industry_id: string
+  employee_count: number
+}
+
+export interface ProductBusinessData extends ProductBusinessPayload {
+  onboarding?: OnboardingProgressSummary
+}
+
+export interface CompanyRole {
+  id: string
+  name: string
+  slug: string
+  icon_key?: string
+}
+
+export interface BusinessType {
+  id: string
+  name: string
+  slug: string
+}
+
+export interface OnboardingIndustry {
+  id: string
+  name: string
+  slug: string
+  emoji?: string
+}
+
+export interface ProductOnboardingStatusData {
+  status: OnboardingStatusValue
+  account_type?: AccountTypeApi
+  current_step?: string
+  next_step?: string
+  completed_steps?: string[]
+  profile?: ProductProfilePayload
+  address?: ProductAddressPayload & { verification_status?: AddressVerificationStatus }
+  business?: ProductBusinessPayload
+}
+
+export interface ProductWorkspaceStub {
+  id: string
+  slug: string
+}
+
+export interface ProductOnboardingCompleteData {
+  status: string
+  redirect_url?: string
+  workspace?: ProductWorkspaceStub
+}

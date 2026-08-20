@@ -32,6 +32,29 @@ function useTeamSizes() {
   return useQuery({ queryKey: queryKeys.teamSizes, queryFn: requests.getTeamSizes })
 }
 
+function useCompanyRoles() {
+  return useQuery({ queryKey: queryKeys.companyRoles, queryFn: requests.getCompanyRoles })
+}
+
+function useBusinessTypes() {
+  return useQuery({ queryKey: queryKeys.businessTypes, queryFn: requests.getBusinessTypes })
+}
+
+function useOnboardingIndustries() {
+  return useQuery({
+    queryKey: queryKeys.onboardingIndustries,
+    queryFn: requests.getOnboardingIndustries,
+  })
+}
+
+function useOnboardingStatus(enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.onboardingStatus,
+    queryFn: requests.getOnboardingStatus,
+    enabled,
+  })
+}
+
 // Combines the five survey option lists into the single loading/error surface
 // app/survey/page.tsx renders around, mirroring the old `Promise.all` call.
 function useSurveyOptions() {
@@ -56,10 +79,14 @@ function useSurveyOptions() {
 }
 
 export {
+  useBusinessTypes,
+  useCompanyRoles,
   useCountries,
   useHiringFrustrations,
   useHiringTools,
   useIndustries,
+  useOnboardingIndustries,
+  useOnboardingStatus,
   useRoles,
   useSurveyOptions,
   useTeamSizes,

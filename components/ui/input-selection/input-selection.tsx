@@ -148,7 +148,7 @@ function InputSelection({
         <label
           id={labelId}
           htmlFor={fieldId}
-          className="text-body-xs font-medium-550 text-text-secondary h-[9px] leading-none pl-[2px]"
+          className="text-body-xs font-medium-550 text-text-tertiary h-[9px] leading-none pl-[3px]"
         >
           {label}
           {required && (
