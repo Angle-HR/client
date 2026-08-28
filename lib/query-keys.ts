@@ -9,6 +9,10 @@ const queryKeys = {
   businessTypes: ['onboarding', 'business-types'] as const,
   onboardingIndustries: ['onboarding', 'industries'] as const,
   onboardingStatus: ['onboarding', 'status'] as const,
+  me: ['auth', 'me'] as const,
+  invite: (token: string) => ['auth', 'invite', token] as const,
+  identificationRequirements: (countryId: string) =>
+    ['onboarding', 'identification-requirements', countryId] as const,
 }
 
 export { queryKeys }

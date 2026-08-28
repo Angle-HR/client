@@ -6,7 +6,7 @@ import { useForm, useWatch } from 'react-hook-form'
 import { z } from 'zod'
 
 import { ArrowRightIcon, EyeIcon, EyeOffIcon } from '@/components/auth/icons'
-import { FlowButton, IconButton, TextInput } from '@/components/ui'
+import { BannerSmall, FlowButton, IconButton, TextInput } from '@/components/ui'
 
 const PASSWORD_HINT = 'Password must be at least 8 characters and include both letters and numbers.'
 
@@ -24,11 +24,19 @@ const inviteJoinSchema = z.object({
 type InviteJoinValues = z.infer<typeof inviteJoinSchema>
 
 interface StepInviteJoinProps {
+  submitting?: boolean
+  /** Server-side failure, shown above the button. */
+  formError?: string
   onContinue: (values: InviteJoinValues) => void
   onBack: () => void
 }
 
-function StepInviteJoin({ onContinue, onBack }: StepInviteJoinProps) {
+function StepInviteJoin({
+  submitting = false,
+  formError,
+  onContinue,
+  onBack,
+}: StepInviteJoinProps) {
   const [showPassword, setShowPassword] = useState(false)
   const [passwordFocused, setPasswordFocused] = useState(false)
 
@@ -107,6 +115,12 @@ function StepInviteJoin({ onContinue, onBack }: StepInviteJoinProps) {
           />
         </div>
 
+        {formError ? (
+          <BannerSmall state="error" outline={false} showCloseButton={false}>
+            {formError}
+          </BannerSmall>
+        ) : null}
+
         <div className="flex flex-col gap-[8px]">
           <FlowButton
             type="submit"
@@ -115,7 +129,7 @@ function StepInviteJoin({ onContinue, onBack }: StepInviteJoinProps) {
             className="w-full"
             iconSuffix={<ArrowRightIcon />}
           >
-            Join workspace
+            {submitting ? 'Joining...' : 'Join workspace'}
           </FlowButton>
           <FlowButton
             type="button"

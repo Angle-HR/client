@@ -1,7 +1,8 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Controller, useForm } from 'react-hook-form'
+import { useEffect } from 'react'
+import { Controller, useForm, useWatch } from 'react-hook-form'
 import { z } from 'zod'
 
 import { AccountTypePicker } from '@/components/auth/account-type-picker'
@@ -40,6 +41,12 @@ type BusinessValues = z.infer<typeof businessSchema>
 interface StepAccountTypeProps {
   accountType?: AccountType
   submitting?: boolean
+  /**
+   * The name to show in the workspace preview beside the form: the person's
+   * first name for an individual, the business name for a company. Fires as it
+   * is typed, so the preview fills in live.
+   */
+  onDisplayNameChange?: (name: string) => void
   onAccountTypeChange: (type: AccountType) => void
   onIndividualContinue: (values: IndividualValues) => void | Promise<void>
   onBusinessContinue: (values: BusinessValues) => void | Promise<void>
@@ -48,6 +55,7 @@ interface StepAccountTypeProps {
 function StepAccountType({
   accountType,
   submitting = false,
+  onDisplayNameChange,
   onAccountTypeChange,
   onIndividualContinue,
   onBusinessContinue,
@@ -67,10 +75,18 @@ function StepAccountType({
         <AccountTypePicker value={accountType} onChange={onAccountTypeChange} />
 
         {accountType === 'individual' ? (
-          <IndividualProfileForm submitting={submitting} onContinue={onIndividualContinue} />
+          <IndividualProfileForm
+            submitting={submitting}
+            onDisplayNameChange={onDisplayNameChange}
+            onContinue={onIndividualContinue}
+          />
         ) : null}
         {accountType === 'business' ? (
-          <BusinessProfileForm submitting={submitting} onContinue={onBusinessContinue} />
+          <BusinessProfileForm
+            submitting={submitting}
+            onDisplayNameChange={onDisplayNameChange}
+            onContinue={onBusinessContinue}
+          />
         ) : null}
       </div>
     </div>
@@ -80,9 +96,11 @@ function StepAccountType({
 function IndividualProfileForm({
   onContinue,
   submitting,
+  onDisplayNameChange,
 }: {
   onContinue: (values: IndividualValues) => void | Promise<void>
   submitting?: boolean
+  onDisplayNameChange?: (name: string) => void
 }) {
   const { data: countries, isLoading, isError } = useCountries()
   const {
@@ -94,6 +112,11 @@ function IndividualProfileForm({
     resolver: zodResolver(individualSchema),
     defaultValues: { firstName: '', lastName: '', countryId: '' },
   })
+
+  const firstName = useWatch({ control, name: 'firstName' })
+  useEffect(() => {
+    onDisplayNameChange?.(firstName.trim())
+  }, [firstName, onDisplayNameChange])
 
   const countryOptions: SelectOption[] = (countries ?? []).map((country) => ({
     value: country.id,
@@ -157,9 +180,11 @@ function IndividualProfileForm({
 function BusinessProfileForm({
   onContinue,
   submitting,
+  onDisplayNameChange,
 }: {
   onContinue: (values: BusinessValues) => void | Promise<void>
   submitting?: boolean
+  onDisplayNameChange?: (name: string) => void
 }) {
   const { data: roles, isLoading, isError } = useCompanyRoles()
   const {
@@ -171,6 +196,11 @@ function BusinessProfileForm({
     resolver: zodResolver(businessSchema),
     defaultValues: { businessName: '', legalFullName: '', roleId: '' },
   })
+
+  const businessName = useWatch({ control, name: 'businessName' })
+  useEffect(() => {
+    onDisplayNameChange?.(businessName.trim())
+  }, [businessName, onDisplayNameChange])
 
   const roleOptions: SelectOption[] = (roles ?? []).map((role) => ({
     value: role.id,

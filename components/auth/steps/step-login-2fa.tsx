@@ -5,41 +5,44 @@ import { useState } from 'react'
 import { ArrowRightIcon, CheckCircleFillIcon } from '@/components/auth/icons'
 import { FlowButton, OTPInput, TextButton, type OTPInputState } from '@/components/ui'
 
-const MOCK_INVALID_TOTP = '111111'
 const OTP_LENGTH = 6
 
 interface StepLogin2faProps {
-  onVerified: () => void
+  /** Submit a code. Resolves to a message to show, or undefined when accepted. */
+  onVerify: (code: string) => Promise<string | undefined>
   onBack: () => void
 }
 
-function StepLogin2fa({ onVerified, onBack }: StepLogin2faProps) {
+function StepLogin2fa({ onVerify, onBack }: StepLogin2faProps) {
   const [code, setCode] = useState('')
   const [otpState, setOtpState] = useState<OTPInputState>('rest')
   const [errorText, setErrorText] = useState<string>()
   const [verifying, setVerifying] = useState(false)
   const [success, setSuccess] = useState(false)
 
-  function verify(value: string) {
+  async function verify(value: string) {
+    if (verifying) return
     if (value.length !== OTP_LENGTH) {
       setOtpState('error')
       setErrorText('Please enter the full authentication code.')
       return
     }
-    if (value === MOCK_INVALID_TOTP) {
-      setOtpState('error')
-      setErrorText('Incorrect TOTP code, please try again.')
+
+    setVerifying(true)
+    setErrorText(undefined)
+    const message = await onVerify(value)
+
+    if (message) {
+      setVerifying(false)
       setSuccess(false)
+      setOtpState('error')
+      setErrorText(message)
       return
     }
 
+    // Left in the verifying state on success: the parent is navigating away.
     setOtpState('success')
-    setErrorText(undefined)
     setSuccess(true)
-    setVerifying(true)
-    window.setTimeout(() => {
-      onVerified()
-    }, 800)
   }
 
   return (
@@ -57,7 +60,7 @@ function StepLogin2fa({ onVerified, onBack }: StepLogin2faProps) {
         className="flex w-full flex-col gap-[24px]"
         onSubmit={(event) => {
           event.preventDefault()
-          verify(code)
+          void verify(code)
         }}
       >
         <div className="flex items-start gap-[8px]">

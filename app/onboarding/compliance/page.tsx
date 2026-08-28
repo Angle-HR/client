@@ -1,47 +1,33 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { AuthShell } from '@/components/auth/auth-shell'
-import { getOnboardingDraft, patchOnboardingDraft } from '@/components/auth/flow-storage'
+import { patchOnboardingDraft } from '@/components/auth/flow-storage'
 import { StepCompliance, type ComplianceValues } from '@/components/auth/steps/step-compliance'
 import { useOnboardingDraft } from '@/components/auth/use-flow-storage'
+import { useOnboardingResume } from '@/components/auth/use-onboarding-resume'
 import { BannerSmall } from '@/components/ui'
 import { applyApiError } from '@/lib/api-error'
 import { routeForOnboarding } from '@/lib/auth-session'
-import { useUpsertBusiness } from '@/lib/mutations'
+import { useUpsertCompliance } from '@/lib/mutations'
 
 function OnboardingCompliancePage() {
   const router = useRouter()
-  const upsertBusiness = useUpsertBusiness()
+  const upsertCompliance = useUpsertCompliance()
   const draft = useOnboardingDraft()
   const [fallbackError, setFallbackError] = useState<string>()
 
-  const ready = Boolean(
-    draft.accountType && draft.profile && (draft.accountType !== 'business' || draft.workspace),
-  )
+  // The server decides whether this step is the right one to be on.
+  const { checking } = useOnboardingResume()
   const backHref = draft.accountType === 'business' ? '/onboarding/workspace' : '/onboarding'
-
-  // Earlier steps are incomplete — bounce back to the first one that is missing.
-  // Reads storage rather than `draft`: the first commit after a fresh load still
-  // holds the server snapshot (an empty draft), which would bounce a valid visitor.
-  useEffect(() => {
-    const stored = getOnboardingDraft()
-    if (!stored.accountType || !stored.profile) {
-      router.replace('/onboarding')
-      return
-    }
-    if (stored.accountType === 'business' && !stored.workspace) {
-      router.replace('/onboarding/workspace')
-    }
-  }, [router])
 
   async function handleContinue(values: ComplianceValues) {
     setFallbackError(undefined)
     try {
       const employeeCount = Number.parseInt(values.employeeCount, 10)
-      const result = await upsertBusiness.mutateAsync({
+      const result = await upsertCompliance.mutateAsync({
         business_type_id: values.businessDescriptor,
         industry_id: values.industryId,
         employee_count: Number.isFinite(employeeCount) ? employeeCount : 0,
@@ -53,12 +39,17 @@ function OnboardingCompliancePage() {
     }
   }
 
-  if (!ready) {
+  if (checking) {
     return null
   }
 
+  // Whatever they called the workspace on the profile step.
+  const profile = draft.profile
+  const previewName =
+    profile && 'businessName' in profile ? profile.businessName : (profile?.firstName ?? '')
+
   return (
-    <AuthShell>
+    <AuthShell previewName={previewName}>
       <div className="flex w-full flex-col gap-[16px]">
         {fallbackError ? (
           <BannerSmall
@@ -71,7 +62,7 @@ function OnboardingCompliancePage() {
           </BannerSmall>
         ) : null}
         <StepCompliance
-          submitting={upsertBusiness.isPending}
+          submitting={upsertCompliance.isPending}
           onContinue={handleContinue}
           onBack={() => router.push(backHref)}
         />

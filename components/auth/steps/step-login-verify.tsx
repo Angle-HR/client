@@ -5,22 +5,26 @@ import { useEffect, useState } from 'react'
 import { ArrowRightIcon } from '@/components/auth/icons'
 import { BannerSmall, FlowButton, OTPInput, TextButton, type OTPInputState } from '@/components/ui'
 
-const MOCK_INVALID_OTP = '000000'
 const OTP_LENGTH = 6
-const OTP_TTL_SECONDS = 90
 
 interface StepLoginVerifyProps {
   email: string
-  onVerified: () => void
+  /** Seconds left on the code that was just sent. */
+  ttlSeconds: number
+  /** Submit a code. Resolves to a message to show, or undefined when accepted. */
+  onVerify: (code: string) => Promise<string | undefined>
+  /** Ask for a fresh code. Resolves to the new code's lifetime in seconds. */
+  onResend: () => Promise<number>
   onBack: () => void
 }
 
-function StepLoginVerify({ email, onVerified, onBack }: StepLoginVerifyProps) {
+function StepLoginVerify({ email, ttlSeconds, onVerify, onResend, onBack }: StepLoginVerifyProps) {
   const [code, setCode] = useState('')
-  const [secondsLeft, setSecondsLeft] = useState(OTP_TTL_SECONDS)
+  const [secondsLeft, setSecondsLeft] = useState(ttlSeconds)
   const [otpState, setOtpState] = useState<OTPInputState>('rest')
   const [errorText, setErrorText] = useState<string>()
   const [resendBanner, setResendBanner] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
 
   const expired = secondsLeft <= 0
 
@@ -32,15 +36,21 @@ function StepLoginVerify({ email, onVerified, onBack }: StepLoginVerifyProps) {
     return () => window.clearTimeout(id)
   }, [secondsLeft])
 
-  function handleResend() {
+  async function handleResend() {
     setCode('')
     setOtpState('rest')
     setErrorText(undefined)
-    setSecondsLeft(OTP_TTL_SECONDS)
-    setResendBanner(true)
+    try {
+      setSecondsLeft(await onResend())
+      setResendBanner(true)
+    } catch {
+      setOtpState('error')
+      setErrorText('Could not send a new code. Please try again.')
+    }
   }
 
-  function verify(value: string) {
+  async function verify(value: string) {
+    if (submitting) return
     if (expired) {
       setOtpState('error')
       setErrorText('Verification timed out. Request a new code.')
@@ -51,14 +61,18 @@ function StepLoginVerify({ email, onVerified, onBack }: StepLoginVerifyProps) {
       setErrorText('Please enter the full verification code.')
       return
     }
-    if (value === MOCK_INVALID_OTP) {
+
+    setSubmitting(true)
+    setErrorText(undefined)
+    const message = await onVerify(value)
+    setSubmitting(false)
+
+    if (message) {
       setOtpState('error')
-      setErrorText('Invalid verification code. Please try again.')
+      setErrorText(message)
       return
     }
     setOtpState('success')
-    setErrorText(undefined)
-    onVerified()
   }
 
   return (
@@ -77,7 +91,7 @@ function StepLoginVerify({ email, onVerified, onBack }: StepLoginVerifyProps) {
         className="flex w-full flex-col gap-[24px]"
         onSubmit={(event) => {
           event.preventDefault()
-          verify(code)
+          void verify(code)
         }}
       >
         <OTPInput
@@ -111,7 +125,7 @@ function StepLoginVerify({ email, onVerified, onBack }: StepLoginVerifyProps) {
             size="md"
             bold
             className="text-text-primary hover:text-text-primary"
-            onClick={handleResend}
+            onClick={() => void handleResend()}
           >
             Request a new code →
           </TextButton>
@@ -123,9 +137,10 @@ function StepLoginVerify({ email, onVerified, onBack }: StepLoginVerifyProps) {
             variant="primary"
             size="md"
             className="w-full"
+            disabled={submitting}
             iconSuffix={<ArrowRightIcon />}
           >
-            Continue with login code
+            {submitting ? 'Verifying...' : 'Continue with login code'}
           </FlowButton>
           <FlowButton
             type="button"
@@ -146,7 +161,7 @@ function StepLoginVerify({ email, onVerified, onBack }: StepLoginVerifyProps) {
             onClose={() => setResendBanner(false)}
             className="w-fit max-w-full"
           >
-            We&apos;ve sent a new login code.
+            We&apos;ve sent a new verification code.
           </BannerSmall>
         ) : null}
       </form>

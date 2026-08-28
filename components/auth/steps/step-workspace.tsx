@@ -7,7 +7,6 @@ import { z } from 'zod'
 
 import { LocationPinIcon } from '@/components/auth/account-type-icons'
 import { ArrowRightIcon } from '@/components/auth/icons'
-import { MOCK_SUGGESTED_ADDRESS } from '@/components/auth/onboarding-options'
 import {
   BannerSmall,
   CountryFlag,
@@ -57,6 +56,12 @@ export interface WorkspaceValues {
 
 interface StepWorkspaceProps {
   onContinue: (values: WorkspaceValues) => void | Promise<void>
+  /**
+   * Ask the verifier what it makes of the address as typed. Resolves to a
+   * corrected address to offer back, or undefined when there is nothing to
+   * suggest — including when the verifier is unavailable, which is not an error.
+   */
+  onVerifyAddress: (address: string, countryId: string) => Promise<string | undefined>
   onBack: () => void
   submitting?: boolean
 }
@@ -68,7 +73,12 @@ function formatManualAddress(values: ManualValues): string {
     .join(', ')
 }
 
-function StepWorkspace({ onContinue, onBack, submitting = false }: StepWorkspaceProps) {
+function StepWorkspace({
+  onContinue,
+  onVerifyAddress,
+  onBack,
+  submitting = false,
+}: StepWorkspaceProps) {
   const [mode, setMode] = useState<AddressMode>('search')
   const [entryMode, setEntryMode] = useState<'search' | 'manual'>('search')
   const [enteredAddress, setEnteredAddress] = useState('')
@@ -76,6 +86,8 @@ function StepWorkspace({ onContinue, onBack, submitting = false }: StepWorkspace
   const [addressNotFound, setAddressNotFound] = useState(false)
   const [draftCountryId, setDraftCountryId] = useState('')
   const [manualDraft, setManualDraft] = useState<ManualValues | null>(null)
+  const [suggestedAddress, setSuggestedAddress] = useState<string>()
+  const [verifying, setVerifying] = useState(false)
 
   const { data: countries, isLoading, isError } = useCountries()
 
@@ -107,7 +119,7 @@ function StepWorkspace({ onContinue, onBack, submitting = false }: StepWorkspace
     },
   })
 
-  function goToSuggestions(
+  async function goToSuggestions(
     address: string,
     countryId: string,
     nextEntryMode: 'search' | 'manual',
@@ -117,36 +129,29 @@ function StepWorkspace({ onContinue, onBack, submitting = false }: StepWorkspace
     setDraftCountryId(countryId)
     setEntryMode(nextEntryMode)
     setManualDraft(manualValues ?? null)
-    setSelectedSuggestion('suggested')
     setAddressNotFound(false)
+
+    setVerifying(true)
+    const suggestion = await onVerifyAddress(address, countryId)
+    setVerifying(false)
+
+    setSuggestedAddress(suggestion)
+    // With nothing to compare against, what they typed is the only option.
+    setSelectedSuggestion(suggestion ? 'suggested' : 'entered')
     setMode('suggestions')
   }
 
-  function handleSearchSubmit(values: SearchValues) {
-    // UI mock: empty-ish "fail" addresses force not-found path into manual.
-    if (values.address.trim().toLowerCase() === 'fail') {
-      setAddressNotFound(true)
-      setMode('manual')
-      setEntryMode('manual')
-      manualForm.reset({
-        countryId: values.countryId,
-        addressLine1: values.address,
-        addressLine2: '',
-        city: '',
-        postcode: '',
-      })
-      return
-    }
-    goToSuggestions(values.address.trim(), values.countryId, 'search')
+  async function handleSearchSubmit(values: SearchValues) {
+    await goToSuggestions(values.address.trim(), values.countryId, 'search')
   }
 
-  function handleManualSubmit(values: ManualValues) {
-    goToSuggestions(formatManualAddress(values), values.countryId, 'manual', values)
+  async function handleManualSubmit(values: ManualValues) {
+    await goToSuggestions(formatManualAddress(values), values.countryId, 'manual', values)
   }
 
   async function handleSuggestionsContinue() {
     const finalAddress =
-      selectedSuggestion === 'suggested' ? MOCK_SUGGESTED_ADDRESS : enteredAddress
+      selectedSuggestion === 'suggested' && suggestedAddress ? suggestedAddress : enteredAddress
     await onContinue({
       countryId:
         draftCountryId || searchForm.getValues('countryId') || manualForm.getValues('countryId'),
@@ -231,10 +236,10 @@ function StepWorkspace({ onContinue, onBack, submitting = false }: StepWorkspace
               variant="primary"
               size="md"
               className="w-full"
-              disabled={isLoading || isError}
+              disabled={isLoading || isError || verifying}
               iconSuffix={<ArrowRightIcon />}
             >
-              Continue
+              {verifying ? 'Checking address...' : 'Continue'}
             </FlowButton>
             <FlowButton
               type="button"
@@ -364,13 +369,16 @@ function StepWorkspace({ onContinue, onBack, submitting = false }: StepWorkspace
               state={selectedSuggestion === 'entered' ? 'selected' : 'rest'}
               onClick={() => setSelectedSuggestion('entered')}
             />
-            <ListItemLocation
-              title="Suggested address"
-              address={MOCK_SUGGESTED_ADDRESS}
-              showCheckMark
-              state={selectedSuggestion === 'suggested' ? 'selected' : 'rest'}
-              onClick={() => setSelectedSuggestion('suggested')}
-            />
+            {/* Only offered when the verifier actually returned a correction. */}
+            {suggestedAddress ? (
+              <ListItemLocation
+                title="Suggested address"
+                address={suggestedAddress}
+                showCheckMark
+                state={selectedSuggestion === 'suggested' ? 'selected' : 'rest'}
+                onClick={() => setSelectedSuggestion('suggested')}
+              />
+            ) : null}
           </div>
 
           <div className="flex flex-col gap-[8px]">

@@ -1,3 +1,4 @@
+import { AppPreviewPanel } from '@/components/auth/app-preview-panel'
 import { WaitlistLogo } from '@/components/waitlist/waitlist-logo'
 
 import type { ReactNode } from 'react'
@@ -7,13 +8,15 @@ interface AuthShellProps {
   footer?: ReactNode
   /** Full-bleed centered loading state (no split panel). */
   variant?: 'split' | 'centered'
+  /** Name shown in the workspace preview; blank until the user types one. */
+  previewName?: string
 }
 
 // Auth chrome from Figma desktop frames (1440):
 // - Left form column ≈ 726/1440 (50.42%)
 // - Right panel column ≈ 714/1440 (49.58%), with 14px inset on top/right/bottom
 // Both columns scale with the viewport — no max-width cap.
-function AuthShell({ children, footer, variant = 'split' }: AuthShellProps) {
+function AuthShell({ children, footer, variant = 'split', previewName }: AuthShellProps) {
   if (variant === 'centered') {
     return (
       <div className="flex min-h-dvh flex-col bg-bg-secondary px-[24px] pb-[24px] pt-[32px]">
@@ -44,7 +47,9 @@ function AuthShell({ children, footer, variant = 'split' }: AuthShellProps) {
       </div>
 
       <div className="hidden min-h-dvh lg:block lg:w-[calc(714/1440*100%)] lg:shrink-0 lg:p-[14px] lg:pl-0">
-        <aside aria-hidden="true" className="h-full w-full rounded-lg-12 bg-bg-primary" />
+        <aside aria-hidden="true" className="h-full w-full">
+          <AppPreviewPanel workspaceName={previewName} />
+        </aside>
       </div>
     </div>
   )

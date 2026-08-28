@@ -15,6 +15,8 @@ const KEYS = {
 export interface InviteContext {
   email: string
   companyName: string
+  /** The invite token from the emailed link, redeemed on /auth/accept-invite. */
+  token: string
   /** Show Germany/GDPR controller disclaimer on accept screen. */
   showGdprDisclaimer?: boolean
 }

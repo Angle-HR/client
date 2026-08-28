@@ -12,14 +12,15 @@ import {
 } from '@/components/auth/steps/step-login-password'
 import { useLoginEmail } from '@/components/auth/use-flow-storage'
 import { applyApiError, getApiError, getApiErrorDetails } from '@/lib/api-error'
-import { routeForOnboarding, setAuthTokens, setVerificationSession } from '@/lib/auth-session'
-import { useLogin } from '@/lib/mutations'
+import { landAfterLogin, setLoginOtpSession, setVerificationSession } from '@/lib/auth-session'
+import { useLogin, useRequestLoginOtp } from '@/lib/mutations'
 
 import type { AuthSignupData } from '@/lib/types'
 
 function LoginPasswordPage() {
   const router = useRouter()
   const login = useLogin()
+  const requestLoginOtp = useRequestLoginOtp()
   const email = useLoginEmail()
   const [formError, setFormError] = useState<string>()
 
@@ -36,18 +37,13 @@ function LoginPasswordPage() {
     setFormError(undefined)
 
     try {
-      const tokens = await login.mutateAsync({
+      // Either tokens or a TOTP challenge; landAfterLogin persists whichever
+      // came back and answers with the next route.
+      const result = await login.mutateAsync({
         email: values.email,
         password: values.password,
       })
-      setAuthTokens(tokens)
-
-      if (tokens.onboarding?.status === 'completed') {
-        router.push('/login/success')
-        return
-      }
-
-      router.push(routeForOnboarding(tokens.onboarding))
+      router.push(landAfterLogin(result))
     } catch (err) {
       const apiError = getApiError(err)
       const details = getApiErrorDetails(err)
@@ -87,6 +83,17 @@ function LoginPasswordPage() {
     }
   }
 
+  async function handleEmailCode() {
+    setFormError(undefined)
+    try {
+      const session = await requestLoginOtp.mutateAsync({ email })
+      setLoginOtpSession(session)
+      router.push('/login/verify')
+    } catch (err) {
+      setFormError(applyApiError(err))
+    }
+  }
+
   if (!email) {
     return null
   }
@@ -98,7 +105,7 @@ function LoginPasswordPage() {
         formError={formError}
         submitting={login.isPending}
         onSignIn={handleSignIn}
-        onEmailCode={() => router.push('/login/verify')}
+        onEmailCode={handleEmailCode}
         onBack={() => router.push('/login')}
       />
     </LoginShell>

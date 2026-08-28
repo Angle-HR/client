@@ -11,6 +11,7 @@ import {
   type IndividualValues,
 } from '@/components/auth/steps/step-account-type'
 import { useOnboardingDraft } from '@/components/auth/use-flow-storage'
+import { useOnboardingResume } from '@/components/auth/use-onboarding-resume'
 import { BannerSmall } from '@/components/ui'
 import { applyApiError } from '@/lib/api-error'
 import { routeForOnboarding } from '@/lib/auth-session'
@@ -22,10 +23,14 @@ function OnboardingAccountPage() {
   const router = useRouter()
   const upsertProfile = useUpsertProfile()
   const draft = useOnboardingDraft()
+  // The server decides which step a returning user belongs on.
+  const { checking } = useOnboardingResume()
   // The saved draft is the starting point; a pick this visit takes precedence.
   const [picked, setPicked] = useState<AccountType>()
   const accountType = picked ?? draft.accountType
   const [fallbackError, setFallbackError] = useState<string>()
+  // Mirrored into the workspace preview beside the form.
+  const [previewName, setPreviewName] = useState('')
 
   function handleAccountTypeChange(type: AccountType) {
     setPicked(type)
@@ -70,8 +75,12 @@ function OnboardingAccountPage() {
     }
   }
 
+  if (checking) {
+    return null
+  }
+
   return (
-    <AuthShell>
+    <AuthShell previewName={previewName}>
       <div className="flex w-full flex-col gap-[16px]">
         {fallbackError ? (
           <BannerSmall
@@ -85,6 +94,7 @@ function OnboardingAccountPage() {
         ) : null}
         <StepAccountType
           accountType={accountType}
+          onDisplayNameChange={setPreviewName}
           submitting={upsertProfile.isPending}
           onAccountTypeChange={handleAccountTypeChange}
           onIndividualContinue={handleIndividualContinue}

@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import { ArrowRightIcon } from '@/components/auth/icons'
-import { FlowButton, TextInput } from '@/components/ui'
+import { BannerSmall, FlowButton, TextInput } from '@/components/ui'
 
 const forgotSchema = z.object({
   email: z
@@ -19,11 +19,23 @@ type ForgotPasswordValues = z.infer<typeof forgotSchema>
 
 interface StepForgotPasswordProps {
   defaultEmail?: string
+  submitting?: boolean
+  /** Server-side failure, shown above the button. */
+  formError?: string
+  /** The request went through; a success banner replaces nothing, it adds to it. */
+  sent?: boolean
   onContinue: (values: ForgotPasswordValues) => void
   onBack: () => void
 }
 
-function StepForgotPassword({ defaultEmail = '', onContinue, onBack }: StepForgotPasswordProps) {
+function StepForgotPassword({
+  defaultEmail = '',
+  submitting = false,
+  formError,
+  sent = false,
+  onContinue,
+  onBack,
+}: StepForgotPasswordProps) {
   const {
     register,
     handleSubmit,
@@ -54,15 +66,30 @@ function StepForgotPassword({ defaultEmail = '', onContinue, onBack }: StepForgo
           {...register('email')}
         />
 
+        {/* BannerSmall is single-line by design, so this stays short. It also
+            avoids confirming whether the address has an account. */}
+        {sent ? (
+          <BannerSmall state="success" outline={false} showCloseButton={false}>
+            Check your inbox for a reset link.
+          </BannerSmall>
+        ) : null}
+
+        {formError ? (
+          <BannerSmall state="error" outline={false} showCloseButton={false}>
+            {formError}
+          </BannerSmall>
+        ) : null}
+
         <div className="flex flex-col gap-[8px]">
           <FlowButton
             type="submit"
             variant="primary"
             size="md"
             className="w-full"
+            disabled={submitting}
             iconSuffix={<ArrowRightIcon />}
           >
-            Send reset link
+            {submitting ? 'Sending...' : sent ? 'Resend reset link' : 'Send reset link'}
           </FlowButton>
           <FlowButton
             type="button"

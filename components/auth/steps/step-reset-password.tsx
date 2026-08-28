@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import { ArrowRightIcon, EyeIcon, EyeOffIcon } from '@/components/auth/icons'
-import { FlowButton, IconButton, TextInput } from '@/components/ui'
+import { BannerSmall, FlowButton, IconButton, TextInput } from '@/components/ui'
 
 const PASSWORD_HINT = 'Password must be at least 8 characters and include both letters and numbers.'
 
@@ -30,11 +30,19 @@ const resetSchema = z
 type ResetPasswordValues = z.infer<typeof resetSchema>
 
 interface StepResetPasswordProps {
+  submitting?: boolean
+  /** Server-side failure, e.g. an expired reset link. */
+  formError?: string
   onContinue: (values: ResetPasswordValues) => void
   onBack: () => void
 }
 
-function StepResetPassword({ onContinue, onBack }: StepResetPasswordProps) {
+function StepResetPassword({
+  submitting = false,
+  formError,
+  onContinue,
+  onBack,
+}: StepResetPasswordProps) {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
 
@@ -100,15 +108,22 @@ function StepResetPassword({ onContinue, onBack }: StepResetPasswordProps) {
           />
         </div>
 
+        {formError ? (
+          <BannerSmall state="error" outline={false} showCloseButton={false}>
+            {formError}
+          </BannerSmall>
+        ) : null}
+
         <div className="flex flex-col gap-[8px]">
           <FlowButton
             type="submit"
             variant="primary"
             size="md"
             className="w-full"
+            disabled={submitting}
             iconSuffix={<ArrowRightIcon />}
           >
-            Continue
+            {submitting ? 'Saving...' : 'Continue'}
           </FlowButton>
           <FlowButton
             type="button"

@@ -4,28 +4,52 @@ import { ENDPOINTS } from './endpoints'
 
 import type {
   ApiResponse,
+  AuthAcceptInvitePayload,
+  AuthForgotPasswordData,
+  AuthForgotPasswordPayload,
+  AuthInviteData,
+  AuthLoginOtpRequestPayload,
+  AuthLoginOtpVerifyPayload,
   AuthLoginPayload,
+  AuthLoginResult,
+  AuthLogoutPayload,
+  AuthMeData,
   AuthRefreshData,
   AuthRefreshPayload,
   AuthResendVerificationPayload,
+  AuthResetPasswordData,
+  AuthResetPasswordPayload,
   AuthSignupData,
   AuthSignupPatchPayload,
   AuthSignupPayload,
   AuthTokenData,
+  AuthTotpConfirmPayload,
+  AuthTotpDisablePayload,
+  AuthTotpEnrollData,
+  AuthTotpLoginPayload,
   AuthVerifyEmailPayload,
   BusinessType,
   CompanyRole,
   Country,
   HiringFrustration,
   HiringTool,
+  IdentificationRequirementsData,
   Industry,
   OnboardingIndustry,
   OnboardingPayload,
   OnboardingResponse,
+  OrganizationInviteData,
+  OrganizationInvitePayload,
   ProductAddressData,
   ProductAddressPayload,
+  ProductAddressSearchData,
+  ProductAddressSearchPayload,
+  ProductAddressVerifyData,
+  ProductAddressVerifyPayload,
   ProductBusinessData,
   ProductBusinessPayload,
+  ProductComplianceData,
+  ProductCompliancePayload,
   ProductOnboardingCompleteData,
   ProductOnboardingStatusData,
   ProductProfileData,
@@ -119,9 +143,96 @@ const requests = {
     return data.data
   },
 
-  login: async (payload: AuthLoginPayload): Promise<AuthTokenData> => {
-    const { data } = await axiosInstance.post<ApiResponse<AuthTokenData>>(
+  login: async (payload: AuthLoginPayload): Promise<AuthLoginResult> => {
+    const { data } = await axiosInstance.post<ApiResponse<AuthLoginResult>>(
       ENDPOINTS.auth.login(),
+      payload,
+    )
+    return data.data
+  },
+
+  requestLoginOtp: async (payload: AuthLoginOtpRequestPayload): Promise<AuthSignupData> => {
+    const { data } = await axiosInstance.post<ApiResponse<AuthSignupData>>(
+      ENDPOINTS.auth.loginOtpRequest(),
+      payload,
+    )
+    return data.data
+  },
+
+  verifyLoginOtp: async (payload: AuthLoginOtpVerifyPayload): Promise<AuthLoginResult> => {
+    const { data } = await axiosInstance.post<ApiResponse<AuthLoginResult>>(
+      ENDPOINTS.auth.loginOtpVerify(),
+      payload,
+    )
+    return data.data
+  },
+
+  verifyLoginTotp: async (payload: AuthTotpLoginPayload): Promise<AuthTokenData> => {
+    const { data } = await axiosInstance.post<ApiResponse<AuthTokenData>>(
+      ENDPOINTS.auth.loginTotp(),
+      payload,
+    )
+    return data.data
+  },
+
+  logout: async (payload: AuthLogoutPayload): Promise<void> => {
+    await axiosInstance.post(ENDPOINTS.auth.logout(), payload)
+  },
+
+  forgotPassword: async (payload: AuthForgotPasswordPayload): Promise<AuthForgotPasswordData> => {
+    const { data } = await axiosInstance.post<ApiResponse<AuthForgotPasswordData>>(
+      ENDPOINTS.auth.forgotPassword(),
+      payload,
+    )
+    return data.data
+  },
+
+  resetPassword: async (payload: AuthResetPasswordPayload): Promise<AuthResetPasswordData> => {
+    const { data } = await axiosInstance.post<ApiResponse<AuthResetPasswordData>>(
+      ENDPOINTS.auth.resetPassword(),
+      payload,
+    )
+    return data.data
+  },
+
+  getMe: async (): Promise<AuthMeData> => {
+    const { data } = await axiosInstance.get<ApiResponse<AuthMeData>>(ENDPOINTS.auth.me())
+    return data.data
+  },
+
+  getInvite: async (token: string): Promise<AuthInviteData> => {
+    const { data } = await axiosInstance.get<ApiResponse<AuthInviteData>>(
+      ENDPOINTS.auth.invite(token),
+    )
+    return data.data
+  },
+
+  acceptInvite: async (payload: AuthAcceptInvitePayload): Promise<AuthTokenData> => {
+    const { data } = await axiosInstance.post<ApiResponse<AuthTokenData>>(
+      ENDPOINTS.auth.acceptInvite(),
+      payload,
+    )
+    return data.data
+  },
+
+  enrollTotp: async (): Promise<AuthTotpEnrollData> => {
+    const { data } = await axiosInstance.post<ApiResponse<AuthTotpEnrollData>>(
+      ENDPOINTS.auth.totpEnroll(),
+    )
+    return data.data
+  },
+
+  confirmTotp: async (payload: AuthTotpConfirmPayload): Promise<void> => {
+    await axiosInstance.post(ENDPOINTS.auth.totpConfirm(), payload)
+  },
+
+  disableTotp: async (payload: AuthTotpDisablePayload): Promise<void> => {
+    await axiosInstance.post(ENDPOINTS.auth.totpDisable(), payload)
+  },
+
+  inviteTeammate: async (payload: OrganizationInvitePayload): Promise<OrganizationInviteData> => {
+    const { data } = await axiosInstance.post<ApiResponse<OrganizationInviteData>>(
+      ENDPOINTS.organizations.invites(),
       payload,
     )
     return data.data
@@ -171,6 +282,44 @@ const requests = {
   upsertAddress: async (payload: ProductAddressPayload): Promise<ProductAddressData> => {
     const { data } = await axiosInstance.put<ApiResponse<ProductAddressData>>(
       ENDPOINTS.onboarding.address(),
+      payload,
+    )
+    return data.data
+  },
+
+  searchAddress: async (
+    payload: ProductAddressSearchPayload,
+  ): Promise<ProductAddressSearchData> => {
+    const { data } = await axiosInstance.post<ApiResponse<ProductAddressSearchData>>(
+      ENDPOINTS.onboarding.addressSearch(),
+      payload,
+    )
+    return data.data
+  },
+
+  getIdentificationRequirements: async (
+    countryId: string,
+  ): Promise<IdentificationRequirementsData> => {
+    const { data } = await axiosInstance.get<ApiResponse<IdentificationRequirementsData>>(
+      ENDPOINTS.onboarding.identificationRequirements(),
+      { params: { country_id: countryId } },
+    )
+    return data.data
+  },
+
+  upsertCompliance: async (payload: ProductCompliancePayload): Promise<ProductComplianceData> => {
+    const { data } = await axiosInstance.put<ApiResponse<ProductComplianceData>>(
+      ENDPOINTS.onboarding.compliance(),
+      payload,
+    )
+    return data.data
+  },
+
+  verifyAddress: async (
+    payload: ProductAddressVerifyPayload,
+  ): Promise<ProductAddressVerifyData> => {
+    const { data } = await axiosInstance.post<ApiResponse<ProductAddressVerifyData>>(
+      ENDPOINTS.onboarding.addressVerify(),
       payload,
     )
     return data.data

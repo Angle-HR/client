@@ -8,6 +8,3 @@ export const BUSINESS_DESCRIPTORS = [
   { value: 'nonprofit', label: 'Non-profit' },
   { value: 'enterprise', label: 'Big Company/Enterprise' },
 ] as const
-
-/** UI-only mock suggestion shown after address entry. */
-export const MOCK_SUGGESTED_ADDRESS = '71-75 Shelton Street, London, Greater London WC2H 9JQ, UK'
