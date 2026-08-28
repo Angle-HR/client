@@ -166,9 +166,9 @@ function StepWorkspace({
   }
 
   return (
-    <div className="flex w-full flex-col gap-[32px]">
-      <header className="flex w-full flex-col gap-[20px]">
-        <h1 className="text-heading-4 font-semibold leading-39_7 text-text-primary">
+    <div className="flex w-full flex-col gap-32">
+      <header className="flex w-full flex-col gap-20">
+        <h1 className="text-heading-4 font-semibold leading-39.7 text-text-primary">
           Make it Yours
         </h1>
         <p className="text-body-l font-medium leading-21 text-text-secondary">
@@ -179,9 +179,9 @@ function StepWorkspace({
       {mode === 'search' ? (
         <form
           onSubmit={searchForm.handleSubmit(handleSearchSubmit)}
-          className="flex flex-col gap-[24px]"
+          className="flex flex-col gap-24"
         >
-          <div className="flex flex-col gap-[12px]">
+          <div className="flex flex-col gap-12">
             <Controller
               control={searchForm.control}
               name="countryId"
@@ -230,7 +230,7 @@ function StepWorkspace({
             </TextButton>
           </div>
 
-          <div className="flex flex-col gap-[8px]">
+          <div className="flex flex-col gap-8">
             <FlowButton
               type="submit"
               variant="primary"
@@ -257,7 +257,7 @@ function StepWorkspace({
       {mode === 'manual' ? (
         <form
           onSubmit={manualForm.handleSubmit(handleManualSubmit)}
-          className="flex flex-col gap-[24px]"
+          className="flex flex-col gap-24"
         >
           {addressNotFound ? (
             <BannerSmall state="error" showCloseButton={false} outline={false} className="w-full">
@@ -265,7 +265,7 @@ function StepWorkspace({
             </BannerSmall>
           ) : null}
 
-          <div className="flex flex-col gap-[12px]">
+          <div className="flex flex-col gap-12">
             <Controller
               control={manualForm.control}
               name="countryId"
@@ -326,7 +326,7 @@ function StepWorkspace({
             </TextButton>
           </div>
 
-          <div className="flex flex-col gap-[8px]">
+          <div className="flex flex-col gap-8">
             <FlowButton
               type="submit"
               variant="primary"
@@ -353,13 +353,13 @@ function StepWorkspace({
       ) : null}
 
       {mode === 'suggestions' ? (
-        <div className="flex flex-col gap-[24px]">
+        <div className="flex flex-col gap-24">
           <div
             role="radiogroup"
             aria-label="Address suggestion"
-            className="flex flex-col gap-[4px]"
+            className="flex flex-col gap-4"
           >
-            <p className="pl-[3px] text-body-xs font-medium-550 text-text-secondary">
+            <p className="pl-3 text-body-xs font-medium-550 text-text-secondary">
               Address suggestion
             </p>
             <ListItemLocation
@@ -381,7 +381,7 @@ function StepWorkspace({
             ) : null}
           </div>
 
-          <div className="flex flex-col gap-[8px]">
+          <div className="flex flex-col gap-8">
             <FlowButton
               type="button"
               variant="primary"

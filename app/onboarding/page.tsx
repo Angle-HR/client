@@ -81,7 +81,7 @@ function OnboardingAccountPage() {
 
   return (
     <AuthShell previewName={previewName}>
-      <div className="flex w-full flex-col gap-[16px]">
+      <div className="flex w-full flex-col gap-16">
         {fallbackError ? (
           <BannerSmall
             state="error"

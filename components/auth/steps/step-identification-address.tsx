@@ -178,9 +178,9 @@ function StepIdentificationAddress({
   const busy = submitting || verifying
 
   return (
-    <div className="flex w-full flex-col gap-[32px]">
-      <header className="flex w-full flex-col gap-[20px]">
-        <h1 className="text-heading-4 leading-39_7 font-semibold text-text-primary">
+    <div className="flex w-full flex-col gap-32">
+      <header className="flex w-full flex-col gap-20">
+        <h1 className="text-heading-4 leading-39.7 font-semibold text-text-primary">
           Make it Yours
         </h1>
         <p className="text-body-l leading-21 font-medium text-text-secondary">
@@ -189,13 +189,13 @@ function StepIdentificationAddress({
       </header>
 
       <form
-        className="flex w-full flex-col gap-[24px]"
+        className="flex w-full flex-col gap-24"
         onSubmit={(event) => {
           event.preventDefault()
           void handleSubmit()
         }}
       >
-        <div className="flex flex-col gap-[12px]">
+        <div className="flex flex-col gap-12">
           {fields.map((field) => (
             <TextInput
               key={field.key}
@@ -252,7 +252,7 @@ function StepIdentificationAddress({
                   }))
                 }
               />
-              <div className="flex gap-[12px]">
+              <div className="flex gap-12">
                 <div className="flex-1">
                   <TextInput
                     label="City"
@@ -309,7 +309,7 @@ function StepIdentificationAddress({
                   setAddressError(undefined)
                 }}
               >
-                <span className="flex items-center gap-[4px]">
+                <span className="flex items-center gap-4">
                   <LocationPinIcon />
                   Enter address manually
                 </span>
@@ -324,7 +324,7 @@ function StepIdentificationAddress({
           </BannerSmall>
         ) : null}
 
-        <div className="flex flex-col gap-[8px]">
+        <div className="flex flex-col gap-8">
           <FlowButton
             type="submit"
             variant="primary"
