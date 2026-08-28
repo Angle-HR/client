@@ -78,7 +78,11 @@ const GroupInputField = forwardRef<HTMLInputElement, GroupInputFieldProps>(funct
       <input
         ref={ref}
         disabled={disabled}
-        className="flex-1 bg-transparent text-body-s text-text-input-filled placeholder:text-text-input-placeholder outline-none min-w-0 disabled:text-text-input-disabled"
+        // text-[1rem] (16px) below md: iOS Safari zooms the viewport on
+        // focus for any text input under 16px — text-body-s (13px) is the
+        // Figma-specified size and stays exactly that from md: up, where
+        // the zoom-on-focus behavior doesn't apply.
+        className="flex-1 bg-transparent text-[1rem] text-text-input-filled placeholder:text-text-input-placeholder outline-none min-w-0 disabled:text-text-input-disabled md:text-body-s"
         {...props}
       />
       {suffix === 'icon' && suffixIcon && (

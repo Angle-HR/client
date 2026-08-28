@@ -2,7 +2,7 @@ import Image from 'next/image'
 
 const paragraphs = [
   "Nobody starts a company thinking they'll manage applicants in spreadsheets. But that's where many founders and small businesses end up.",
-  'This isn\'t a "you" problem — it\'s a market problem. Most HR software is built for big companies with bigger budgets and dedicated HR teams.',
+  'This isn\'t a "you" problem — it\'s a market problem. Most HR solutions are built for big companies with bigger budgets and dedicated HR teams.',
   "Leaving startups with two choices: an expensive platform full of features they'll never use, or a patchwork of forms, spreadsheets, and free tools that don't talk to each other.",
   'Neither fits a 5-10 person team making its first hire or trying to stay compliant.',
 ]
