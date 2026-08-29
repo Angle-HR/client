@@ -148,6 +148,8 @@ input:-webkit-autofill:active {
   --shadow-md: var(--shadow-md);
   --shadow-lg: var(--shadow-lg);
   --shadow-flow-btn: var(--shadow-flow-btn);
+  --shadow-slots-xsmall: var(--shadow-slots-xsmall);
+  --shadow-slots-small: var(--shadow-slots-small);
 
   /* ══════════════════════════════════════════════════════════════════════════
      COLORS — Primitive palette (for edge cases, one-off overrides)
@@ -330,6 +332,7 @@ input:-webkit-autofill:active {
   --color-bg-notification: var(--bg-notification);
   --color-bg-logo: var(--bg-logo);
   --color-bg-danger: var(--bg-danger);
+  --color-bg-light: var(--bg-light);
 
   /* ── Background / Transparent ── */
   --color-bg-transparent-light: var(--bg-transparent-light);

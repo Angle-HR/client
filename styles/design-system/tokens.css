@@ -17,6 +17,7 @@
   --bg-notification: var(--color-red-7);
   --bg-logo: var(--color-black);
   --bg-danger: var(--color-red-12);
+  --bg-light: var(--color-white);
 
   /* ── Background / Transparent ── */
   --bg-transparent-light: var(--color-black-14);
@@ -376,6 +377,7 @@
     --bg-notification: var(--color-red-7);
     --bg-logo: var(--color-non);
     --bg-danger: var(--color-red-alpha-1);
+    --bg-light: var(--color-dark-grey-3);
 
     /* ── Background / Transparent ── */
     --bg-transparent-light: var(--color-white-13);
