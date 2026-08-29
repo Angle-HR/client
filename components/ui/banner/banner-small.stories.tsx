@@ -72,3 +72,41 @@ export const Error: Story = {
 export const Info: Story = {
   args: { state: 'info', children: 'System maintenance scheduled' },
 }
+
+export const WithUndoButton: Story = {
+  render: () => (
+    <div className="flex flex-col gap-[8px] w-[360px]">
+      <BannerSmall state="rest" withButton onUndo={() => {}}>
+        Member removed
+      </BannerSmall>
+      <BannerSmall state="success" withButton onUndo={() => {}}>
+        Member removed
+      </BannerSmall>
+      <BannerSmall state="error" withButton onUndo={() => {}}>
+        Member removed
+      </BannerSmall>
+      <BannerSmall state="info" withButton onUndo={() => {}}>
+        Member removed
+      </BannerSmall>
+    </div>
+  ),
+}
+
+export const WithUndoButtonNoOutline: Story = {
+  render: () => (
+    <div className="flex flex-col gap-[8px] w-[360px]">
+      <BannerSmall state="rest" outline={false} withButton onUndo={() => {}}>
+        Member removed
+      </BannerSmall>
+      <BannerSmall state="success" outline={false} withButton onUndo={() => {}}>
+        Member removed
+      </BannerSmall>
+      <BannerSmall state="error" outline={false} withButton onUndo={() => {}}>
+        Member removed
+      </BannerSmall>
+      <BannerSmall state="info" outline={false} withButton onUndo={() => {}}>
+        Member removed
+      </BannerSmall>
+    </div>
+  ),
+}
