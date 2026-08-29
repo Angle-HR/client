@@ -245,6 +245,7 @@ function InputSelection({
                   withIcon={false}
                   leadingVisual={opt.icon}
                   state={isSelected ? 'hover' : 'rest'}
+                  selected={isSelected}
                   onClick={() => selectOption(opt.value)}
                 />
               )
