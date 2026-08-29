@@ -44,12 +44,17 @@ function FileUploadedItem({
 }: FileUploadedItemProps) {
   const showProgress = state !== 'completed'
   const displayProgress = state === 'success' ? 100 : progress
+  // Same conflict class as Slots' position bug: Tailwind's cascade order (not
+  // class-attribute order) decides the winner when both `w-full` and a
+  // caller-supplied width utility are present, so the default must be
+  // omitted rather than relying on override-by-appending.
+  const needsOwnWidth = !/\bw-/.test(className)
 
   return (
     <div
       role="listitem"
       aria-label={fileName}
-      className={`flex w-full flex-col gap-[6px] rounded-lg-12 ${
+      className={`flex ${needsOwnWidth ? 'w-full ' : ''}flex-col gap-[6px] rounded-lg-12 ${
         wrapped && showProgress
           ? 'border-[0.5px] border-border-transparent-medium bg-bg-secondary p-[12px]'
           : ''
