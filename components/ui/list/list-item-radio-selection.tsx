@@ -17,6 +17,15 @@ interface ListItemRadioSelectionProps {
  * A two-line radio row (small label line + larger value line) purpose-built
  * for "pick one of these suggested values" flows like address confirmation —
  * not for plain one-line choices, that's RadioButton on its own.
+ *
+ * FLAGGED DUPLICATE: this matches Outline's "List Item Radio Selection" doc
+ * (Figma node 1070:52459, layer "Radio selection") almost exactly overlaps
+ * ListItemLocation (Figma node 2906:32286, layer "Location"), same radius,
+ * padding, and radio+two-line-text anatomy, just different prop names
+ * (label/value/infoIcon here vs title/address/showCheckMark there) and a
+ * different trailing icon (info vs check). Built to each doc's own spec
+ * rather than silently merging them — flagging for a design decision on
+ * whether these should consolidate into one component.
  */
 function ListItemRadioSelection({
   label,
