@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 
+import { Avatar } from '../avatar/avatar'
 import { IconButton } from '../button/icon-button'
 import { SidebarIcon } from '../icons'
 import { ListItemDefault } from '../list/list-item-default'
@@ -137,7 +138,13 @@ function CompanySelector({
                     mainText={company.name}
                     withIcon={false}
                     leadingVisual={
-                      <CompanySelectorItem name={company.name} avatarUrl={company.avatarUrl} />
+                      <Avatar
+                        size={14}
+                        type={company.avatarUrl ? 'image-border' : 'initials'}
+                        src={company.avatarUrl}
+                        text={company.name[0]}
+                        aria-hidden
+                      />
                     }
                     onClick={() => onSwitchCompany?.(company.id)}
                   />
