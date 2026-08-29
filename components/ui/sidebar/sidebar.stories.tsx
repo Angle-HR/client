@@ -1,4 +1,5 @@
 import { Button } from '../button/button'
+import { Briefcase, Cog6Tooth, Funnel } from '../icons'
 
 import { CompanySelector } from './company-selector'
 import { SidebarGroupItem, type SidebarItemData } from './group-item'
@@ -7,32 +8,12 @@ import { Sidebar } from './sidebar'
 
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
-const BriefcaseIcon = (
-  <svg viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="1.1">
-    <rect x="1" y="4" width="11" height="7" rx="1" />
-    <path d="M4.5 4V2.5a1 1 0 011-1h2a1 1 0 011 1V4" />
-  </svg>
-)
-
-const FunnelIcon = (
-  <svg viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="1.1">
-    <path d="M1.5 2h10L7.5 7v4l-2-1V7L1.5 2z" strokeLinejoin="round" />
-  </svg>
-)
-
-const CogIcon = (
-  <svg viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="1.1">
-    <circle cx="6.5" cy="6.5" r="2" />
-    <path d="M6.5 1.5v1M6.5 10.5v1M1.5 6.5h1M10.5 6.5h1" />
-  </svg>
-)
-
 const hiringItems: SidebarItemData[] = [
-  { label: 'Job Postings', icon: BriefcaseIcon, href: '#', active: true },
-  { label: 'Candidates', icon: FunnelIcon, href: '#', notificationCount: 3 },
+  { label: 'Job Postings', icon: <Briefcase />, href: '#', active: true },
+  { label: 'Candidates', icon: <Funnel />, href: '#', notificationCount: 3 },
 ]
 
-const settingsItems: SidebarItemData[] = [{ label: 'Workspace', icon: CogIcon, href: '#' }]
+const settingsItems: SidebarItemData[] = [{ label: 'Workspace', icon: <Cog6Tooth />, href: '#' }]
 
 const meta: Meta<typeof Sidebar> = {
   title: 'UI/Sidebar/Sidebar',
@@ -52,7 +33,7 @@ export const Default: Story = {
             Invite teammate
           </Button>
         }
-        footer={<SidebarItem label="Help & support" icon={CogIcon} href="#" />}
+        footer={<SidebarItem label="Help & support" icon={<Cog6Tooth />} href="#" />}
       >
         <SidebarGroupItem title="Hiring" items={hiringItems} />
         <SidebarGroupItem title="Account" items={settingsItems} />

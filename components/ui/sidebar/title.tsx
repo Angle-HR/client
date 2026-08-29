@@ -1,5 +1,7 @@
 'use client'
 
+import { ChevronDown } from '../icons'
+
 interface SidebarTitleProps {
   label: string
   hoverable?: boolean
@@ -8,20 +10,6 @@ interface SidebarTitleProps {
   /** id of the item list this title controls, for aria-controls. */
   controls?: string
   className?: string
-}
-
-function ChevronIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 10 10" fill="none" aria-hidden="true">
-      <path
-        d="M2.5 3.75L5 6.25L7.5 3.75"
-        stroke="currentColor"
-        strokeWidth="1.25"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
 }
 
 // hoverable=false renders as a real heading — Figma's export tags every
@@ -55,7 +43,7 @@ function SidebarTitle({
       className={`group flex h-[28px] w-[204px] cursor-pointer items-center gap-[4px] rounded-sm-7 px-[8px] py-[7px] text-left text-[12px] leading-[19.2px] font-medium text-text-secondary transition-colors hover:bg-bg-transparent-lighter hover:text-text-primary ${className}`}
     >
       {label}
-      <ChevronIcon
+      <ChevronDown
         className={`size-[10px] shrink-0 text-current transition-transform duration-150 ease-out ${closed ? '-rotate-90' : ''}`}
       />
     </button>

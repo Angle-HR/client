@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 
 import { IconButton } from '../button/icon-button'
+import { SidebarIcon } from '../icons'
 import { ListItemDefault } from '../list/list-item-default'
 import { Divider } from '../notification/divider'
 import { Slots } from '../slots/slots'
@@ -50,23 +51,6 @@ interface CompanySelectorProps {
   onIconButtonIcon?: ReactNode
   onIconButtonClick?: () => void
   className?: string
-}
-
-function SidebarIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 14 14" fill="none" aria-hidden="true">
-      <rect
-        x="1.5"
-        y="2"
-        width="11"
-        height="10"
-        rx="1.5"
-        stroke="currentColor"
-        strokeWidth="1.25"
-      />
-      <path d="M5.5 2v10" stroke="currentColor" strokeWidth="1.25" />
-    </svg>
-  )
 }
 
 function CompanySelector({
