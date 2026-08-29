@@ -14,3 +14,6 @@ export type { IconButtonProps, IconButtonVariant, IconButtonSize } from './icon-
 
 export { TextButton } from './text-button'
 export type { TextButtonProps, TextButtonSize } from './text-button'
+
+export { LabelButton } from './label-button'
+export type { LabelButtonProps } from './label-button'
