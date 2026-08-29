@@ -7,6 +7,7 @@ export {
   ComputerDesktop,
   ArrowRightStartOnRectangle,
   ChatBubbleOvalLeftEllipsis,
+  ChatBubbleLeftRight,
   SquaresPlus,
   Funnel,
   User,
