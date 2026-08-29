@@ -79,9 +79,18 @@ function Slots({
       ? 'border-border-transparent-medium'
       : 'border-border-light'
 
+  // Only one position utility may ever be present at once. Tailwind's
+  // cascade order (not class-attribute order) decides which wins when two
+  // conflicting utilities are both present, so naively appending a
+  // caller-supplied `absolute` after this component's own `relative` does
+  // NOT override it — both end up in the stylesheet and `relative` wins
+  // regardless of where it appears in the string. Any non-static position
+  // still gives the fade-hint children a containing block, so this is safe.
+  const needsOwnPositioning = !/\b(absolute|fixed|sticky|static)\b/.test(className)
+
   return (
     <div
-      className={`relative flex overflow-clip rounded-lg-10 border-[0.5px] ${border} ${bgClasses[background]} ${shadowClasses[shadow]} ${className}`}
+      className={`${needsOwnPositioning ? 'relative ' : ''}flex overflow-clip rounded-lg-10 border-[0.5px] ${border} ${bgClasses[background]} ${shadowClasses[shadow]} ${className}`}
     >
       <div
         ref={contentRef}

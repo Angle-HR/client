@@ -167,36 +167,39 @@ function CompanySelector({
               />
             ))}
           </ul>
+        </Slots>
+      )}
 
-          {/* Anchored to the whole panel rather than the specific triggering
-              row — Figma anchors it per-row, but that needs per-item DOM
-              measurement for a small, bounded win. */}
-          {activeSubmenu && (
-            <Slots
-              background="light"
-              padding="tight"
-              shadow="medium"
-              className="absolute top-0 left-full z-20 ml-[4px] w-[202px]"
-            >
-              <ul role="listbox" className="flex w-full flex-col gap-[2px]">
-                {activeSubmenu.map((sub) => (
-                  <ListItemDefault
-                    key={sub.key}
-                    mainText={sub.label}
-                    icon={sub.icon}
-                    withIcon={!!sub.icon}
-                    state={sub.selected ? 'hover' : 'rest'}
-                    selected={sub.selected}
-                    onClick={() => {
-                      sub.onClick?.()
-                      setOpen(false)
-                    }}
-                    className="w-full!"
-                  />
-                ))}
-              </ul>
-            </Slots>
-          )}
+      {/* A sibling of the main panel, not nested inside it — Slots clips its
+          own content to its rounded corners (needed for the scroll-fade
+          mechanism), which would invisibly clip a flyout rendered as its
+          child. Anchored to the whole panel's top rather than the specific
+          triggering row — Figma anchors it per-row, but that needs per-item
+          DOM measurement for a small, bounded win. */}
+      {open && activeSubmenu && (
+        <Slots
+          background="light"
+          padding="tight"
+          shadow="medium"
+          className="absolute top-[32px] left-[250px] z-20 w-[202px]"
+        >
+          <ul role="listbox" className="flex w-full flex-col gap-[2px]">
+            {activeSubmenu.map((sub) => (
+              <ListItemDefault
+                key={sub.key}
+                mainText={sub.label}
+                icon={sub.icon}
+                withIcon={!!sub.icon}
+                state={sub.selected ? 'hover' : 'rest'}
+                selected={sub.selected}
+                onClick={() => {
+                  sub.onClick?.()
+                  setOpen(false)
+                }}
+                className="w-full!"
+              />
+            ))}
+          </ul>
         </Slots>
       )}
     </div>
