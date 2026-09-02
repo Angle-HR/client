@@ -31,6 +31,9 @@ const individualSchema = z.object({
 
 const businessSchema = z.object({
   businessName: z.string().trim().min(1, 'Please enter your legal business name.'),
+  // Decides which business identification number the next step asks for, so it
+  // has to be captured here.
+  countryId: z.string().min(1, 'Select a country of residence'),
   legalFullName: z.string().trim().min(1, 'Please enter your legal full name.'),
   roleId: z.string().min(1, 'Please select your role.'),
 })
@@ -187,6 +190,7 @@ function BusinessProfileForm({
   onDisplayNameChange?: (name: string) => void
 }) {
   const { data: roles, isLoading, isError } = useCompanyRoles()
+  const countries = useCountries()
   const {
     register,
     control,
@@ -194,7 +198,7 @@ function BusinessProfileForm({
     formState: { errors, isSubmitting },
   } = useForm<BusinessValues>({
     resolver: zodResolver(businessSchema),
-    defaultValues: { businessName: '', legalFullName: '', roleId: '' },
+    defaultValues: { businessName: '', countryId: '', legalFullName: '', roleId: '' },
   })
 
   const businessName = useWatch({ control, name: 'businessName' })
@@ -205,6 +209,12 @@ function BusinessProfileForm({
   const roleOptions: SelectOption[] = (roles ?? []).map((role) => ({
     value: role.id,
     label: role.name,
+  }))
+
+  const businessCountryOptions: SelectOption[] = (countries.data ?? []).map((country) => ({
+    value: country.id,
+    label: country.name,
+    icon: <CountryFlag code={flagCodeFor(country)} name={country.name} width={24} height={16} />,
   }))
 
   const pending = submitting || isSubmitting
@@ -218,6 +228,24 @@ function BusinessProfileForm({
           autoComplete="organization"
           errorText={errors.businessName?.message}
           {...register('businessName')}
+        />
+        <Controller
+          control={control}
+          name="countryId"
+          render={({ field }) => (
+            <InputSelection
+              label="Business Country of Residence"
+              placeholder="Search for an option..."
+              size="md"
+              options={businessCountryOptions}
+              value={field.value}
+              onChange={field.onChange}
+              errorText={
+                errors.countryId?.message ??
+                (countries.isError ? 'Failed to load countries. Please try again.' : undefined)
+              }
+            />
+          )}
         />
         <TextInput
           label="Legal Full Name"

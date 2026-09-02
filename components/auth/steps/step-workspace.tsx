@@ -354,11 +354,7 @@ function StepWorkspace({
 
       {mode === 'suggestions' ? (
         <div className="flex flex-col gap-24">
-          <div
-            role="radiogroup"
-            aria-label="Address suggestion"
-            className="flex flex-col gap-4"
-          >
+          <div role="radiogroup" aria-label="Address suggestion" className="flex flex-col gap-4">
             <p className="pl-3 text-body-xs font-medium-550 text-text-secondary">
               Address suggestion
             </p>

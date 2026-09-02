@@ -42,6 +42,11 @@ interface StepIdentificationAddressProps {
   formError?: string
   onSearchAddress: (query: string) => Promise<ProductAddressSuggestion[]>
   /**
+   * Turn a picked suggestion into a full address. Suggestions carry only an id
+   * and display text, so the structured parts need a second lookup.
+   */
+  onResolveSuggestion: (suggestion: ProductAddressSuggestion) => Promise<AddressParts | null>
+  /**
    * Verify an address. Resolves to the verified address when it differs from
    * what was entered (so it can be offered back), `null` when it matched, or
    * throws nothing — a verifier that cannot judge resolves to 'not_verifiable'.
@@ -72,6 +77,7 @@ function StepIdentificationAddress({
   submitting = false,
   formError,
   onSearchAddress,
+  onResolveSuggestion,
   onVerifyAddress,
   onContinue,
   onBack,
@@ -101,14 +107,30 @@ function StepIdentificationAddress({
   function validateIdentification(): boolean {
     const next: Record<string, string> = {}
     for (const field of fields) {
-      const raw = identification[field.key] ?? ''
-      const value = raw.replace(/\s/g, '')
+      const trimmed = (identification[field.key] ?? '').trim()
+      const stripped = trimmed.replace(/\s/g, '')
 
-      if (field.required && !value) {
+      if (field.required && !stripped) {
         next[field.key] = `Enter a valid ${field.label}`
         continue
       }
-      if (value && field.pattern && !new RegExp(field.pattern).test(value)) {
+      if (!stripped || !field.pattern) continue
+
+      // Tested both as typed and with spaces removed, because a country's
+      // pattern may or may not include them — Nigeria's RC number is written
+      // "RC 1234567" but is just as valid without the space. Checking only the
+      // stripped form would reject every value for a pattern that expects one.
+      let matches: boolean
+      try {
+        const expression = new RegExp(field.pattern)
+        matches = expression.test(stripped) || expression.test(trimmed)
+      } catch {
+        // A pattern we cannot compile is the API's problem, not the user's —
+        // let the value through and let the server reject it.
+        matches = true
+      }
+
+      if (!matches) {
         next[field.key] = field.format_hint
           ? `Enter a valid ${field.label} — ${field.format_hint}`
           : `Enter a valid ${field.label}`
@@ -289,14 +311,14 @@ function StepIdentificationAddress({
                 onSearch={onSearchAddress}
                 onSelect={(suggestion) => {
                   setQuery(suggestion.description || suggestion.formatted_address || '')
+                  // Optimistic: the display text stands in until the structured
+                  // address arrives, so the field never looks empty.
                   setPicked({
                     place_id: suggestion.place_id,
-                    line_1: suggestion.line_1,
-                    line_2: suggestion.line_2,
-                    city: suggestion.city,
-                    state_or_county: suggestion.state_or_county,
-                    post_code: suggestion.post_code,
-                    formatted_address: suggestion.formatted_address || suggestion.description,
+                    formatted_address: suggestion.description,
+                  })
+                  void onResolveSuggestion(suggestion).then((resolved) => {
+                    if (resolved) setPicked(resolved)
                   })
                 }}
               />

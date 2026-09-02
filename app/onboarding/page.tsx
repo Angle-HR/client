@@ -62,6 +62,7 @@ function OnboardingAccountPage() {
       const result = await upsertProfile.mutateAsync({
         account_type: 'business',
         legal_business_name: values.businessName,
+        country_id: values.countryId,
         legal_full_name: values.legalFullName,
         company_role_id: values.roleId,
       })
