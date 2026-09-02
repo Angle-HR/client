@@ -89,7 +89,10 @@ const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         ref={ref}
         disabled={disabled}
         readOnly={readOnly}
-        className="flex-1 bg-transparent text-body-m text-text-input-filled placeholder:text-text-input-placeholder outline-none min-w-0 disabled:text-text-input-disabled"
+        // text-[1rem] (16px) below md: iOS Safari zooms the viewport on
+        // focus for any text input under 16px. From md: up the Figma size
+        // applies — text-body-m, which the auth and onboarding inputs use.
+        className="flex-1 bg-transparent text-[1rem] text-text-input-filled placeholder:text-text-input-placeholder outline-none min-w-0 disabled:text-text-input-disabled md:text-body-m"
         {...props}
       />
       {suffix === 'icon' && suffixIcon && (

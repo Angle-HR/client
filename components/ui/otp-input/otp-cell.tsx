@@ -36,7 +36,11 @@ const OTPCell = forwardRef<HTMLInputElement, OTPCellProps>(function OTPCell(
   const resolvedState: OTPCellState = disabled ? 'disabled' : state
 
   const classes = [
-    'h-[42px] w-[38px] px-[12px] border rounded-sm-8 text-center text-body-l text-text-input-filled',
+    // text-[1rem] (16px) below md: iOS Safari zooms the viewport on focus
+    // for any text input under 16px — text-body-l (14px) is the
+    // Figma-specified size and stays exactly that from md: up, where the
+    // zoom-on-focus behavior doesn't apply.
+    'h-[42px] w-[38px] px-[12px] border rounded-sm-8 text-center text-[1rem] md:text-body-l text-text-input-filled',
     'outline-none transition-colors',
     stateClasses[resolvedState],
     className,
