@@ -12,16 +12,19 @@
   /* ── Background / Surface ── */
   --bg-primary: var(--color-light-grey-2);
   --bg-secondary: var(--color-white);
+  --bg-non: var(--color-white);
   --bg-tertiary: var(--color-light-grey-2);
   --bg-notification: var(--color-red-7);
   --bg-logo: var(--color-black);
   --bg-danger: var(--color-red-12);
+  --bg-light: var(--color-white);
 
   /* ── Background / Transparent ── */
   --bg-transparent-light: var(--color-black-14);
   --bg-transparent-lighter: var(--color-black-15);
   --bg-transparent-medium: var(--color-black-12);
   --bg-transparent-strong: var(--color-black-9);
+  --bg-transparent-blue-accent-lighter: var(--color-blue-alpha-5);
   --bg-transparent-blue-accent-light: var(--color-blue-alpha-5);
   --bg-transparent-blue-accent-medium: var(--color-blue-alpha-4);
 
@@ -87,6 +90,11 @@
   --bg-flow-btn-sec-pressed: var(--color-black-12);
   --bg-flow-btn-sec-disabled: var(--color-non);
   --bg-flow-btn-sec-focus: var(--color-light-grey-2);
+  --bg-flow-btn-tet-rest: var(--color-non);
+  --bg-flow-btn-tet-hover: var(--color-black-14);
+  --bg-flow-btn-tet-pressed: var(--color-black-12);
+  --bg-flow-btn-tet-disabled: var(--color-non);
+  --bg-flow-btn-tet-focus: var(--color-light-grey-2);
 
   /* ── Background / Input ── */
   --bg-input-filled: var(--color-light-grey-1);
@@ -128,12 +136,42 @@
   /* ── Background / Gradient ── */
   --bg-gradient-transparent-light: var(--color-black-13);
   --bg-gradient-transparent-lighter: var(--color-black-15);
+  --bg-gradient-inverted-transparent-lighter: var(--color-white-16);
+  --bg-gradient-inverted-transparent-strong: var(--color-white);
 
   /* ── Background / Selection Controls ── */
   --bg-selection-controls-empty: var(--color-non);
   --bg-selection-controls-hover-rest: var(--color-light-grey-3);
   --bg-selection-controls-hover-selected: var(--color-blue-13);
   --bg-selection-controls-selected: var(--color-blue-8);
+
+  /* ── Background / Banner ── */
+  --bg-banner-success: var(--color-green-7);
+  --bg-banner-warning: var(--color-yellow-8);
+  --bg-banner-error: var(--color-red-11);
+  --bg-banner-info: var(--color-blue-12);
+  --bg-banner-info-outline: var(--color-blue-14);
+  --bg-banner-neutral: var(--color-light-grey-2);
+
+  /* ── Background / Progress Bar ── */
+  --bg-progress-bar-info: var(--color-blue-8);
+  --bg-progress-bar-success: var(--color-green-5);
+  --bg-progress-bar-error: var(--color-red-7);
+  --bg-progress-bar-neutral: var(--color-light-grey-2);
+
+  /* ── Background / Table Status ── */
+  --bg-table-icon-open: var(--color-teal-4);
+  --bg-table-icon-paused: var(--color-yellow-4);
+  --bg-table-icon-closed: var(--color-green-4);
+  --bg-table-icon-draft: var(--color-aqua-4);
+  --bg-table-icon-archived: var(--color-dark-grey-7);
+  --bg-table-icon-expired: var(--color-dark-grey-7);
+  --bg-table-open: var(--color-teal-alpha-1);
+  --bg-table-paused: var(--color-yellow-alpha-1);
+  --bg-table-closed: var(--color-green-alpha-2);
+  --bg-table-draft: var(--color-aqua-alpha-1);
+  --bg-table-archived: var(--color-black-15);
+  --bg-table-expired: var(--color-black-15);
 
   /* ── Text / Generic ── */
   --text-primary: var(--color-dark-grey-4);
@@ -142,6 +180,7 @@
   --text-light: var(--color-light-grey-7);
   --text-error: var(--color-red-7);
   --text-blue-accent: var(--color-blue-7);
+  --text-success: var(--color-green-5);
   --text-inverted: var(--color-white);
   --text-non: var(--color-white);
   --text-logo: var(--color-white);
@@ -167,6 +206,7 @@
   --text-flow-btn-secondary: var(--color-dark-grey-4);
   --text-flow-btn-tertiary: var(--color-dark-grey-9);
   --text-flow-btn-sec-disabled: var(--color-light-grey-4);
+  --text-flow-btn-tet-disabled: var(--color-light-grey-4);
 
   /* ── Text / Avatar ── */
   --text-avatar-green: var(--color-green-1);
@@ -209,8 +249,19 @@
   --text-tags-teal: var(--color-teal-4);
   --text-tags-empty: var(--color-dark-grey-7);
 
+  /* ── Text / Banner ── */
+  --text-banner-success: var(--color-green-3);
+  --text-banner-error: var(--color-red-5);
+  --text-banner-info: var(--color-blue-8);
+  --text-banner-neutral: var(--color-dark-grey-7);
+  --text-banner-success-bd: var(--color-green-1);
+  --text-banner-error-bd: var(--color-red-1);
+  --text-banner-info-bd: var(--color-blue-6);
+  --text-banner-neutral-bd: var(--color-dark-grey-7);
+
   /* ── Border / Surface ── */
   --border-light: var(--color-light-grey-3);
+  --border-non: var(--color-white-16);
 
   /* ── Border / Transparent ── */
   --border-transparent-light: var(--color-black-14);
@@ -297,12 +348,19 @@
   --border-input-hover: var(--color-black-11);
   --border-input-focus: var(--color-blue-8);
   --border-input-error: var(--color-red-10);
+  --border-input-success: var(--color-green-6);
   --border-input-disabled: var(--color-light-grey-3);
   --border-input-placeholder: var(--color-light-grey-3);
   --border-input-hover-group-items: var(--color-black-14);
 
   /* ── Border / Tags ── */
   --border-tags-empty: var(--color-light-grey-5);
+
+  /* ── Border / Banner ── */
+  --border-banner-success: var(--color-green-6);
+  --border-banner-error: var(--color-red-9);
+  --border-banner-info: var(--color-blue-alpha-2);
+  --border-banner-neutral: var(--color-light-grey-4);
 
   /* ── Other ── */
   --top-nav: var(--color-dark-grey-1);
@@ -314,16 +372,19 @@
     /* ── Background / Surface ── */
     --bg-primary: var(--color-dark-grey-2);
     --bg-secondary: var(--color-dark-grey-1);
+    --bg-non: var(--color-dark-grey-1);
     --bg-tertiary: var(--color-dark-grey-1);
     --bg-notification: var(--color-red-7);
     --bg-logo: var(--color-non);
     --bg-danger: var(--color-red-alpha-1);
+    --bg-light: var(--color-dark-grey-3);
 
     /* ── Background / Transparent ── */
     --bg-transparent-light: var(--color-white-13);
     --bg-transparent-lighter: var(--color-white-15);
     --bg-transparent-medium: var(--color-white-11);
     --bg-transparent-strong: var(--color-white-9);
+    --bg-transparent-blue-accent-lighter: var(--color-blue-alpha-5);
     --bg-transparent-blue-accent-light: var(--color-blue-alpha-4);
     --bg-transparent-blue-accent-medium: var(--color-blue-alpha-3);
 
@@ -389,6 +450,11 @@
     --bg-flow-btn-sec-pressed: var(--color-white-12);
     --bg-flow-btn-sec-disabled: var(--color-non);
     --bg-flow-btn-sec-focus: var(--color-dark-grey-2);
+    --bg-flow-btn-tet-rest: var(--color-non);
+    --bg-flow-btn-tet-hover: var(--color-white-13);
+    --bg-flow-btn-tet-pressed: var(--color-white-12);
+    --bg-flow-btn-tet-disabled: var(--color-non);
+    --bg-flow-btn-tet-focus: var(--color-dark-grey-2);
 
     /* ── Background / Input ── */
     --bg-input-filled: var(--color-dark-grey-2);
@@ -430,12 +496,42 @@
     /* ── Background / Gradient ── */
     --bg-gradient-transparent-light: var(--color-white-12);
     --bg-gradient-transparent-lighter: var(--color-white-15);
+    --bg-gradient-inverted-transparent-lighter: var(--color-black-15);
+    --bg-gradient-inverted-transparent-strong: var(--color-black-4);
 
     /* ── Background / Selection Controls ── */
     --bg-selection-controls-empty: var(--color-non);
     --bg-selection-controls-hover-rest: var(--color-dark-grey-3);
     --bg-selection-controls-hover-selected: var(--color-blue-3);
     --bg-selection-controls-selected: var(--color-blue-8);
+
+    /* ── Background / Banner ── */
+    --bg-banner-success: var(--color-green-alpha-1);
+    --bg-banner-warning: var(--color-yellow-2);
+    --bg-banner-error: var(--color-red-alpha-1);
+    --bg-banner-info: var(--color-blue-alpha-3);
+    --bg-banner-info-outline: var(--color-blue-alpha-3);
+    --bg-banner-neutral: var(--color-white-12);
+
+    /* ── Background / Progress Bar ── */
+    --bg-progress-bar-info: var(--color-blue-7);
+    --bg-progress-bar-success: var(--color-green-4);
+    --bg-progress-bar-error: var(--color-red-6);
+    --bg-progress-bar-neutral: var(--color-white-12);
+
+    /* ── Background / Table Status ── */
+    --bg-table-icon-open: var(--color-teal-4);
+    --bg-table-icon-paused: var(--color-yellow-4);
+    --bg-table-icon-closed: var(--color-green-4);
+    --bg-table-icon-draft: var(--color-aqua-4);
+    --bg-table-icon-archived: var(--color-dark-grey-7);
+    --bg-table-icon-expired: var(--color-dark-grey-7);
+    --bg-table-open: var(--color-teal-alpha-2);
+    --bg-table-paused: var(--color-yellow-alpha-2);
+    --bg-table-closed: var(--color-green-alpha-3);
+    --bg-table-draft: var(--color-aqua-alpha-1);
+    --bg-table-archived: var(--color-white-15);
+    --bg-table-expired: var(--color-white-15);
 
     /* ── Text / Generic ── */
     --text-primary: var(--color-light-grey-4);
@@ -444,6 +540,7 @@
     --text-light: var(--color-dark-grey-7);
     --text-error: var(--color-red-7);
     --text-blue-accent: var(--color-blue-8);
+    --text-success: var(--color-green-5);
     --text-inverted: var(--color-white);
     --text-non: var(--color-white);
     --text-logo: var(--color-white);
@@ -469,6 +566,7 @@
     --text-flow-btn-secondary: var(--color-light-grey-4);
     --text-flow-btn-tertiary: var(--color-dark-grey-8);
     --text-flow-btn-sec-disabled: var(--color-dark-grey-3);
+    --text-flow-btn-tet-disabled: var(--color-dark-grey-3);
 
     /* ── Text / Avatar ── */
     --text-avatar-green: var(--color-green-8);
@@ -511,8 +609,19 @@
     --text-tags-teal: var(--color-teal-5);
     --text-tags-empty: var(--color-light-grey-7);
 
+    /* ── Text / Banner ── */
+    --text-banner-success: var(--color-white);
+    --text-banner-error: var(--color-white);
+    --text-banner-info: var(--color-blue-13);
+    --text-banner-neutral: var(--color-light-grey-6);
+    --text-banner-success-bd: var(--color-white);
+    --text-banner-error-bd: var(--color-white);
+    --text-banner-info-bd: var(--color-white);
+    --text-banner-neutral-bd: var(--color-light-grey-6);
+
     /* ── Border / Surface ── */
     --border-light: var(--color-dark-grey-3);
+    --border-non: var(--color-white-16);
 
     /* ── Border / Transparent ── */
     --border-transparent-light: var(--color-white-13);
@@ -599,12 +708,19 @@
     --border-input-hover: var(--color-white-11);
     --border-input-focus: var(--color-blue-8);
     --border-input-error: var(--color-red-3);
+    --border-input-success: var(--color-green-4);
     --border-input-disabled: var(--color-dark-grey-3);
     --border-input-placeholder: var(--color-dark-grey-3);
     --border-input-hover-group-items: var(--color-white-11);
 
     /* ── Border / Tags ── */
     --border-tags-empty: var(--color-dark-grey-5);
+
+    /* ── Border / Banner ── */
+    --border-banner-success: var(--color-green-4);
+    --border-banner-error: var(--color-red-4);
+    --border-banner-info: var(--color-blue-6);
+    --border-banner-neutral: var(--color-dark-grey-4);
 
     /* ── Other ── */
     --top-nav: var(--color-light-grey-1);

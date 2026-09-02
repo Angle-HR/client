@@ -13,4 +13,14 @@
 
   /* ── Flow Button Shadow ── */
   --shadow-flow-btn: 0 1px 1px #0000000f, 0 0 1px #00000026;
+
+  /* ── Slots Shadow ──
+     Figma names these "x-small"/"small" as a general shadow scale, but
+     "small" only appears on one Slots variant in the file (Padding=4px
+     horizontal, Light background) — scoped here rather than promoted to
+     the general elevation scale until design extends it. Note: --shadow-sm
+     above uses a 6px second-layer blur; Figma's "small" effect uses 4px —
+     flagging the discrepancy rather than touching --shadow-sm. */
+  --shadow-slots-xsmall: 0 0.5px 1px #00000014;
+  --shadow-slots-small: 0 2px 4px #00000014, 0 0 4px #00000005;
 }

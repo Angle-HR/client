@@ -5,6 +5,7 @@ import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } f
 import { HelperText, type HelperTextState } from '../input/helper-text'
 import { ListItemDefault } from '../list/list-item-default'
 import { ListItemMultiSelect } from '../list/list-item-multi-select'
+import { Slots } from '../slots/slots'
 import { Tag } from '../tags/tag'
 
 import { SelectionField } from './selection-field'
@@ -75,6 +76,10 @@ function InputSelection({
   const wrapperRef = useRef<HTMLDivElement>(null)
   const [open, setOpen] = useState(false)
   const [dropUp, setDropUp] = useState(false)
+  // Mounted stays true slightly past `open=false` so the exit transition can
+  // play — a plain `{open && ...}` unmounts before a CSS transition starts.
+  const [mounted, setMounted] = useState(false)
+  const [visible, setVisible] = useState(false)
   const [internalValue, setInternalValue] = useState<string | string[]>(
     defaultValue ?? (multiple ? [] : ''),
   )
@@ -97,6 +102,23 @@ function InputSelection({
     const spaceAbove = rect.top
     const listboxSpace = 244 // max-h-[240px] + the 4px gap to the trigger
     setDropUp(spaceBelow < listboxSpace && spaceAbove > spaceBelow)
+  }, [open])
+
+  // Adjust state during render rather than in an effect — mounting on open
+  // and clearing `visible` on close both need to happen before paint, not
+  // after an effect runs.
+  if (open && !mounted) setMounted(true)
+  if (!open && visible) setVisible(false)
+
+  useEffect(() => {
+    if (open) {
+      // One frame so the enter transition starts from the closed state
+      // rather than snapping straight to open (no-op on first paint).
+      const raf = requestAnimationFrame(() => setVisible(true))
+      return () => cancelAnimationFrame(raf)
+    }
+    const timeout = setTimeout(() => setMounted(false), 150)
+    return () => clearTimeout(timeout)
   }, [open])
 
   useEffect(() => {
@@ -192,36 +214,44 @@ function InputSelection({
         aria-describedby={showHelper || hasError ? helperId : undefined}
       />
 
-      {open && (
-        <ul
-          id={listboxId}
-          role="listbox"
-          aria-multiselectable={multiple || undefined}
-          className={`absolute z-10 left-0 right-0 max-h-[240px] overflow-y-auto flex flex-col gap-[2px] p-[4px] rounded-sm-8 border border-border-light bg-bg-secondary shadow-md ${dropUp ? 'bottom-full mb-[4px]' : 'top-full mt-[4px]'}`}
+      {mounted && (
+        <Slots
+          padding="tight"
+          shadow="medium"
+          scrollable
+          className={`absolute z-10 left-0 right-0 max-h-[240px] transition-[opacity,transform] duration-150 ease-out motion-reduce:scale-100 motion-reduce:duration-100 ${dropUp ? 'bottom-full mb-[4px] origin-bottom' : 'top-full mt-[4px] origin-top'} ${visible ? 'opacity-100 scale-100' : 'opacity-0 scale-[0.96]'}`}
         >
-          {options.map((opt) => {
-            const isSelected = selectedArray.includes(opt.value)
-            return multiple ? (
-              <ListItemMultiSelect
-                key={opt.value}
-                mainText={opt.label}
-                selected={isSelected}
-                withCheckbox
-                onChange={() => selectOption(opt.value)}
-              />
-            ) : (
-              <ListItemDefault
-                className="w-full!"
-                key={opt.value}
-                mainText={opt.label}
-                withIcon={false}
-                leadingVisual={opt.icon}
-                state={isSelected ? 'hover' : 'rest'}
-                onClick={() => selectOption(opt.value)}
-              />
-            )
-          })}
-        </ul>
+          <ul
+            id={listboxId}
+            role="listbox"
+            aria-multiselectable={multiple || undefined}
+            className="flex w-full flex-col gap-[2px]"
+          >
+            {options.map((opt) => {
+              const isSelected = selectedArray.includes(opt.value)
+              return multiple ? (
+                <ListItemMultiSelect
+                  key={opt.value}
+                  mainText={opt.label}
+                  selected={isSelected}
+                  withCheckbox
+                  onChange={() => selectOption(opt.value)}
+                />
+              ) : (
+                <ListItemDefault
+                  className="w-full!"
+                  key={opt.value}
+                  mainText={opt.label}
+                  withIcon={false}
+                  leadingVisual={opt.icon}
+                  state={isSelected ? 'hover' : 'rest'}
+                  selected={isSelected}
+                  onClick={() => selectOption(opt.value)}
+                />
+              )
+            })}
+          </ul>
+        </Slots>
       )}
 
       {name &&

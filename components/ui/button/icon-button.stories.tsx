@@ -54,11 +54,11 @@ export const Sizes: Story = {
 }
 
 export const WithCounter: Story = {
-  args: { counter: 5 },
+  args: { showCounter: true, counter: 5 },
 }
 
 export const CounterOverflow: Story = {
-  args: { counter: 150 },
+  args: { showCounter: true, counter: 150 },
 }
 
 export const Disabled: Story = {

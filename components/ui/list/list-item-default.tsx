@@ -19,6 +19,9 @@ interface ListItemDefaultProps {
   danger?: boolean
   state?: ListItemDefaultState
   disabled?: boolean
+  /** Reflected as aria-selected — set alongside state="hover" when this row
+   * represents the current value in a listbox. */
+  selected?: boolean
   onClick?: MouseEventHandler<HTMLLIElement>
   className?: string
 }
@@ -35,6 +38,7 @@ const ListItemDefault = forwardRef<HTMLLIElement, ListItemDefaultProps>(function
     danger = false,
     state,
     disabled = false,
+    selected = false,
     onClick,
     className = '',
   },
@@ -63,7 +67,7 @@ const ListItemDefault = forwardRef<HTMLLIElement, ListItemDefaultProps>(function
     <li
       ref={ref}
       role="option"
-      aria-selected={false}
+      aria-selected={selected}
       aria-disabled={disabled}
       onClick={disabled ? undefined : onClick}
       className={classes}
