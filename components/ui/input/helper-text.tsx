@@ -39,10 +39,10 @@ function HelperText({ state = 'neutral', helper, children, className = '', id }:
   return (
     <span
       id={id}
-      className={`inline-flex items-center gap-[2px] h-[9px] text-body-xs ${stateClasses[state]} ${className}`}
+      className={`inline-flex items-center gap-[2px] pl-[3px] text-body-xs leading-19_2 ${stateClasses[state]} ${className}`}
     >
       {state === 'success' && <SuccessIcon />}
-      <span className="leading-none">{helper ?? children}</span>
+      <span>{helper ?? children}</span>
     </span>
   )
 }

@@ -11,7 +11,7 @@ interface OTPCellProps extends Omit<
   value?: string
   onChange?: (value: string) => void
   state?: OTPCellState
-  position: 1 | 2 | 3 | 4
+  position: number
   disabled?: boolean
 }
 

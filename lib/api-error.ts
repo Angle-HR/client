@@ -16,6 +16,10 @@ function getApiError(error: unknown): ApiErrorBody['error'] | undefined {
   return undefined
 }
 
+function getApiErrorDetails(error: unknown): Record<string, unknown> | undefined {
+  return getApiError(error)?.details
+}
+
 /**
  * Maps an API error onto a form field via react-hook-form's `setError` when the
  * error `code` is known for this form; otherwise returns a message to show as a
@@ -40,5 +44,5 @@ function applyApiError<T extends FieldValues>(
   return apiError.message || fallbackMessage
 }
 
-export { applyApiError, getApiError }
+export { applyApiError, getApiError, getApiErrorDetails }
 export type { FieldErrorMap }

@@ -34,7 +34,7 @@ const sizeConfig: Record<
   md: {
     height: 'h-[32px]',
     padding: 'px-[8px]',
-    radius: 'rounded-sm-7',
+    radius: 'rounded-sm-8',
     icon: 'h-[14px] w-[14px]',
   },
   lg: {
@@ -108,7 +108,7 @@ const SelectionField = forwardRef<HTMLButtonElement, SelectionFieldProps>(functi
           {tags?.length ? (
             tags
           ) : (
-            <span className="text-body-s text-text-input-placeholder truncate">{placeholder}</span>
+            <span className="text-body-m text-text-input-placeholder truncate">{placeholder}</span>
           )}
         </span>
       ) : (
@@ -117,7 +117,7 @@ const SelectionField = forwardRef<HTMLButtonElement, SelectionFieldProps>(functi
             <span className="inline-flex shrink-0 items-center">{leadingVisual}</span>
           )}
           <span
-            className={`flex-1 truncate text-body-s ${hasValue ? 'text-text-input-filled' : 'text-text-input-placeholder'}`}
+            className={`flex-1 truncate text-body-m ${hasValue ? 'text-text-input-filled' : 'text-text-input-placeholder'}`}
           >
             {value || placeholder}
           </span>

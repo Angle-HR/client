@@ -11,6 +11,7 @@ services:
         # build arg, not just a runtime `environment:` var (see Dockerfile).
         - NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
         - NEXT_PUBLIC_GA_ID=${NEXT_PUBLIC_GA_ID}
+        - NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
     restart: unless-stopped
     environment:
       - NODE_ENV=production

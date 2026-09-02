@@ -50,6 +50,9 @@ next-env.d.ts
 /.claude/skills/
 /skills-lock.json
 
+# local API stubs used to exercise flows against fake responses — never shipped
+/app/stub-api/
+
 # tooling / e2e
 .eslintcache
 playwright-report/

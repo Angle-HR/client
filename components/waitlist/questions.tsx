@@ -14,13 +14,7 @@ import {
 } from './brand-icons'
 
 import type { StepQuestionnaireProps } from './steps/step-questionnaire'
-import type {
-  HiringFrustration,
-  HiringTool,
-  Industry,
-  Role,
-  TeamSize,
-} from '@/lib/types'
+import type { HiringFrustration, HiringTool, Industry, Role, TeamSize } from '@/lib/types'
 
 // Survey question definitions. Shaped like the props StepQuestionnaire takes, so
 // they can later be fetched from the backend and passed straight through.
