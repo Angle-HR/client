@@ -148,6 +148,8 @@ input:-webkit-autofill:active {
   --shadow-md: var(--shadow-md);
   --shadow-lg: var(--shadow-lg);
   --shadow-flow-btn: var(--shadow-flow-btn);
+  --shadow-slots-xsmall: var(--shadow-slots-xsmall);
+  --shadow-slots-small: var(--shadow-slots-small);
 
   /* ══════════════════════════════════════════════════════════════════════════
      COLORS — Primitive palette (for edge cases, one-off overrides)
@@ -325,16 +327,19 @@ input:-webkit-autofill:active {
   /* ── Background / Surface ── */
   --color-bg-primary: var(--bg-primary);
   --color-bg-secondary: var(--bg-secondary);
+  --color-bg-non: var(--bg-non);
   --color-bg-tertiary: var(--bg-tertiary);
   --color-bg-notification: var(--bg-notification);
   --color-bg-logo: var(--bg-logo);
   --color-bg-danger: var(--bg-danger);
+  --color-bg-light: var(--bg-light);
 
   /* ── Background / Transparent ── */
   --color-bg-transparent-light: var(--bg-transparent-light);
   --color-bg-transparent-lighter: var(--bg-transparent-lighter);
   --color-bg-transparent-medium: var(--bg-transparent-medium);
   --color-bg-transparent-strong: var(--bg-transparent-strong);
+  --color-bg-transparent-blue-accent-lighter: var(--bg-transparent-blue-accent-lighter);
   --color-bg-transparent-blue-accent-light: var(--bg-transparent-blue-accent-light);
   --color-bg-transparent-blue-accent-medium: var(--bg-transparent-blue-accent-medium);
 
@@ -400,6 +405,11 @@ input:-webkit-autofill:active {
   --color-bg-flow-btn-sec-pressed: var(--bg-flow-btn-sec-pressed);
   --color-bg-flow-btn-sec-disabled: var(--bg-flow-btn-sec-disabled);
   --color-bg-flow-btn-sec-focus: var(--bg-flow-btn-sec-focus);
+  --color-bg-flow-btn-tet-rest: var(--bg-flow-btn-tet-rest);
+  --color-bg-flow-btn-tet-hover: var(--bg-flow-btn-tet-hover);
+  --color-bg-flow-btn-tet-pressed: var(--bg-flow-btn-tet-pressed);
+  --color-bg-flow-btn-tet-disabled: var(--bg-flow-btn-tet-disabled);
+  --color-bg-flow-btn-tet-focus: var(--bg-flow-btn-tet-focus);
 
   /* ── Background / Input ── */
   --color-bg-input-filled: var(--bg-input-filled);
@@ -441,12 +451,42 @@ input:-webkit-autofill:active {
   /* ── Background / Gradient ── */
   --color-bg-gradient-transparent-light: var(--bg-gradient-transparent-light);
   --color-bg-gradient-transparent-lighter: var(--bg-gradient-transparent-lighter);
+  --color-bg-gradient-inverted-transparent-lighter: var(--bg-gradient-inverted-transparent-lighter);
+  --color-bg-gradient-inverted-transparent-strong: var(--bg-gradient-inverted-transparent-strong);
 
   /* ── Background / Selection Controls ── */
   --color-bg-selection-controls-empty: var(--bg-selection-controls-empty);
   --color-bg-selection-controls-hover-rest: var(--bg-selection-controls-hover-rest);
   --color-bg-selection-controls-hover-selected: var(--bg-selection-controls-hover-selected);
   --color-bg-selection-controls-selected: var(--bg-selection-controls-selected);
+
+  /* ── Background / Banner ── */
+  --color-bg-banner-success: var(--bg-banner-success);
+  --color-bg-banner-warning: var(--bg-banner-warning);
+  --color-bg-banner-error: var(--bg-banner-error);
+  --color-bg-banner-info: var(--bg-banner-info);
+  --color-bg-banner-info-outline: var(--bg-banner-info-outline);
+  --color-bg-banner-neutral: var(--bg-banner-neutral);
+
+  /* ── Background / Progress Bar ── */
+  --color-bg-progress-bar-info: var(--bg-progress-bar-info);
+  --color-bg-progress-bar-success: var(--bg-progress-bar-success);
+  --color-bg-progress-bar-error: var(--bg-progress-bar-error);
+  --color-bg-progress-bar-neutral: var(--bg-progress-bar-neutral);
+
+  /* ── Background / Table Status ── */
+  --color-bg-table-icon-open: var(--bg-table-icon-open);
+  --color-bg-table-icon-paused: var(--bg-table-icon-paused);
+  --color-bg-table-icon-closed: var(--bg-table-icon-closed);
+  --color-bg-table-icon-draft: var(--bg-table-icon-draft);
+  --color-bg-table-icon-archived: var(--bg-table-icon-archived);
+  --color-bg-table-icon-expired: var(--bg-table-icon-expired);
+  --color-bg-table-open: var(--bg-table-open);
+  --color-bg-table-paused: var(--bg-table-paused);
+  --color-bg-table-closed: var(--bg-table-closed);
+  --color-bg-table-draft: var(--bg-table-draft);
+  --color-bg-table-archived: var(--bg-table-archived);
+  --color-bg-table-expired: var(--bg-table-expired);
 
   /* ── Text / Generic ── */
   --color-text-primary: var(--text-primary);
@@ -455,6 +495,7 @@ input:-webkit-autofill:active {
   --color-text-light: var(--text-light);
   --color-text-error: var(--text-error);
   --color-text-blue-accent: var(--text-blue-accent);
+  --color-text-success: var(--text-success);
   --color-text-inverted: var(--text-inverted);
   --color-text-non: var(--text-non);
   --color-text-logo: var(--text-logo);
@@ -480,6 +521,7 @@ input:-webkit-autofill:active {
   --color-text-flow-btn-secondary: var(--text-flow-btn-secondary);
   --color-text-flow-btn-tertiary: var(--text-flow-btn-tertiary);
   --color-text-flow-btn-sec-disabled: var(--text-flow-btn-sec-disabled);
+  --color-text-flow-btn-tet-disabled: var(--text-flow-btn-tet-disabled);
 
   /* ── Text / Avatar ── */
   --color-text-avatar-green: var(--text-avatar-green);
@@ -522,8 +564,19 @@ input:-webkit-autofill:active {
   --color-text-tags-teal: var(--text-tags-teal);
   --color-text-tags-empty: var(--text-tags-empty);
 
+  /* ── Text / Banner ── */
+  --color-text-banner-success: var(--text-banner-success);
+  --color-text-banner-error: var(--text-banner-error);
+  --color-text-banner-info: var(--text-banner-info);
+  --color-text-banner-neutral: var(--text-banner-neutral);
+  --color-text-banner-success-bd: var(--text-banner-success-bd);
+  --color-text-banner-error-bd: var(--text-banner-error-bd);
+  --color-text-banner-info-bd: var(--text-banner-info-bd);
+  --color-text-banner-neutral-bd: var(--text-banner-neutral-bd);
+
   /* ── Border / Surface ── */
   --color-border-light: var(--border-light);
+  --color-border-non: var(--border-non);
 
   /* ── Border / Transparent ── */
   --color-border-transparent-light: var(--border-transparent-light);
@@ -610,12 +663,19 @@ input:-webkit-autofill:active {
   --color-border-input-hover: var(--border-input-hover);
   --color-border-input-focus: var(--border-input-focus);
   --color-border-input-error: var(--border-input-error);
+  --color-border-input-success: var(--border-input-success);
   --color-border-input-disabled: var(--border-input-disabled);
   --color-border-input-placeholder: var(--border-input-placeholder);
   --color-border-input-hover-group-items: var(--border-input-hover-group-items);
 
   /* ── Border / Tags ── */
   --color-border-tags-empty: var(--border-tags-empty);
+
+  /* ── Border / Banner ── */
+  --color-border-banner-success: var(--border-banner-success);
+  --color-border-banner-error: var(--border-banner-error);
+  --color-border-banner-info: var(--border-banner-info);
+  --color-border-banner-neutral: var(--border-banner-neutral);
 
   /* ── Other ── */
   --color-top-nav: var(--top-nav);

@@ -4,6 +4,9 @@ export type { ListItemContentProps, SubTextAlignment } from './list-item-content
 export { ListItemDefault } from './list-item-default'
 export type { ListItemDefaultProps, ListItemDefaultState } from './list-item-default'
 
+export { ListItemRadioSelection } from './list-item-radio-selection'
+export type { ListItemRadioSelectionProps } from './list-item-radio-selection'
+
 export { ListItemButton } from './list-item-button'
 export type {
   ListItemButtonProps,

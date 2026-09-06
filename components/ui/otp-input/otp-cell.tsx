@@ -15,8 +15,7 @@ interface OTPCellProps extends Omit<
   disabled?: boolean
 }
 
-// Border/background per composite-driven state. No input-success token exists,
-// so the success state uses green primitives.
+// Border/background per composite-driven state.
 const stateClasses: Record<OTPCellState, string> = {
   placeholder:
     'bg-bg-input-placeholder border-border-input-placeholder hover:border-border-input-hover focus:border-border-input-focus focus:bg-bg-input-focus',
@@ -25,7 +24,7 @@ const stateClasses: Record<OTPCellState, string> = {
   filled:
     'bg-bg-input-filled border-border-input-filled hover:border-border-input-hover focus:border-border-input-focus',
   error: 'bg-bg-input-error border-border-input-error',
-  success: 'bg-bg-tags-green border-green-7',
+  success: 'bg-bg-tags-green border-border-input-success',
   disabled: 'bg-bg-input-disabled border-border-input-disabled pointer-events-none opacity-60',
 }
 

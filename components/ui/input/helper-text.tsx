@@ -20,12 +20,11 @@ const stateClasses: Record<HelperTextState, string> = {
   success: 'text-text-secondary',
 }
 
-// Only the success state renders an icon (a green check-circle). The design
-// system has no `text/Success` token, so the green primitive is used.
+// Only the success state renders an icon (a green check-circle).
 function SuccessIcon() {
   return (
     <svg
-      className="h-[9px] w-[9px] shrink-0 text-green-7"
+      className="h-[9px] w-[9px] shrink-0 text-text-success"
       viewBox="0 0 12 12"
       fill="currentColor"
       aria-hidden="true"

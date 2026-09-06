@@ -2,6 +2,11 @@
 
 import { forwardRef, type MouseEventHandler } from 'react'
 
+// FLAGGED DUPLICATE: see ListItemRadioSelection (Figma node 1070:52459,
+// layer "Radio selection") — near-identical radius/padding/radio+two-line
+// anatomy to this component's own doc (node 2906:32286, layer "Location"),
+// just different prop names and trailing icon (check vs info). Left both as
+// built rather than merging unilaterally; flagging for a design decision.
 type ListItemLocationState = 'rest' | 'hover' | 'selected' | 'selected-hover' | 'disabled'
 
 interface ListItemLocationProps {
