@@ -17,8 +17,16 @@ export const AllStates: Story = {
   render: () => (
     <div className="flex w-[280px] flex-col gap-[8px]">
       <ListItemRadioSelection label="Suggested Address:" value="123 Main St, Springfield" />
-      <ListItemRadioSelection label="Suggested Address:" value="123 Main St, Springfield" selected />
-      <ListItemRadioSelection label="Suggested Address:" value="123 Main St, Springfield" disabled />
+      <ListItemRadioSelection
+        label="Suggested Address:"
+        value="123 Main St, Springfield"
+        selected
+      />
+      <ListItemRadioSelection
+        label="Suggested Address:"
+        value="123 Main St, Springfield"
+        disabled
+      />
     </div>
   ),
 }
@@ -40,7 +48,11 @@ export const AddressGroup: Story = {
     ]
     const [selected, setSelected] = useState('a')
     return (
-      <div role="radiogroup" aria-label="Choose your address" className="flex w-[300px] flex-col gap-[8px]">
+      <div
+        role="radiogroup"
+        aria-label="Choose your address"
+        className="flex w-[300px] flex-col gap-[8px]"
+      >
         {options.map((opt) => (
           <ListItemRadioSelection
             key={opt.id}

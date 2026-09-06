@@ -75,7 +75,9 @@ export const UploadedList: Story = {
           files={files}
           onRemoveFile={(id) => setFiles((f) => f.filter((file) => file.id !== id))}
           onRetryFile={(id) =>
-            setFiles((f) => f.map((file) => (file.id === id ? { ...file, state: 'loading' } : file)))
+            setFiles((f) =>
+              f.map((file) => (file.id === id ? { ...file, state: 'loading' } : file)),
+            )
           }
         />
       </div>

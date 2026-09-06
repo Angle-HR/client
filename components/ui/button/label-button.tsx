@@ -45,10 +45,16 @@ const LabelButton = forwardRef<HTMLButtonElement, LabelButtonProps>(function Lab
       onClick={onClick}
       className={classes}
     >
-      {iconLeft && <span className="inline-flex size-[14px] shrink-0 items-center justify-center">{iconLeft}</span>}
+      {iconLeft && (
+        <span className="inline-flex size-[14px] shrink-0 items-center justify-center">
+          {iconLeft}
+        </span>
+      )}
       <span>{children}</span>
       {iconRight && (
-        <span className="inline-flex size-[14px] shrink-0 items-center justify-center">{iconRight}</span>
+        <span className="inline-flex size-[14px] shrink-0 items-center justify-center">
+          {iconRight}
+        </span>
       )}
     </button>
   )

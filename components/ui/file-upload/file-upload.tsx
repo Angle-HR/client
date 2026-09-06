@@ -1,6 +1,13 @@
 'use client'
 
-import { useId, useRef, useState, type ChangeEvent, type DragEvent, type KeyboardEvent } from 'react'
+import {
+  useId,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type DragEvent,
+  type KeyboardEvent,
+} from 'react'
 
 import { HelperText } from '../input/helper-text'
 
@@ -225,4 +232,10 @@ function FileUpload({
 }
 
 export { FileUpload }
-export type { FileUploadProps, FileUploadSize, FileUploadedLayout, FileUploadFileType, UploadedFile }
+export type {
+  FileUploadProps,
+  FileUploadSize,
+  FileUploadedLayout,
+  FileUploadFileType,
+  UploadedFile,
+}

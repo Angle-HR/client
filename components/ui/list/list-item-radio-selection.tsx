@@ -47,11 +47,7 @@ function ListItemRadioSelection({
   ].join(' ')
 
   return (
-    <div
-      className={classes}
-      onClick={() => !disabled && onSelect?.(value)}
-      role="presentation"
-    >
+    <div className={classes} onClick={() => !disabled && onSelect?.(value)} role="presentation">
       <RadioButton
         textPosition="none"
         checked={selected}
