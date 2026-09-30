@@ -59,6 +59,24 @@ function setAccessToken(token: string, expiresInSeconds: number) {
   setItem(KEYS.expiresAt, String(Date.now() + expiresInSeconds * 1000))
 }
 
+/** Keep the stored onboarding summary in step with what the API last reported. */
+function setStoredOnboarding(onboarding?: OnboardingProgressSummary | null) {
+  if (!onboarding) return
+  setItem(KEYS.onboarding, JSON.stringify(onboarding))
+}
+
+/** Persist progress and atomically adopt the regional token pair returned by a migrating step. */
+function reconcileOnboardingStep(result: {
+  onboarding: OnboardingProgressSummary
+  tokens?: AuthTokenData
+}): void {
+  if (result.tokens) {
+    setAuthTokens({ ...result.tokens, onboarding: result.onboarding })
+    return
+  }
+  setStoredOnboarding(result.onboarding)
+}
+
 function clearAuthTokens() {
   removeItem(KEYS.accessToken)
   removeItem(KEYS.refreshToken)
@@ -254,6 +272,7 @@ export {
   getStoredOnboarding,
   getVerificationEmail,
   getVerificationSessionId,
+  reconcileOnboardingStep,
   routeForOnboarding,
   setAccessToken,
   setAuthTokens,

@@ -271,7 +271,9 @@ export interface ProductProfilePayload {
 
 export interface ProductProfileData extends ProductProfilePayload {
   region?: string
-  onboarding?: OnboardingProgressSummary
+  onboarding: OnboardingProgressSummary
+  /** Returned when this step moves the account from the global holding region. */
+  tokens?: AuthTokenData
 }
 
 /** Identification keys vary by country, so this is a map, not fixed fields. */
@@ -293,7 +295,9 @@ export interface ProductAddressPayload {
 
 export interface ProductAddressData extends ProductAddressPayload {
   verification_status?: AddressVerificationStatus
-  onboarding?: OnboardingProgressSummary
+  onboarding: OnboardingProgressSummary
+  /** Returned when this step moves the account from the global holding region. */
+  tokens?: AuthTokenData
 }
 
 /**
@@ -366,7 +370,7 @@ export interface ProductBusinessPayload {
 }
 
 export interface ProductBusinessData extends ProductBusinessPayload {
-  onboarding?: OnboardingProgressSummary
+  onboarding: OnboardingProgressSummary
 }
 
 /** `PUT /onboarding/compliance` — same shape, for both account types. */
