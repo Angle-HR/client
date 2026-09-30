@@ -13,7 +13,7 @@ import {
 import { useOnboardingDraft } from '@/components/auth/use-flow-storage'
 import { useOnboardingResume } from '@/components/auth/use-onboarding-resume'
 import { applyApiError } from '@/lib/api-error'
-import { routeForOnboarding } from '@/lib/auth-session'
+import { reconcileOnboardingStep, routeForOnboarding } from '@/lib/auth-session'
 import {
   autocompleteAddresses,
   createSessionToken,
@@ -148,6 +148,7 @@ function OnboardingWorkspacePage() {
           address: values.address.formatted_address ?? '',
         },
       })
+      reconcileOnboardingStep(result)
       router.push(routeForOnboarding(result.onboarding) || '/onboarding/compliance')
     } catch (err) {
       setFallbackError(applyApiError(err))

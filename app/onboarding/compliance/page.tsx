@@ -10,7 +10,7 @@ import { useOnboardingDraft } from '@/components/auth/use-flow-storage'
 import { useOnboardingResume } from '@/components/auth/use-onboarding-resume'
 import { BannerSmall } from '@/components/ui'
 import { applyApiError } from '@/lib/api-error'
-import { routeForOnboarding } from '@/lib/auth-session'
+import { reconcileOnboardingStep, routeForOnboarding } from '@/lib/auth-session'
 import { useUpsertCompliance } from '@/lib/mutations'
 
 function OnboardingCompliancePage() {
@@ -33,6 +33,7 @@ function OnboardingCompliancePage() {
         employee_count: Number.isFinite(employeeCount) ? employeeCount : 0,
       })
       patchOnboardingDraft({ compliance: values })
+      reconcileOnboardingStep(result)
       router.push(routeForOnboarding(result.onboarding) || '/onboarding/setup')
     } catch (err) {
       setFallbackError(applyApiError(err))
