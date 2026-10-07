@@ -41,10 +41,10 @@ const outlineBgClasses: Record<BannerSmallState, string> = {
 }
 
 const borderClasses: Record<BannerSmallState, string> = {
-  rest: 'border-border-banner-neutral',
-  success: 'border-border-banner-success',
-  error: 'border-border-banner-error',
-  info: 'border-border-banner-info',
+  rest: 'outline-border-banner-neutral',
+  success: 'outline-border-banner-success',
+  error: 'outline-border-banner-error',
+  info: 'outline-border-banner-info',
 }
 
 // Info uses one text colour regardless of outline; success/error/neutral each
@@ -87,7 +87,9 @@ function BannerSmall({
     'inline-flex items-center overflow-clip rounded-lg-10 pr-[3px]',
     withButton ? 'gap-[8px]' : '',
     outline ? outlineBgClasses[state] : bgClasses[state],
-    outline ? `border ${borderClasses[state]}` : '',
+    // An inset outline, like a Figma stroke: it draws the edge without adding
+    // 2px to the banner's 30px height.
+    outline ? `outline -outline-offset-1 ${borderClasses[state]}` : '',
     className,
   ].join(' ')
 

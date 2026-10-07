@@ -228,10 +228,13 @@ function AssignJobsModal({ me, current, onSave, onClose }: AssignJobsModalProps)
           label="Assign to"
           placeholder="Search for an option..."
           multiple
+          searchable
+          selectionStyle="chip"
           options={people.map((person) => ({
             value: person.name,
             label: person.name,
             icon: <PersonAvatar person={person} size={16} />,
+            chipIcon: <PersonAvatar person={person} />,
           }))}
           value={names}
           onChange={(value) => setNames(Array.isArray(value) ? value : [value])}

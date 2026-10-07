@@ -134,7 +134,6 @@ function JobRowMenu({ job, anchor, onAction, onChangeStatus, onClose }: JobRowMe
         />
       ))}
 
-      <li role="presentation" className="h-[2px]" />
       <MenuRow icon="trash-solid" iconSize={14} label="Delete" danger onClick={act('delete')} />
     </FloatingMenu>
   )

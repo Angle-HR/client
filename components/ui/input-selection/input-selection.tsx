@@ -15,6 +15,7 @@ import { ListItemDefault } from '../list/list-item-default'
 import { ListItemMultiSelect } from '../list/list-item-multi-select'
 import { Divider } from '../notification/divider'
 import { Slots } from '../slots/slots'
+import { Chip } from '../tags/chip'
 import { Tag } from '../tags/tag'
 
 import { SelectionField } from './selection-field'
@@ -24,6 +25,8 @@ interface SelectOption {
   label: string
   /** Optional leading visual (e.g. a CountryFlag) shown in the trigger and rows. */
   icon?: ReactNode
+  /** The visual on this option's chip, when it differs from `icon` (a smaller avatar, say). */
+  chipIcon?: ReactNode
   /** Extra words a searchable field matches this option by, e.g. an abbreviation. */
   keywords?: string
 }
@@ -56,6 +59,12 @@ interface InputSelectionProps {
   searchable?: boolean
   /** With `searchable`: typed text that matches no option can be added as one. */
   allowCustom?: boolean
+  /**
+   * How chosen values show in a multi-select: plain tags, or chips that carry
+   * the option's icon (a person's avatar, say). With chips the prefix icon
+   * gives way once something is chosen.
+   */
+  selectionStyle?: 'tag' | 'chip'
   /** An action pinned under the options, e.g. "Create new team". */
   footerAction?: { label: string; icon?: ReactNode; onClick: () => void }
 }
@@ -84,6 +93,7 @@ function InputSelection({
   className = '',
   searchable = false,
   allowCustom = false,
+  selectionStyle = 'tag',
   footerAction,
   ...props
 }: InputSelectionProps) {
@@ -248,7 +258,7 @@ function InputSelection({
         id={fieldId}
         size={size}
         state={triggerState}
-        showPrefixIcon={showPrefixIcon}
+        showPrefixIcon={showPrefixIcon && !(selectionStyle === 'chip' && selectedArray.length > 0)}
         prefixIcon={prefixIcon}
         withSelection={withSelection}
         placeholder={placeholder}
@@ -286,9 +296,22 @@ function InputSelection({
         }
         tags={
           withSelection
-            ? selectedArray.map((v) => (
-                <Tag key={v} label={labelFor(v)} removable onRemove={() => selectOption(v)} />
-              ))
+            ? selectedArray.map((v) => {
+                const option = options.find((o) => o.value === v)
+                const chipIcon = option?.chipIcon ?? option?.icon
+                return selectionStyle === 'chip' ? (
+                  <Chip
+                    key={v}
+                    label={labelFor(v)}
+                    icon={chipIcon}
+                    withIcon={Boolean(chipIcon)}
+                    removable
+                    onRemove={() => selectOption(v)}
+                  />
+                ) : (
+                  <Tag key={v} label={labelFor(v)} removable onRemove={() => selectOption(v)} />
+                )
+              })
             : undefined
         }
         disabled={disabled}
