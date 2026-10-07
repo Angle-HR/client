@@ -73,7 +73,7 @@ function FirstJobArt() {
         />
       </svg>
       <span className="absolute top-[37px] left-[75px] inline-flex text-text-primary">
-        <DashboardIcon name="briefcase-solid" size={28} />
+        <DashboardIcon name="briefcase-outline" size={28} />
       </span>
     </span>
   )

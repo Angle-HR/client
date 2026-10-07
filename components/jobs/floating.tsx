@@ -57,10 +57,26 @@ function Floating({
     const element = ref.current
     if (!element) return
     setPosition(place({ width: element.offsetWidth, height: element.offsetHeight }))
-    if (focusFirstItem) element.querySelector<HTMLElement>(ITEMS)?.focus({ preventScroll: true })
     // `place` is recreated every render; the anchor is what actually changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [anchor.top, anchor.left, anchor.right, anchor.bottom])
+
+  // Closing hands focus back to whatever opened the popover, unless the user
+  // has already put it somewhere else (by clicking into a field, say).
+  useEffect(() => {
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    return () => {
+      if (document.activeElement === document.body) opener?.focus({ preventScroll: true })
+    }
+  }, [])
+
+  // Focus moves in once the popover is placed: while it is still being
+  // measured it is hidden, and a hidden element cannot take focus.
+  const placed = position !== null
+  useEffect(() => {
+    if (!placed || !focusFirstItem) return
+    ref.current?.querySelector<HTMLElement>(ITEMS)?.focus({ preventScroll: true })
+  }, [placed, focusFirstItem])
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
