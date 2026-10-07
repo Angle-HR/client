@@ -1,4 +1,5 @@
 import { DashboardIcon } from '@/components/dashboard/nav-config'
+import { JOB_STATUS_ORDER } from '@/lib/jobs/actions'
 
 import type { JobStatus } from '@/lib/jobs/types'
 
@@ -20,9 +21,6 @@ interface JobStatusMeta {
   tintClass: string
   hoverTintClass: string
 }
-
-/** Group and column order, per the designer's dev note on the job table. */
-const JOB_STATUS_ORDER: JobStatus[] = ['open', 'paused', 'draft', 'closed', 'archived', 'expired']
 
 const JOB_STATUS_META: Record<JobStatus, JobStatusMeta> = {
   open: {

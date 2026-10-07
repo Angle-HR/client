@@ -28,8 +28,11 @@ import type { Job, JobStatus } from '@/lib/jobs/types'
 interface JobsBoardProps {
   groups: JobGroup[]
   selectedIds: ReadonlySet<string>
+  /** The column whose menu is open, so its trigger can show as pressed. */
+  menuStatus: JobStatus | null
   onSelect: SelectJob
   onMoveJob: (jobId: string, status: JobStatus) => void
+  onOpenColumnMenu: (status: JobStatus, anchor: DOMRect) => void
 }
 
 // Card surfaces. Each state stacks a wash over the card's own background the
@@ -146,6 +149,8 @@ interface BoardColumnProps {
   draggingId: string | null
   /** True while a card from another column is held over this one. */
   dropTarget: boolean
+  menuOpen: boolean
+  onOpenMenu: (status: JobStatus, anchor: DOMRect) => void
   onSelect: SelectJob
   onDragStart: (jobId: string) => void
   onDragEnd: () => void
@@ -159,6 +164,8 @@ function BoardColumn({
   selectedIds,
   draggingId,
   dropTarget,
+  menuOpen,
+  onOpenMenu,
   onSelect,
   onDragStart,
   onDragEnd,
@@ -204,7 +211,10 @@ function BoardColumn({
         <button
           type="button"
           aria-label={`${meta.label} column actions`}
-          className="inline-flex cursor-pointer items-center justify-center rounded-sm-6 p-[6px] text-text-secondary transition-colors hover:bg-bg-transparent-light hover:text-text-primary"
+          aria-haspopup="menu"
+          aria-expanded={menuOpen}
+          onClick={(event) => onOpenMenu(group.status, event.currentTarget.getBoundingClientRect())}
+          className={`inline-flex cursor-pointer items-center justify-center rounded-xs-4 p-[6px] transition-colors hover:bg-bg-transparent-light hover:text-text-primary ${menuOpen ? 'bg-bg-transparent-light text-text-primary' : 'text-text-secondary'}`}
         >
           <DashboardIcon name="ellipsis-horizontal-solid" size={10} />
         </button>
@@ -237,7 +247,14 @@ function BoardColumn({
   )
 }
 
-function JobsBoard({ groups, selectedIds, onSelect, onMoveJob }: JobsBoardProps) {
+function JobsBoard({
+  groups,
+  selectedIds,
+  menuStatus,
+  onSelect,
+  onMoveJob,
+  onOpenColumnMenu,
+}: JobsBoardProps) {
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [overStatus, setOverStatus] = useState<JobStatus | null>(null)
 
@@ -261,6 +278,8 @@ function JobsBoard({ groups, selectedIds, onSelect, onMoveJob }: JobsBoardProps)
             overStatus === group.status &&
             draggingFrom?.status !== group.status
           }
+          menuOpen={menuStatus === group.status}
+          onOpenMenu={onOpenColumnMenu}
           onSelect={onSelect}
           onDragStart={setDraggingId}
           onDragEnd={endDrag}

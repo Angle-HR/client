@@ -1,18 +1,26 @@
 'use client'
 
-import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useMemo, useRef, useState } from 'react'
 
 import { DashboardErrorState } from '@/components/dashboard/dashboard-states'
 import { DashboardIcon } from '@/components/dashboard/nav-config'
-import { JOB_STATUS_ORDER } from '@/components/jobs/job-status'
+import { ColumnMenu, JobRowMenu } from '@/components/jobs/job-menus'
+import {
+  ClosingDateModal,
+  DeleteJobsModal,
+  ExportJobsModal,
+  StatusConfirmModal,
+} from '@/components/jobs/job-modals'
+import { JOB_STATUS_META, JOB_STATUS_ORDER } from '@/components/jobs/job-status'
+import { JobToast } from '@/components/jobs/job-toast'
 import { JobsBoard } from '@/components/jobs/jobs-board'
 import { JobsTable } from '@/components/jobs/jobs-table'
 import { SelectionToolbar } from '@/components/jobs/selection-toolbar'
+import { useJobsController } from '@/components/jobs/use-jobs-controller'
 import { Button, Tabs, TextButton, TextInput } from '@/components/ui'
-import { useJobs } from '@/lib/queries'
-import { queryKeys } from '@/lib/query-keys'
+import { searchJobs, statusTargets } from '@/lib/jobs/actions'
 
+import type { AnchorRect, JobRowAction } from '@/components/jobs/job-menus'
 import type { JobGroup, SelectJob } from '@/components/jobs/jobs-table'
 import type { TabOption } from '@/components/ui'
 import type { Job, JobStatus } from '@/lib/jobs/types'
@@ -55,19 +63,6 @@ function BarActionLabel({
   )
 }
 
-/**
- * Search matches a job's title or department. Title matches rank above
- * department-only matches, per the designer's note on the search field.
- */
-function searchJobs(jobs: Job[], term: string): Job[] {
-  if (!term) return jobs
-  const inTitle = jobs.filter((job) => job.title.toLowerCase().includes(term))
-  const inDepartment = jobs.filter(
-    (job) => !job.title.toLowerCase().includes(term) && job.department.toLowerCase().includes(term),
-  )
-  return [...inTitle, ...inDepartment]
-}
-
 function groupJobs(jobs: Job[], statuses: JobStatus[]): JobGroup[] {
   return JOB_STATUS_ORDER.filter((status) => statuses.includes(status))
     .map((status) => ({ status, jobs: jobs.filter((job) => job.status === status) }))
@@ -82,14 +77,25 @@ function byNewest(groups: JobGroup[]): JobGroup[] {
   }))
 }
 
+const toAnchor = (rect: DOMRect): AnchorRect => ({
+  top: rect.top,
+  left: rect.left,
+  right: rect.right,
+  bottom: rect.bottom,
+})
+
 function JobsPage() {
-  const jobsQuery = useJobs()
+  const controller = useJobsController()
+  const { jobs, jobsQuery, dialog } = controller
+
   const [tab, setTab] = useState<JobsTab>('all')
   const [view, setView] = useState<JobsView>('list')
   const [search, setSearch] = useState('')
   const [selectedIds, setSelectedIds] = useState<ReadonlySet<string>>(new Set())
-
-  const jobs = useMemo(() => jobsQuery.data ?? [], [jobsQuery.data])
+  const [rowMenu, setRowMenu] = useState<{ jobId: string; anchor: AnchorRect } | null>(null)
+  const [columnMenu, setColumnMenu] = useState<{ status: JobStatus; anchor: AnchorRect } | null>(
+    null,
+  )
 
   const tabs = useMemo<TabOption<JobsTab>[]>(() => {
     const count = (key: JobsTab) =>
@@ -103,8 +109,7 @@ function JobsPage() {
   }, [jobs])
 
   const groups = useMemo(() => {
-    const matching = searchJobs(jobs, search.trim().toLowerCase())
-    const grouped = groupJobs(matching, TAB_STATUSES[tab])
+    const grouped = groupJobs(searchJobs(jobs, search), TAB_STATUSES[tab])
     return view === 'board' ? byNewest(grouped) : grouped
   }, [jobs, search, tab, view])
 
@@ -124,8 +129,9 @@ function JobsPage() {
         const from = anchor ? visibleIds.indexOf(anchor) : -1
         const to = visibleIds.indexOf(jobId)
         if (range && from !== -1 && to !== -1) {
-          for (const id of visibleIds.slice(Math.min(from, to), Math.max(from, to) + 1))
+          for (const id of visibleIds.slice(Math.min(from, to), Math.max(from, to) + 1)) {
             next.add(id)
+          }
         } else if (next.has(jobId)) next.delete(jobId)
         else next.add(jobId)
         return next
@@ -140,18 +146,22 @@ function JobsPage() {
     lastSelectedId.current = null
   }, [])
 
-  // There is no jobs API yet, so edits are applied to the cached list.
-  const queryClient = useQueryClient()
-  const setStatus = useCallback(
-    (jobIds: ReadonlySet<string>, status: JobStatus) => {
-      queryClient.setQueryData<Job[]>(queryKeys.jobs, (current) =>
-        current?.map((job) => (jobIds.has(job.id) ? { ...job, status } : job)),
-      )
-    },
-    [queryClient],
-  )
-
+  // Selected jobs that still exist — a deleted job drops out on its own.
   const selectedJobs = jobs.filter((job) => selectedIds.has(job.id))
+  const selectedJobIds = selectedJobs.map((job) => job.id)
+  const menuJob = rowMenu ? jobs.find((job) => job.id === rowMenu.jobId) : undefined
+  const dialogJobs = dialog ? jobs.filter((job) => dialog.jobIds.includes(job.id)) : []
+
+  function handleRowAction(job: Job, action: JobRowAction) {
+    if (action === 'duplicate') controller.duplicate([job.id])
+    else if (action === 'copy-link') void controller.copyLinks([job.id])
+    else if (action === 'delete') controller.openDialog({ type: 'delete', jobIds: [job.id] })
+    else if (action === 'export') controller.openDialog({ type: 'export', jobIds: [job.id] })
+    else if (action === 'closing-date') {
+      controller.openDialog({ type: 'closing-date', jobIds: [job.id] })
+    }
+    // Editing and assigning open flows that are built separately.
+  }
 
   if (jobsQuery.isError) return <DashboardErrorState kind="unknown" />
   if (jobsQuery.isPending) return null
@@ -194,6 +204,7 @@ function JobsPage() {
             <TextButton size="sm" disabled className={barAction}>
               <BarActionLabel icon="bars-arrow-up-solid" iconSize={10} label="Sort" />
             </TextButton>
+            {/* The label names the view you would switch to. */}
             <TextButton
               size="sm"
               className={barAction}
@@ -242,25 +253,102 @@ function JobsPage() {
         </div>
       ) : view === 'list' ? (
         <div className="min-h-0 flex-1 overflow-auto">
-          <JobsTable groups={groups} selectedIds={selectedIds} onSelect={selectJob} />
+          <JobsTable
+            groups={groups}
+            selectedIds={selectedIds}
+            menuJobId={rowMenu?.jobId ?? null}
+            onSelect={selectJob}
+            onOpenMenu={(jobId, rect) => setRowMenu({ jobId, anchor: toAnchor(rect) })}
+          />
         </div>
       ) : (
         <JobsBoard
           groups={groups}
           selectedIds={selectedIds}
+          menuStatus={columnMenu?.status ?? null}
           onSelect={selectJob}
-          onMoveJob={(jobId, status) => setStatus(new Set([jobId]), status)}
+          // A drop is its own confirmation, and the toast offers Undo.
+          onMoveJob={(jobId, status) => controller.applyStatus([jobId], status)}
+          onOpenColumnMenu={(status, rect) => setColumnMenu({ status, anchor: toAnchor(rect) })}
         />
       )}
 
       {selectedJobs.length > 0 ? (
         <SelectionToolbar
           count={selectedJobs.length}
+          statusOptions={statusTargets(selectedJobs)}
           showClosingDate={selectedJobs.some((job) => job.status === 'open')}
           // The selection is kept after a status change so the moved jobs can
           // still be tracked; Escape or the close button dismisses it.
-          onChangeStatus={(status) => setStatus(selectedIds, status)}
+          onChangeStatus={(status) => controller.requestStatus(selectedJobIds, status)}
+          onChangeClosingDate={() =>
+            controller.openDialog({ type: 'closing-date', jobIds: selectedJobIds })
+          }
+          onDuplicate={() => controller.duplicate(selectedJobIds)}
+          onCopyLinks={() => void controller.copyLinks(selectedJobIds)}
+          onExport={() => controller.openDialog({ type: 'export', jobIds: selectedJobIds })}
+          onDelete={() => controller.openDialog({ type: 'delete', jobIds: selectedJobIds })}
           onClear={clearSelection}
+        />
+      ) : null}
+
+      {controller.toast ? (
+        <JobToast toast={controller.toast} onDismiss={controller.dismissToast} />
+      ) : null}
+
+      {rowMenu && menuJob ? (
+        <JobRowMenu
+          job={menuJob}
+          anchor={rowMenu.anchor}
+          onAction={(action) => handleRowAction(menuJob, action)}
+          onChangeStatus={(status) => controller.requestStatus([menuJob.id], status)}
+          onClose={() => setRowMenu(null)}
+        />
+      ) : null}
+
+      {columnMenu ? (
+        <ColumnMenu
+          label={`${JOB_STATUS_META[columnMenu.status].label} column actions`}
+          anchor={columnMenu.anchor}
+          onSelectAll={() => {
+            const columnIds = groups.find((group) => group.status === columnMenu.status)?.jobs
+            setSelectedIds(
+              (previous) => new Set([...previous, ...(columnIds ?? []).map((j) => j.id)]),
+            )
+          }}
+          onExport={() => {
+            const columnIds = groups.find((group) => group.status === columnMenu.status)?.jobs
+            controller.openDialog({ type: 'export', jobIds: (columnIds ?? []).map((j) => j.id) })
+          }}
+          onClose={() => setColumnMenu(null)}
+        />
+      ) : null}
+
+      {dialog?.type === 'status' ? (
+        <StatusConfirmModal
+          status={dialog.status}
+          onConfirm={controller.confirmDialog.status}
+          onClose={controller.closeDialog}
+        />
+      ) : null}
+      {dialog?.type === 'delete' ? (
+        <DeleteJobsModal
+          applicantCount={dialogJobs.reduce((total, job) => total + job.totalApplicants, 0)}
+          onConfirm={controller.confirmDialog.delete}
+          onClose={controller.closeDialog}
+        />
+      ) : null}
+      {dialog?.type === 'closing-date' ? (
+        <ClosingDateModal
+          onSave={controller.confirmDialog.closingDate}
+          onClose={controller.closeDialog}
+        />
+      ) : null}
+      {dialog?.type === 'export' ? (
+        <ExportJobsModal
+          selectedCount={dialog.jobIds.length}
+          onExport={controller.confirmDialog.export}
+          onClose={controller.closeDialog}
         />
       ) : null}
     </div>

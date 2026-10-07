@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 
 import { DashboardIcon } from '@/components/dashboard/nav-config'
-import { JOB_STATUS_META, JOB_STATUS_ORDER } from '@/components/jobs/job-status'
+import { JOB_STATUS_META } from '@/components/jobs/job-status'
 
 import type { JobStatus } from '@/lib/jobs/types'
 
@@ -18,6 +18,8 @@ import type { JobStatus } from '@/lib/jobs/types'
 
 interface SelectionToolbarProps {
   count: number
+  /** Statuses the selection can move to; depends on what is selected. */
+  statusOptions: JobStatus[]
   /** Only offered when the selection includes an open job. */
   showClosingDate: boolean
   onChangeStatus: (status: JobStatus) => void
@@ -75,6 +77,7 @@ function Menu({
 
 function SelectionToolbar({
   count,
+  statusOptions,
   showClosingDate,
   onChangeStatus,
   onChangeClosingDate,
@@ -142,7 +145,7 @@ function SelectionToolbar({
         </button>
         {menu === 'status' ? (
           <Menu label="Change status" className="left-0 mb-[5.5px]">
-            {JOB_STATUS_ORDER.map((status) => (
+            {statusOptions.map((status) => (
               <MenuItem
                 key={status}
                 icon={JOB_STATUS_META[status].icon}

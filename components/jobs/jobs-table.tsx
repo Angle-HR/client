@@ -31,10 +31,16 @@ interface JobGroup {
 /** `range` is true when Shift was held, to extend from the last selection. */
 type SelectJob = (jobId: string, options: { range: boolean }) => void
 
+/** Opens the row's action menu, anchored to the button that was pressed. */
+type OpenJobMenu = (jobId: string, anchor: DOMRect) => void
+
 interface JobsTableProps {
   groups: JobGroup[]
   selectedIds: ReadonlySet<string>
+  /** The job whose menu is open, so its trigger can show as pressed. */
+  menuJobId: string | null
   onSelect: SelectJob
+  onOpenMenu: OpenJobMenu
 }
 
 const cellText = 'text-body-xs leading-19_2 font-medium text-text-secondary'
@@ -120,10 +126,12 @@ function GroupHeader({ status, count, collapsed, showColumnLabels, onToggle }: G
 interface JobRowProps {
   job: Job
   selected: boolean
+  menuOpen: boolean
   onSelect: SelectJob
+  onOpenMenu: OpenJobMenu
 }
 
-function JobRow({ job, selected, onSelect }: JobRowProps) {
+function JobRow({ job, selected, menuOpen, onSelect, onOpenMenu }: JobRowProps) {
   // The checkbox's change event does not carry modifier keys, so the click
   // that precedes it records whether Shift was down.
   const shiftHeld = useRef(false)
@@ -197,7 +205,10 @@ function JobRow({ job, selected, onSelect }: JobRowProps) {
         <button
           type="button"
           aria-label={`More actions for ${job.title}`}
-          className="inline-flex cursor-pointer items-center justify-center rounded-sm-6 p-[6px] text-text-secondary transition-colors hover:bg-bg-transparent-light hover:text-text-primary"
+          aria-haspopup="menu"
+          aria-expanded={menuOpen}
+          onClick={(event) => onOpenMenu(job.id, event.currentTarget.getBoundingClientRect())}
+          className={`inline-flex cursor-pointer items-center justify-center rounded-xs-4 p-[6px] transition-colors hover:bg-bg-transparent-light hover:text-text-primary ${menuOpen ? 'bg-bg-transparent-light text-text-primary' : 'text-text-secondary'}`}
         >
           <DashboardIcon name="ellipsis-horizontal-solid" size={11} />
         </button>
@@ -206,7 +217,7 @@ function JobRow({ job, selected, onSelect }: JobRowProps) {
   )
 }
 
-function JobsTable({ groups, selectedIds, onSelect }: JobsTableProps) {
+function JobsTable({ groups, selectedIds, menuJobId, onSelect, onOpenMenu }: JobsTableProps) {
   const [collapsed, setCollapsed] = useState<ReadonlySet<JobStatus>>(new Set())
 
   function toggleGroup(status: JobStatus) {
@@ -238,7 +249,9 @@ function JobsTable({ groups, selectedIds, onSelect }: JobsTableProps) {
                     key={job.id}
                     job={job}
                     selected={selectedIds.has(job.id)}
+                    menuOpen={menuJobId === job.id}
                     onSelect={onSelect}
+                    onOpenMenu={onOpenMenu}
                   />
                 ))}
           </div>
@@ -249,4 +262,4 @@ function JobsTable({ groups, selectedIds, onSelect }: JobsTableProps) {
 }
 
 export { JobsTable }
-export type { JobGroup, JobsTableProps, SelectJob }
+export type { JobGroup, JobsTableProps, OpenJobMenu, SelectJob }

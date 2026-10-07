@@ -26,6 +26,8 @@ interface Job {
   newApplicants: number
   /** ISO date (yyyy-mm-dd). */
   postedAt: string
+  /** ISO date (yyyy-mm-dd). Only set once a closing date has been chosen. */
+  closingDate?: string
 }
 
 export type { Job, JobEmploymentType, JobManager, JobStatus, JobWorkplace }
