@@ -90,17 +90,39 @@ describe('DescriptionField', () => {
     expect(screen.getByRole('button', { name: 'Edit with AI' })).toBeInTheDocument()
   })
 
-  it('reports a connection that fails and offers another try', () => {
+  it('reports a connection that fails, with the follow-up the design draws', () => {
     const onToast = vi.fn()
     render(<Field access="disconnected" connectError="general" onToast={onToast} />)
     fireEvent.click(screen.getByRole('button', { name: 'Generate' }))
     fireEvent.click(screen.getByRole('button', { name: 'Done' }))
 
     const toast = onToast.mock.calls[0]?.[0]
-    expect(toast).toMatchObject({ kind: 'error', message: "MCP couldn't connect." })
+    expect(toast).toMatchObject({
+      kind: 'error',
+      message: "MCP couldn't connect.",
+      action: { label: 'Try again' },
+    })
     expect(screen.queryByLabelText('MCP endpoint')).not.toBeInTheDocument()
-    act(() => toast.action.onClick())
-    expect(screen.getByLabelText('MCP endpoint')).toBeInTheDocument()
+  })
+
+  it('opens the describe panel as far as it is designed', () => {
+    render(<Field access="connected" />)
+    fireEvent.click(screen.getByRole('button', { name: 'Generate' }))
+    finishRun()
+    const editor = screen.getAllByRole('textbox')[0] as HTMLElement
+    const before = editor.textContent
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit with AI' }))
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Describe a change' }))
+    const panel = screen.getByRole('complementary', { name: 'Describe what to improve' })
+    expect(panel).toBeInTheDocument()
+
+    // Nothing is sent yet: the description is left as it was.
+    fireEvent.click(screen.getByRole('button', { name: 'Send' }))
+    expect(editor.textContent).toBe(before)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }))
+    expect(screen.queryByRole('complementary')).not.toBeInTheDocument()
   })
 
   it('says when the key is wrong or the service is down', () => {

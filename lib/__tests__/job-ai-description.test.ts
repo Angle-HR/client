@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest'
 
 import {
   GENERATE_STEPS,
-  describeChange,
   draftDescription,
   editSteps,
   improveDescription,
@@ -58,13 +57,6 @@ describe('edits', () => {
     const once = improveDescription(draft, 'salary')
     expect(plainText(once)).toContain('Salary & benefits')
     expect(improveDescription(once, 'salary')).toBe(once)
-  })
-
-  it('applies a described change as a sentence', () => {
-    expect(describeChange('<p>Hi.</p>', ' mention the on-call rota ')).toBe(
-      '<p>Hi.</p><p>Mention the on-call rota.</p>',
-    )
-    expect(describeChange('<p>Hi.</p>', '   ')).toBe('<p>Hi.</p>')
   })
 })
 

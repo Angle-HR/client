@@ -67,17 +67,25 @@ function DateInput({
     value.day && value.month && value.year.length === 4
       ? `${value.year}-${value.month.padStart(2, '0')}-${value.day.padStart(2, '0')}`
       : undefined
-  const segment = (key: keyof DateParts, placeholder: string, name: string, widthClass: string) => (
-    <input
-      value={value[key]}
-      onChange={(event) =>
-        onChange({ ...value, [key]: digits(event.target.value, placeholder.length) })
-      }
-      inputMode="numeric"
-      placeholder={placeholder}
-      aria-label={name}
-      className={`${widthClass} bg-transparent text-body-m leading-21 text-text-primary outline-none placeholder:text-text-input-placeholder`}
-    />
+  // Each segment is as wide as what it shows: its placeholder while empty,
+  // its digits once typed, so a filled date closes up as it does in the design.
+  // A hidden copy of the text sizes the box and the input fills it.
+  const segment = (key: keyof DateParts, placeholder: string, name: string) => (
+    <span className="relative inline-grid shrink-0">
+      <span aria-hidden="true" className="invisible text-body-m leading-21 whitespace-pre">
+        {value[key] || placeholder}
+      </span>
+      <input
+        value={value[key]}
+        onChange={(event) =>
+          onChange({ ...value, [key]: digits(event.target.value, placeholder.length) })
+        }
+        inputMode="numeric"
+        placeholder={placeholder}
+        aria-label={name}
+        className="absolute inset-0 w-full bg-transparent text-body-m leading-21 text-text-primary outline-none placeholder:text-text-input-placeholder"
+      />
+    </span>
   )
   const dot = (
     <span
@@ -98,11 +106,11 @@ function DateInput({
         aria-labelledby={labelId}
         className={`flex h-[32px] items-center gap-[4px] rounded-sm-8 border bg-bg-input-placeholder pl-[7px] transition-colors focus-within:border-border-input-focus focus-within:bg-bg-input-focus hover:border-border-input-hover ${errorText ? 'border-border-input-error' : 'border-border-input-placeholder'}`}
       >
-        {segment('day', 'DD', 'Day', 'w-[20px]')}
+        {segment('day', 'DD', 'Day')}
         {dot}
-        {segment('month', 'MM', 'Month', 'w-[25px]')}
+        {segment('month', 'MM', 'Month')}
         {dot}
-        {segment('year', 'YYYY', 'Year', 'w-[37px]')}
+        {segment('year', 'YYYY', 'Year')}
         <button
           type="button"
           aria-label="Open calendar"

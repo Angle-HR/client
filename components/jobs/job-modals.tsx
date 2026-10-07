@@ -228,8 +228,14 @@ function AssignJobsModal({ me, current, onSave, onClose }: AssignJobsModalProps)
           label="Assign to"
           placeholder="Search for an option..."
           multiple
-          searchable
+          listSearchPlaceholder="Assign to…"
           selectionStyle="chip"
+          // The design ends at this row: there is no invite flow behind it yet.
+          footerAction={{
+            label: 'Invite new team members',
+            icon: <DashboardIcon name="user-plus-solid" size={14} />,
+            onClick: () => {},
+          }}
           options={people.map((person) => ({
             value: person.name,
             label: person.name,
@@ -241,7 +247,7 @@ function AssignJobsModal({ me, current, onSave, onClose }: AssignJobsModalProps)
           showPrefixIcon
           prefixIcon={
             <span className="inline-flex text-text-input-placeholder">
-              <DashboardIcon name="user-plus-outline" size={14} />
+              <DashboardIcon name="user-plus-solid" size={14} />
             </span>
           }
         />

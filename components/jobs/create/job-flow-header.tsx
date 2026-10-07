@@ -79,12 +79,12 @@ function JobFlowHeader({ current, mode, onSave }: JobFlowHeaderProps) {
         <Button variant="primary" accent="default" size="sm" onClick={onSave}>
           {mode === 'create' ? 'Save as draft' : 'Save Changes'}
         </Button>
-        {/* The preview screen is not designed yet. */}
+        {/* Drawn at rest in the design, with no preview screen behind it yet:
+            the button is here and leads nowhere until that screen exists. */}
         <Button
           variant="primary"
           accent="default"
           size="sm"
-          disabled
           iconSuffix={<DashboardIcon name="play-circle-semi" size={14} />}
         >
           Preview

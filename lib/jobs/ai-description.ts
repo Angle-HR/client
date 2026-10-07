@@ -178,18 +178,10 @@ function improveDescription(html: string, improvement: Improvement): string {
   return `${html}<p><b>${option.heading}</b></p><p>${option.body}</p>`
 }
 
-/** Applies a change described in the user's own words. */
-function describeChange(html: string, instruction: string): string {
-  const note = instruction.trim()
-  if (!note) return html
-  return `${html}<p>${escapeHtml(note.charAt(0).toUpperCase() + note.slice(1))}${/[.!?]$/.test(note) ? '' : '.'}</p>`
-}
-
 export {
   CONNECT_ERRORS,
   GENERATE_STEPS,
   IMPROVEMENTS,
-  describeChange,
   draftDescription,
   editSteps,
   improveDescription,

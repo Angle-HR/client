@@ -51,6 +51,10 @@ function useMe(enabled = true) {
   return useQuery({ queryKey: queryKeys.me, queryFn: requests.getMe, enabled })
 }
 
+function useJobPermissions() {
+  return useQuery({ queryKey: queryKeys.jobPermissions, queryFn: requests.getJobPermissions })
+}
+
 function useJobs() {
   return useQuery({
     queryKey: queryKeys.jobs,
@@ -125,6 +129,7 @@ export {
   useIdentificationRequirements,
   useInvite,
   useMe,
+  useJobPermissions,
   useJobs,
   useJobTemplates,
   useBusinessTypes,

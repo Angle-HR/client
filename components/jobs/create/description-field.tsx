@@ -1,16 +1,17 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 
 import { DashboardIcon } from '@/components/dashboard/nav-config'
 import { Floating, toAnchor } from '@/components/jobs/floating'
+import { DescribeArt } from '@/components/jobs/job-art'
 import { PanelHeader, panel, rowBase, rowText } from '@/components/jobs/job-filters'
 import { Button, Modal, ModalActions, RichTextInput } from '@/components/ui'
 import {
   CONNECT_ERRORS,
   GENERATE_STEPS,
   IMPROVEMENTS,
-  describeChange,
   draftDescription,
   editSteps,
   improveDescription,
@@ -52,7 +53,7 @@ const STEP_MS = 900
 type Menu =
   | { type: 'edits'; anchor: AnchorRect }
   | { type: 'improve'; anchor: AnchorRect }
-  | { type: 'describe'; anchor: AnchorRect; improving: boolean }
+  | { type: 'describe' }
 
 interface Run {
   steps: string[]
@@ -119,11 +120,10 @@ interface McpModalProps {
   endpoint: string
   onDone: () => void
   onClose: () => void
-  onCopied: () => void
 }
 
 /** "Connect to the Open HR MCP server". Figma: 8973:610701. */
-function McpModal({ endpoint, onDone, onClose, onCopied }: McpModalProps) {
+function McpModal({ endpoint, onDone, onClose }: McpModalProps) {
   return (
     <Modal
       open
@@ -148,12 +148,12 @@ function McpModal({ endpoint, onDone, onClose, onCopied }: McpModalProps) {
           <button
             type="button"
             onClick={() => {
-              void navigator.clipboard?.writeText(endpoint).then(onCopied, () => {})
+              void navigator.clipboard?.writeText(endpoint).catch(() => {})
             }}
             className="flex shrink-0 cursor-pointer items-center gap-[8px] rounded-r-sm-8 border border-l-0 border-border-flow-btn-sec-rest bg-bg-flow-btn-sec-rest px-[10px] text-body-l font-medium text-text-flow-btn-secondary transition-colors hover:bg-bg-flow-btn-sec-hover"
           >
             Copy
-            <DashboardIcon name="clipboard-document-outline" size={15} />
+            <DashboardIcon name="clipboard-document-solid" size={15} />
           </button>
         </div>
         <a
@@ -163,7 +163,7 @@ function McpModal({ endpoint, onDone, onClose, onCopied }: McpModalProps) {
           className="flex h-[22px] items-center gap-[2px] rounded-sm-6 px-[6px] text-body-xs leading-none text-text-secondary transition-colors hover:bg-bg-transparent-light hover:text-text-primary"
         >
           Learn how to connect your AI
-          <DashboardIcon name="arrow-top-right-on-square-outline" size={10} />
+          <DashboardIcon name="arrow-top-right-on-square-solid" size={10} />
         </a>
       </div>
       <ModalActions>
@@ -175,6 +175,82 @@ function McpModal({ endpoint, onDone, onClose, onCopied }: McpModalProps) {
         </Button>
       </ModalActions>
     </Modal>
+  )
+}
+
+const roundButton =
+  'flex size-[20px] shrink-0 items-center justify-center rounded-full bg-bg-secondary text-text-secondary'
+
+/**
+ * "Describe what to improve": the side panel the designer has started and
+ * marked as still being worked on (8973:611717). It is built as far as it is
+ * drawn — header, mark and composer — and no further: nothing is sent, and the
+ * attach and dictate buttons do nothing yet.
+ */
+function DescribePanel({ onClose }: { onClose: () => void }) {
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [onClose])
+
+  if (typeof document === 'undefined') return null
+
+  return createPortal(
+    <aside
+      aria-label="Describe what to improve"
+      // Over the right of the content card: under its 44px header, to its foot.
+      className="fixed top-[49px] right-[5px] bottom-[5px] z-40 flex w-[350px] flex-col border-l-[0.5px] border-border-transparent-medium bg-bg-secondary"
+    >
+      <div className="relative">
+        <PanelHeader
+          title="Describe what to improve"
+          icon="chevron-left-outline"
+          iconLabel="Back"
+          onIconClick={onClose}
+        />
+        <button
+          type="button"
+          aria-label="Close"
+          onClick={onClose}
+          className={`absolute top-[7px] right-[8px] cursor-pointer ${roundButton}`}
+        >
+          <DashboardIcon name="x-mark-outline" size={12} />
+        </button>
+      </div>
+      {/* The mark sits at the centre of the whole panel, not of the space
+          left above the composer. */}
+      <div className="flex-1" />
+      <span className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+        <DescribeArt />
+      </span>
+      <div className="mx-[8.5px] mb-[32px] flex flex-col gap-[10px] rounded-lg-10 bg-bg-primary px-[2px] pt-[2px] pb-[10px]">
+        <textarea
+          aria-label="Describe what to improve"
+          className="h-[96px] w-full resize-none rounded-lg-10 bg-bg-secondary px-[14px] py-[12px] text-body-s leading-19_5 text-text-primary shadow-slots-xsmall outline-none"
+        />
+        <div className="flex items-center justify-between px-[15px]">
+          <button type="button" aria-label="Attach" className={roundButton}>
+            <DashboardIcon name="plus-outline" size={12} />
+          </button>
+          <span className="flex items-center gap-[8px]">
+            <button type="button" aria-label="Dictate" className={roundButton}>
+              <DashboardIcon name="microphone-outline" size={12} />
+            </button>
+            <button
+              type="button"
+              aria-label="Send"
+              className="flex size-[20px] shrink-0 items-center justify-center rounded-full bg-text-primary text-bg-secondary"
+            >
+              <DashboardIcon name="arrow-up-outline" size={10} />
+            </button>
+          </span>
+        </div>
+      </div>
+    </aside>,
+    document.body,
   )
 }
 
@@ -193,7 +269,6 @@ function DescriptionField({
   const [drafted, setDrafted] = useState(false)
   const [connecting, setConnecting] = useState(false)
   const [menu, setMenu] = useState<Menu | null>(null)
-  const [instruction, setInstruction] = useState('')
   const [run, setRun] = useState<Run | null>(null)
   const latest = useRef({ onChange })
   useEffect(() => {
@@ -255,9 +330,9 @@ function DescriptionField({
         kind: 'error',
         message: copy.message,
         detail: copy.detail,
-        // Creating a key has no screen yet, so every follow-up reopens the
-        // connection dialog.
-        action: { label: copy.action, onClick: () => setConnecting(true) },
+        // The design stops at the button: its note says what each one leads
+        // to is still to be designed.
+        action: { label: copy.action, onClick: () => {} },
       })
       return
     }
@@ -267,16 +342,6 @@ function DescriptionField({
       message: 'MCP connected.',
       detail: 'You can disconnect it anytime in Account settings then MCPs',
     })
-  }
-
-  function applyInstruction(improving: boolean) {
-    const note = instruction.trim()
-    if (!note) return
-    setInstruction('')
-    start(
-      editSteps(improving ? 'Improving the content' : 'Making your change'),
-      describeChange(value, note),
-    )
   }
 
   const trigger = (
@@ -330,7 +395,6 @@ function DescriptionField({
           endpoint={mcpEndpoint(workspace)}
           onDone={connect}
           onClose={() => setConnecting(false)}
-          onCopied={() => onToast({ kind: 'done', message: 'Endpoint copied to your clipboard' })}
         />
       ) : null}
 
@@ -393,7 +457,7 @@ function DescriptionField({
                 className={rowBase}
               >
                 <span className="inline-flex text-text-tertiary">
-                  <DashboardIcon name="arrow-trending-up-solid" size={14} />
+                  <DashboardIcon name="arrow-trending-up-outline" size={14} />
                 </span>
                 <span className={rowText}>Improve the content</span>
                 <span className="inline-flex text-text-light">
@@ -405,7 +469,7 @@ function DescriptionField({
               <button
                 type="button"
                 role="menuitem"
-                onClick={() => setMenu({ type: 'describe', anchor: menu.anchor, improving: false })}
+                onClick={() => setMenu({ type: 'describe' })}
                 className={rowBase}
               >
                 <span className="inline-flex text-text-tertiary">
@@ -467,7 +531,7 @@ function DescriptionField({
                   className={rowBase}
                 >
                   <span className="inline-flex text-text-tertiary">
-                    <DashboardIcon name="circle-empty-outline" size={14} />
+                    <DashboardIcon name="circle-empty-solid" size={14} />
                   </span>
                   <span className={rowText}>{improvement.label}</span>
                 </button>
@@ -478,7 +542,7 @@ function DescriptionField({
               <button
                 type="button"
                 role="menuitem"
-                onClick={() => setMenu({ type: 'describe', anchor: menu.anchor, improving: true })}
+                onClick={() => setMenu({ type: 'describe' })}
                 className={rowBase}
               >
                 <span className="inline-flex text-text-tertiary">
@@ -491,54 +555,7 @@ function DescriptionField({
         </Floating>
       ) : null}
 
-      {menu?.type === 'describe' ? (
-        <Floating
-          anchor={menu.anchor}
-          place={underRight(menu.anchor)}
-          className={panel}
-          onClose={() => setMenu(null)}
-          focusFirstItem={false}
-        >
-          <PanelHeader
-            title="Edit with AI"
-            icon="chevron-left-outline"
-            iconLabel="Back"
-            onIconClick={() =>
-              setMenu({ type: menu.improving ? 'improve' : 'edits', anchor: menu.anchor })
-            }
-          />
-          <form
-            className="flex flex-col"
-            onSubmit={(event) => {
-              event.preventDefault()
-              applyInstruction(menu.improving)
-            }}
-          >
-            <div className="flex h-[36px] shrink-0 items-center border-b border-border-transparent-light px-[10px]">
-              <input
-                autoFocus
-                value={instruction}
-                onChange={(event) => setInstruction(event.target.value)}
-                placeholder={menu.improving ? 'Describe what to improve' : 'Describe a change'}
-                aria-label={menu.improving ? 'Describe what to improve' : 'Describe a change'}
-                className="w-full bg-transparent text-body-m leading-21 text-text-primary outline-none placeholder:text-text-tertiary"
-              />
-            </div>
-            <div className="px-[4px] pt-[4px]">
-              <button
-                type="submit"
-                disabled={!instruction.trim()}
-                className={`${rowBase} disabled:cursor-default disabled:opacity-50`}
-              >
-                <span className="inline-flex text-text-tertiary">
-                  <DashboardIcon name="sparkles-solid" size={14} />
-                </span>
-                <span className={rowText}>Apply change</span>
-              </button>
-            </div>
-          </form>
-        </Floating>
-      ) : null}
+      {menu?.type === 'describe' ? <DescribePanel onClose={() => setMenu(null)} /> : null}
     </div>
   )
 }

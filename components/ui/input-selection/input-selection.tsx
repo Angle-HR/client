@@ -13,6 +13,7 @@ import {
 import { HelperText, type HelperTextState } from '../input/helper-text'
 import { ListItemDefault } from '../list/list-item-default'
 import { ListItemMultiSelect } from '../list/list-item-multi-select'
+import { ListItemSelected } from '../list/list-item-selected'
 import { Divider } from '../notification/divider'
 import { Slots } from '../slots/slots'
 import { Chip } from '../tags/chip'
@@ -65,6 +66,11 @@ interface InputSelectionProps {
    * gives way once something is chosen.
    */
   selectionStyle?: 'tag' | 'chip'
+  /**
+   * Puts a search box at the top of the list instead of in the field, with
+   * this placeholder. For lists whose field shows chips.
+   */
+  listSearchPlaceholder?: string
   /** An action pinned under the options, e.g. "Create new team". */
   footerAction?: { label: string; icon?: ReactNode; onClick: () => void }
 }
@@ -94,6 +100,7 @@ function InputSelection({
   searchable = false,
   allowCustom = false,
   selectionStyle = 'tag',
+  listSearchPlaceholder,
   footerAction,
   ...props
 }: InputSelectionProps) {
@@ -126,7 +133,7 @@ function InputSelection({
   // itself never displays one.
   const showsValue = !withSelection && !multiple
 
-  const term = searchable ? query.trim().toLowerCase() : ''
+  const term = searchable || listSearchPlaceholder ? query.trim().toLowerCase() : ''
   const shownOptions = term
     ? options.filter((o) => `${o.label} ${o.keywords ?? ''}`.toLowerCase().includes(term))
     : options
@@ -335,6 +342,20 @@ function InputSelection({
           // Figma's floating list is inset 5px, a pixel more than a tight slot.
           className={`absolute z-10 left-0 right-0 max-h-[249px] [&>div:first-child]:p-[5px]! transition-[opacity,transform] duration-150 ease-out motion-reduce:scale-100 motion-reduce:duration-100 ${dropUp ? 'bottom-full mb-[4px] origin-bottom' : 'top-full mt-[4px] origin-top'} ${visible ? 'opacity-100 scale-100' : 'opacity-0 scale-[0.96]'}`}
         >
+          {listSearchPlaceholder ? (
+            // Edge to edge across the list's 5px inset, with a hairline under it.
+            <div className="-mx-[5px] -mt-[5px] mb-[4px] flex h-[36px] items-center border-b border-border-transparent-light px-[10px]">
+              <input
+                autoFocus
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={listSearchPlaceholder}
+                aria-label={listSearchPlaceholder}
+                autoComplete="off"
+                className="w-full bg-transparent text-body-m leading-21 text-text-primary outline-none placeholder:text-text-tertiary"
+              />
+            </div>
+          ) : null}
           <ul
             id={listboxId}
             role="listbox"
@@ -343,6 +364,21 @@ function InputSelection({
           >
             {shownOptions.map((opt) => {
               const isSelected = selectedArray.includes(opt.value)
+              // With chips, a chosen row is ticked at its right rather than
+              // carrying a tick box, and keeps its own visual (an avatar).
+              if (multiple && selectionStyle === 'chip') {
+                return (
+                  <ListItemSelected
+                    className="w-full!"
+                    key={opt.value}
+                    mainText={opt.label}
+                    icon={opt.icon}
+                    withIcon={Boolean(opt.icon)}
+                    selected={isSelected}
+                    onClick={() => selectOption(opt.value)}
+                  />
+                )
+              }
               return multiple ? (
                 <ListItemMultiSelect
                   key={opt.value}

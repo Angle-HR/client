@@ -97,6 +97,8 @@ interface AutocompleteOptions {
   regionCode?: string
   sessionToken?: string
   signal?: AbortSignal
+  /** Only cities, regions and countries — no streets, airports or businesses. */
+  regionsOnly?: boolean
 }
 
 /**
@@ -106,7 +108,7 @@ interface AutocompleteOptions {
  */
 async function autocompleteAddresses(
   input: string,
-  { regionCode, sessionToken, signal }: AutocompleteOptions = {},
+  { regionCode, sessionToken, signal, regionsOnly }: AutocompleteOptions = {},
 ): Promise<ProductAddressSuggestion[]> {
   const key = apiKey()
   if (!key || !input.trim()) return []
@@ -122,6 +124,7 @@ async function autocompleteAddresses(
       input,
       ...(sessionToken ? { sessionToken } : {}),
       ...(regionCode ? { includedRegionCodes: [regionCode.toLowerCase()] } : {}),
+      ...(regionsOnly ? { includedPrimaryTypes: ['(regions)'] } : {}),
     }),
   })
 

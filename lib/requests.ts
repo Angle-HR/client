@@ -2,8 +2,10 @@ import { axiosInstance } from '@/config/axios'
 
 import { ENDPOINTS } from './endpoints'
 import { JOB_FIXTURES } from './jobs/fixtures'
+import { FULL_PERMISSIONS } from './jobs/permissions'
 import { TEMPLATE_FIXTURES } from './jobs/templates'
 
+import type { JobPermissions } from './jobs/permissions'
 import type { JobTemplate } from './jobs/templates'
 import type { Job } from './jobs/types'
 import type {
@@ -203,6 +205,8 @@ const requests = {
   // screens are already shaped for the real call.
   getJobs: async (): Promise<Job[]> => JOB_FIXTURES,
   getJobTemplates: async (): Promise<JobTemplate[]> => TEMPLATE_FIXTURES,
+  // Stand-in until the API says what this person may do with jobs.
+  getJobPermissions: async (): Promise<JobPermissions> => FULL_PERMISSIONS,
 
   getMe: async (): Promise<AuthMeData> => {
     const { data } = await axiosInstance.get<ApiResponse<AuthMeData>>(ENDPOINTS.auth.me())

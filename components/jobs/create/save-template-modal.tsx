@@ -66,7 +66,6 @@ function SaveTemplateModal({
       />
       <Textarea
         label="Description (Optional)"
-        placeholder="What is this template for?"
         value={description}
         onChange={(event) => {
           setDescription(event.target.value)

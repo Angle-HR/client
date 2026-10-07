@@ -27,7 +27,12 @@ import { useJobsController } from '@/components/jobs/use-jobs-controller'
 import { Button, Tabs, TextButton, TextInput } from '@/components/ui'
 import { needsRetentionNotice, searchJobs, statusTargets } from '@/lib/jobs/actions'
 import { applyFilters, applySort } from '@/lib/jobs/filters'
-import { useJobTemplates, useMe } from '@/lib/queries'
+import {
+  FULL_PERMISSIONS,
+  canChangeClosingDate,
+  withPermissionsOverride,
+} from '@/lib/jobs/permissions'
+import { useJobPermissions, useJobTemplates, useMe } from '@/lib/queries'
 
 import type { AnchorRect } from '@/components/jobs/floating'
 import type { FilterPopover } from '@/components/jobs/job-filters'
@@ -95,6 +100,12 @@ function JobsPage() {
   const controller = useJobsController()
   const { jobs, jobsQuery, dialog } = controller
   const templates = useJobTemplates().data ?? []
+  // `?permissions=limited` reaches the limited-permission toolbar until the API
+  // reports roles.
+  const permissions = withPermissionsOverride(
+    useJobPermissions().data ?? FULL_PERMISSIONS,
+    searchParams.get('permissions'),
+  )
   const templateCount = templates.length
   const me = useMe()
 
@@ -240,20 +251,12 @@ function JobsPage() {
               >
                 Create a new job
               </Button>
-              {/* The AI-assisted flow is not designed yet; the designer's own
-                  toast says so. */}
+              {/* Drawn in the design with no flow behind it on these pages:
+                  the button is here and leads nowhere until that is designed. */}
               <Button
                 variant="tertiary"
                 accent="blue"
                 size="sm"
-                onClick={() =>
-                  notify({
-                    kind: 'info',
-                    message: 'AI integration coming soon',
-                    detail:
-                      "We're building a way to connect your own AI to Open HR. We'll let you know when it's ready",
-                  })
-                }
                 iconSuffix={<DashboardIcon name="sparkles-solid" size={14} />}
               >
                 Create with AI
@@ -450,7 +453,7 @@ function JobsPage() {
         <SelectionToolbar
           count={selectedJobs.length}
           statusOptions={statusTargets(selectedJobs)}
-          showClosingDate={selectedJobs.some((job) => job.status === 'open')}
+          showClosingDate={canChangeClosingDate(permissions, selectedJobs)}
           // The selection is kept after a status change so the moved jobs can
           // still be tracked; Escape or the close button dismisses it.
           onChangeStatus={(status) => controller.requestStatus(selectedJobIds, status)}

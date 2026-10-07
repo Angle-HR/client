@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from 'react'
 
 import { DashboardIcon } from '@/components/dashboard/nav-config'
+import { AreaSearchField } from '@/components/jobs/create/area-search-field'
 import { CreateTeamModal } from '@/components/jobs/create/create-team-modal'
 import { DescriptionField } from '@/components/jobs/create/description-field'
 import {
@@ -20,6 +21,7 @@ import {
   TextInput,
 } from '@/components/ui'
 import { toIsoDate } from '@/lib/jobs/actions'
+import { flagCodeFor } from '@/lib/jobs/areas'
 import {
   AREA_OPTIONS,
   COMPANY_ADDRESS,
@@ -150,7 +152,8 @@ const PAY_PERIODS: { value: PayPeriod; label: string }[] = [
 const single = (value: string | string[]) => (Array.isArray(value) ? (value[0] ?? '') : value)
 const many = (value: string | string[]) => (Array.isArray(value) ? value : [value])
 
-const flagFor = (area: string) => AREA_OPTIONS.find((option) => option.value === area)?.flag
+const flagFor = (area: string) =>
+  AREA_OPTIONS.find((option) => option.value === area)?.flag ?? flagCodeFor(area)
 
 /** A round 14px flag, as the area options and chips show one. */
 function AreaFlag({ area }: { area: string }) {
@@ -162,12 +165,6 @@ function AreaFlag({ area }: { area: string }) {
     </span>
   )
 }
-
-const AREA_SELECT_OPTIONS = AREA_OPTIONS.map((option) => ({
-  value: option.value,
-  label: option.label,
-  icon: <AreaFlag area={option.value} />,
-}))
 
 function JobDetailsForm({ draft, errors, onChange, ai, onToast }: JobDetailsFormProps) {
   // Teams created from this form, on top of the workspace's own.
@@ -217,7 +214,7 @@ function JobDetailsForm({ draft, errors, onChange, ai, onToast }: JobDetailsForm
                 errorText={errors.team}
                 footerAction={{
                   label: 'Create new team',
-                  icon: <DashboardIcon name="plus-solid" size={14} />,
+                  icon: <DashboardIcon name="plus-circle-solid" size={14} />,
                   onClick: () => setCreatingTeam(true),
                 }}
               />
@@ -277,17 +274,9 @@ function JobDetailsForm({ draft, errors, onChange, ai, onToast }: JobDetailsForm
               <>
                 {/* Chosen places sit under the field as chips, so the field
                     itself stays a search box. */}
-                <InputSelection
-                  label="Country"
-                  placeholder="Search"
-                  options={AREA_SELECT_OPTIONS}
-                  multiple
-                  withSelection={false}
-                  searchable
-                  value={draft.areas}
-                  onChange={(value) => setAreas(many(value))}
-                  showHelper
-                  helperText="Enter the city, state or country where this role is based."
+                <AreaSearchField
+                  chosen={draft.areas}
+                  onSelect={(place) => setAreas([...draft.areas, place])}
                 />
                 {draft.areas.length > 0 ? (
                   <div className="flex flex-wrap gap-[6px]">

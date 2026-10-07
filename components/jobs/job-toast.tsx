@@ -74,8 +74,8 @@ function JobToast({ toast, onDismiss }: { toast: JobToastState; onDismiss: () =>
               <DashboardIcon name="info-solid" size={15} />
             </span>
           ) : toast.kind === 'error' ? (
-            <span className="inline-flex text-red-7">
-              <DashboardIcon name="x-circle-solid" size={15} />
+            <span className="inline-flex text-red-5">
+              <DashboardIcon name="exclamation-triangle-solid" size={15} />
             </span>
           ) : (
             <span className="inline-flex text-green-5">
