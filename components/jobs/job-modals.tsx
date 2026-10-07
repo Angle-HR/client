@@ -4,18 +4,21 @@ import { useState } from 'react'
 
 import { DashboardIcon } from '@/components/dashboard/nav-config'
 import {
+  Avatar,
   BannerInfo,
   Button,
   DateInput,
   EMPTY_DATE,
+  InputSelection,
   Modal,
   ModalActions,
   RadioButton,
 } from '@/components/ui'
 import { parseFutureDate } from '@/lib/jobs/actions'
+import { TEAM_MEMBERS } from '@/lib/jobs/people'
 
 import type { DateParts } from '@/components/ui'
-import type { JobStatus } from '@/lib/jobs/types'
+import type { JobManager, JobStatus } from '@/lib/jobs/types'
 
 /**
  * The confirmation and form modals for acting on jobs. Figma: "Changing Job
@@ -176,6 +179,95 @@ function ClosingDateModal({ onSave, onClose }: ClosingDateModalProps) {
   )
 }
 
+interface AssignJobsModalProps {
+  /** The signed-in user, offered as "Assign to me". */
+  me: JobManager
+  /** Who the jobs are assigned to now, pre-selected when they all agree. */
+  current: JobManager[]
+  onSave: (people: JobManager[]) => void
+  onClose: () => void
+}
+
+function AssignJobsModal({ me, current, onSave, onClose }: AssignJobsModalProps) {
+  const onlyMe = current.length === 1 && current[0]?.name === me.name
+  const [mode, setMode] = useState<'me' | 'others'>(
+    onlyMe || current.length === 0 ? 'me' : 'others',
+  )
+  const [names, setNames] = useState<string[]>(onlyMe ? [] : current.map((person) => person.name))
+
+  // Everyone who can be picked: the team, plus anyone already assigned.
+  const people = [
+    ...TEAM_MEMBERS,
+    ...current.filter((person) => !TEAM_MEMBERS.some((member) => member.name === person.name)),
+  ]
+  const chosen = mode === 'me' ? [me] : people.filter((person) => names.includes(person.name))
+
+  return (
+    <Modal
+      open
+      title="Assign Job to…"
+      icon={<DashboardIcon name="user-circle-solid" size={14} />}
+      onClose={onClose}
+    >
+      <div role="radiogroup" aria-label="Assign to" className="flex flex-col gap-[10px]">
+        <RadioButton
+          name="assign-mode"
+          label="Assign to me"
+          checked={mode === 'me'}
+          onChange={() => setMode('me')}
+        />
+        <RadioButton
+          name="assign-mode"
+          label="Assign to others…"
+          checked={mode === 'others'}
+          onChange={() => setMode('others')}
+        />
+      </div>
+      {mode === 'others' ? (
+        <InputSelection
+          label="Assign to"
+          placeholder="Search for an option..."
+          multiple
+          options={people.map((person) => ({
+            value: person.name,
+            label: person.name,
+            icon: (
+              <Avatar
+                size={16}
+                type="initials"
+                text={person.name.charAt(0)}
+                colour={person.colour}
+              />
+            ),
+          }))}
+          value={names}
+          onChange={(value) => setNames(Array.isArray(value) ? value : [value])}
+          showPrefixIcon
+          prefixIcon={
+            <span className="inline-flex text-text-input-placeholder">
+              <DashboardIcon name="user-plus-outline" size={14} />
+            </span>
+          }
+        />
+      ) : null}
+      <ModalActions>
+        <Button variant="primary" accent="default" size="md" onClick={onClose}>
+          Cancel
+        </Button>
+        <Button
+          variant="primary"
+          accent="blue"
+          size="md"
+          disabled={chosen.length === 0}
+          onClick={() => onSave(chosen)}
+        >
+          Save changes
+        </Button>
+      </ModalActions>
+    </Modal>
+  )
+}
+
 type ExportScope = 'all' | 'selected'
 type ExportFormat = 'csv' | 'json'
 
@@ -245,5 +337,5 @@ function ExportJobsModal({ selectedCount, onExport, onClose }: ExportJobsModalPr
   )
 }
 
-export { ClosingDateModal, DeleteJobsModal, ExportJobsModal, StatusConfirmModal }
+export { AssignJobsModal, ClosingDateModal, DeleteJobsModal, ExportJobsModal, StatusConfirmModal }
 export type { ConfirmableStatus, ExportFormat, ExportScope }

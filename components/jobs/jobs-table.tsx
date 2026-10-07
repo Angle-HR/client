@@ -4,7 +4,8 @@ import { useRef, useState, type ReactNode } from 'react'
 
 import { DashboardIcon } from '@/components/dashboard/nav-config'
 import { DOT, GroupLabel, JOB_STATUS_META, formatPostedDate } from '@/components/jobs/job-status'
-import { Avatar, Checkbox, Chip } from '@/components/ui'
+import { ManagersChip } from '@/components/jobs/managers-chip'
+import { Checkbox, Chip } from '@/components/ui'
 
 import type { GroupMeta } from '@/components/jobs/job-status'
 import type { Job, JobStatus } from '@/lib/jobs/types'
@@ -174,20 +175,7 @@ function JobRow({ job, selected, menuOpen, onSelect, onOpenMenu }: JobRowProps) 
         />
       </div>
       <div role="cell" className="flex h-full w-[100px] shrink-0 items-center px-[12px]">
-        <Chip
-          fill="transparent"
-          tone="secondary"
-          label={job.manager.name}
-          icon={
-            <Avatar
-              size={14}
-              type="initials"
-              text={job.manager.name.charAt(0)}
-              colour={job.manager.colour}
-            />
-          }
-          className="max-w-full min-w-0"
-        />
+        <ManagersChip managers={job.managers} />
       </div>
       <div role="cell" className={`w-[130px] shrink-0 truncate px-[12px] ${cellText}`}>
         {`${job.location} ${DOT} ${job.workplace}`}

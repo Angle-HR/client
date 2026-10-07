@@ -10,6 +10,7 @@ import { toAnchor } from '@/components/jobs/floating'
 import { FilterBar, FilterPopovers } from '@/components/jobs/job-filters'
 import { ColumnMenu, JobRowMenu } from '@/components/jobs/job-menus'
 import {
+  AssignJobsModal,
   ClosingDateModal,
   DeleteJobsModal,
   ExportJobsModal,
@@ -25,7 +26,7 @@ import { useJobsController } from '@/components/jobs/use-jobs-controller'
 import { Button, Tabs, TextButton, TextInput } from '@/components/ui'
 import { searchJobs, statusTargets } from '@/lib/jobs/actions'
 import { applyFilters, applySort } from '@/lib/jobs/filters'
-import { useJobTemplates } from '@/lib/queries'
+import { useJobTemplates, useMe } from '@/lib/queries'
 
 import type { AnchorRect } from '@/components/jobs/floating'
 import type { FilterPopover } from '@/components/jobs/job-filters'
@@ -33,7 +34,7 @@ import type { JobRowAction } from '@/components/jobs/job-menus'
 import type { JobGroup, SelectJob } from '@/components/jobs/jobs-table'
 import type { TabOption } from '@/components/ui'
 import type { JobFilter, JobSort } from '@/lib/jobs/filters'
-import type { Job, JobStatus } from '@/lib/jobs/types'
+import type { Job, JobManager, JobStatus } from '@/lib/jobs/types'
 
 type JobsTab = 'all' | 'drafts' | 'archived' | 'templates'
 type JobsView = 'list' | 'board'
@@ -93,6 +94,7 @@ function JobsPage() {
   const controller = useJobsController()
   const { jobs, jobsQuery, dialog } = controller
   const templateCount = useJobTemplates().data?.length ?? 0
+  const me = useMe()
 
   const [tab, setTab] = useState<JobsTab>('all')
   const [view, setView] = useState<JobsView>('list')
@@ -167,6 +169,8 @@ function JobsPage() {
   // Selected jobs that still exist — a deleted job drops out on its own.
   const selectedJobs = jobs.filter((job) => selectedIds.has(job.id))
   const selectedJobIds = selectedJobs.map((job) => job.id)
+  const meName = me.data?.first_name || me.data?.legal_full_name || me.data?.email || 'You'
+  const currentUser: JobManager = { name: meName, colour: 'blue' }
   const menuJob = rowMenu ? jobs.find((job) => job.id === rowMenu.jobId) : undefined
   const dialogJobs = dialog ? jobs.filter((job) => dialog.jobIds.includes(job.id)) : []
 
@@ -175,6 +179,7 @@ function JobsPage() {
     else if (action === 'copy-link') void controller.copyLinks([job.id])
     else if (action === 'delete') controller.openDialog({ type: 'delete', jobIds: [job.id] })
     else if (action === 'export') controller.openDialog({ type: 'export', jobIds: [job.id] })
+    else if (action === 'assign') controller.openDialog({ type: 'assign', jobIds: [job.id] })
     else if (action === 'closing-date') {
       controller.openDialog({ type: 'closing-date', jobIds: [job.id] })
     }
@@ -427,6 +432,7 @@ function JobsPage() {
           onChangeClosingDate={() =>
             controller.openDialog({ type: 'closing-date', jobIds: selectedJobIds })
           }
+          onAssign={() => controller.openDialog({ type: 'assign', jobIds: selectedJobIds })}
           onDuplicate={() => controller.duplicate(selectedJobIds)}
           onCopyLinks={() => void controller.copyLinks(selectedJobIds)}
           onExport={() => controller.openDialog({ type: 'export', jobIds: selectedJobIds })}
@@ -494,6 +500,23 @@ function JobsPage() {
       {dialog?.type === 'closing-date' ? (
         <ClosingDateModal
           onSave={controller.confirmDialog.closingDate}
+          onClose={controller.closeDialog}
+        />
+      ) : null}
+      {dialog?.type === 'assign' ? (
+        <AssignJobsModal
+          me={currentUser}
+          // Pre-select the current managers only when every job agrees on them.
+          current={
+            dialogJobs.every(
+              (job) =>
+                job.managers.map((m) => m.name).join() ===
+                dialogJobs[0]?.managers.map((m) => m.name).join(),
+            )
+              ? (dialogJobs[0]?.managers ?? [])
+              : []
+          }
+          onSave={controller.confirmDialog.assign}
           onClose={controller.closeDialog}
         />
       ) : null}

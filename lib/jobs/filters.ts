@@ -164,26 +164,29 @@ function applicantRange(count: number): string {
   return (APPLICANT_RANGES.find((range) => count <= range.max) ?? APPLICANT_RANGES[0]!).value
 }
 
-/** The value a job has for a field, as the string a filter compares against. */
-function fieldValue(job: Job, field: FilterField, today: Date): string {
+/**
+ * The values a job has for a field, as the strings a filter compares against.
+ * Most fields have exactly one; a job with several managers has one per manager.
+ */
+function fieldValues(job: Job, field: FilterField, today: Date): string[] {
   switch (field) {
     case 'status':
-      return job.status
+      return [job.status]
     case 'assignee':
     case 'managedBy':
-      return job.manager.name
+      return job.managers.map((manager) => manager.name)
     case 'createdBy':
-      return job.createdBy.name
+      return [job.createdBy.name]
     case 'location':
-      return job.location
+      return [job.location]
     case 'team':
-      return job.department
+      return [job.department]
     case 'employmentType':
-      return job.employmentType
+      return [job.employmentType]
     case 'createdOn':
-      return dateRange(job.postedAt, today)
+      return [dateRange(job.postedAt, today)]
     case 'applicants':
-      return applicantRange(job.totalApplicants)
+      return [applicantRange(job.totalApplicants)]
   }
 }
 
@@ -201,15 +204,26 @@ function filterOptions(jobs: Job[], field: FilterField): FilterOption[] {
 
   const seen = new Map<string, FilterOption>()
   for (const job of jobs) {
-    const person =
+    const people =
       field === 'createdBy'
-        ? job.createdBy
+        ? [job.createdBy]
         : field === 'assignee' || field === 'managedBy'
-          ? job.manager
+          ? job.managers
           : null
-    const value = person ? person.name : fieldValue(job, field, new Date())
-    if (!seen.has(value)) {
-      seen.set(value, { value, label: value, avatarColour: person?.colour })
+    if (people) {
+      for (const person of people) {
+        if (!seen.has(person.name)) {
+          seen.set(person.name, {
+            value: person.name,
+            label: person.name,
+            avatarColour: person.colour,
+          })
+        }
+      }
+      continue
+    }
+    for (const value of fieldValues(job, field, new Date())) {
+      if (!seen.has(value)) seen.set(value, { value, label: value })
     }
   }
   return [...seen.values()].sort((a, b) => a.label.localeCompare(b.label))
@@ -221,7 +235,9 @@ function applyFilters(jobs: Job[], filters: JobFilter[], today: Date = new Date(
   if (active.length === 0) return jobs
   return jobs.filter((job) =>
     active.every((filter) => {
-      const matches = filter.values.includes(fieldValue(job, filter.field, today))
+      const matches = fieldValues(job, filter.field, today).some((value) =>
+        filter.values.includes(value),
+      )
       return filter.operator === 'is' ? matches : !matches
     }),
   )
@@ -269,7 +285,7 @@ function sortKey(job: Job, field: SortField): string | number {
     case 'createdBy':
       return job.createdBy.name.toLowerCase()
     case 'managedBy':
-      return job.manager.name.toLowerCase()
+      return (job.managers[0]?.name ?? '').toLowerCase()
     case 'totalApplicants':
       return job.totalApplicants
     case 'newApplicants':

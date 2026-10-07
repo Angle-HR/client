@@ -90,7 +90,7 @@ function toExportRow(job: Job): JobExportRow {
     title: job.title,
     department: job.department,
     status: job.status,
-    managedBy: job.manager.name,
+    managedBy: job.managers.map((manager) => manager.name).join('; '),
     postedAt: job.postedAt,
     closingDate: job.closingDate ?? '',
     totalApplicants: job.totalApplicants,

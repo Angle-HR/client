@@ -9,7 +9,8 @@ import {
   JobStatusLabel,
   formatPostedDate,
 } from '@/components/jobs/job-status'
-import { Avatar, Chip } from '@/components/ui'
+import { ManagersChip } from '@/components/jobs/managers-chip'
+import { Chip } from '@/components/ui'
 
 import type { JobGroup, SelectJob } from '@/components/jobs/jobs-table'
 import type { Job, JobStatus } from '@/lib/jobs/types'
@@ -129,19 +130,7 @@ function JobCard({ job, selected, dragging, onSelect, onDragStart, onDragEnd }: 
           aria-label={`${job.totalApplicants} applicants, ${job.newApplicants} new`}
           icon={<ChipGlyph name="users-solid" />}
         />
-        <Chip
-          fill="transparent"
-          tone="secondary"
-          label={job.manager.name}
-          icon={
-            <Avatar
-              size={14}
-              type="initials"
-              text={job.manager.name.charAt(0)}
-              colour={job.manager.colour}
-            />
-          }
-        />
+        <ManagersChip managers={job.managers} />
         <Chip
           fill="transparent"
           label={formatPostedDate(job.postedAt)}

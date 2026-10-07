@@ -78,7 +78,7 @@ describe('draftToJob', () => {
       location: 'Ireland',
       workplace: 'Hybrid',
       totalApplicants: 0,
-      manager: owner,
+      managers: [owner],
     })
   })
 

@@ -4,12 +4,13 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useMemo, useRef, useState } from 'react'
 
 import { exportJobs, statusChangeMessage } from '@/lib/jobs/actions'
+import { assignedMessage } from '@/lib/jobs/people'
 import { useJobs } from '@/lib/queries'
 import { queryKeys } from '@/lib/query-keys'
 
 import type { ExportFormat, ExportScope } from '@/components/jobs/job-modals'
 import type { JobToastState } from '@/components/jobs/job-toast'
-import type { Job, JobStatus } from '@/lib/jobs/types'
+import type { Job, JobManager, JobStatus } from '@/lib/jobs/types'
 
 /**
  * Everything the jobs page can do to jobs, with its feedback.
@@ -24,6 +25,7 @@ type JobDialog =
   | { type: 'delete'; jobIds: string[] }
   | { type: 'closing-date'; jobIds: string[] }
   | { type: 'export'; jobIds: string[] }
+  | { type: 'assign'; jobIds: string[] }
 
 function download(filename: string, contents: string, mimeType: string) {
   const url = URL.createObjectURL(new Blob([contents], { type: mimeType }))
@@ -157,6 +159,20 @@ function useJobsController() {
         ),
       )
       notify({ kind: 'undoable', message: 'Job closing date updated', onUndo: undo })
+      setDialog(null)
+    },
+    assign: (people: JobManager[]) => {
+      if (dialog?.type !== 'assign' || people.length === 0) return
+      const ids = new Set(dialog.jobIds)
+      const assigned = jobs.filter((job) => ids.has(job.id))
+      edit((current) =>
+        current.map((job) => (ids.has(job.id) ? { ...job, managers: people } : job)),
+      )
+      notify({
+        kind: 'done',
+        message: 'Job assigned',
+        detail: assignedMessage(assigned, people),
+      })
       setDialog(null)
     },
     export: (scope: ExportScope, format: ExportFormat) => {

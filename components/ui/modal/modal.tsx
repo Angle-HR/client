@@ -35,6 +35,8 @@ function Modal({ open, title, icon, onClose, children }: ModalProps): ReactNode 
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
+        // An open dropdown inside the dialog gets the first Escape.
+        if (panelRef.current?.querySelector('[aria-expanded="true"]')) return
         // Stop other Escape handlers (e.g. clearing a selection) from also
         // firing for the same key press.
         event.stopPropagation()

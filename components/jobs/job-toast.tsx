@@ -69,12 +69,16 @@ function JobToast({ toast, onDismiss }: { toast: JobToastState; onDismiss: () =>
             <DashboardIcon name="check-circle-solid" size={15} />
           </span>
         )}
-        <span className="flex min-w-0 flex-1 flex-col gap-[6px] pl-[3px]">
-          <span className="truncate text-body-s leading-none font-semibold text-text-primary">
+        {/* Figma measures these from the text's cap height: a 9px title, 14px
+            to the detail, and 6px under it. */}
+        <span className="flex min-w-0 flex-1 flex-col gap-[14px] py-[3px] pl-[3px]">
+          <span className="flex h-[9px] items-center truncate text-body-s leading-none font-semibold text-text-primary">
             {toast.message}
           </span>
           {toast.detail ? (
-            <span className="text-body-xs leading-19_2 text-text-secondary">{toast.detail}</span>
+            <span className="-my-[5px] pb-[6px] text-body-s leading-19_5 text-text-secondary">
+              {toast.detail}
+            </span>
           ) : null}
         </span>
       </span>

@@ -21,7 +21,8 @@ interface Job {
   location: string
   workplace: JobWorkplace
   status: JobStatus
-  manager: JobManager
+  /** Who the job is assigned to. Never empty: the first is the lead. */
+  managers: JobManager[]
   createdBy: JobManager
   totalApplicants: number
   newApplicants: number

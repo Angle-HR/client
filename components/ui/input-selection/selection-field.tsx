@@ -1,6 +1,12 @@
 'use client'
 
-import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react'
+import {
+  forwardRef,
+  type ButtonHTMLAttributes,
+  type HTMLAttributes,
+  type ReactNode,
+  type Ref,
+} from 'react'
 
 import { ChevronDown } from '../icons'
 
@@ -81,38 +87,96 @@ const SelectionField = forwardRef<HTMLButtonElement, SelectionFieldProps>(functi
     className,
   ].join(' ')
 
+  // Boolean() rather than a comparison: TypeScript would narrow `tags` through
+  // a compared alias, and both branches below render the same children.
+  const tagMode = Boolean(tags)
+
   return (
-    <button ref={ref} type="button" disabled={disabled} className={classes} {...props}>
-      {showPrefixIcon && prefixIcon && (
-        <span
-          className={`inline-flex ${config.icon} items-center justify-center shrink-0 text-text-input-icon-rest`}
-          aria-hidden="true"
-        >
-          {prefixIcon}
-        </span>
-      )}
-      {withSelection ? (
-        <span className="flex-1 inline-flex items-center gap-[2px] min-w-0 overflow-hidden">
-          {tags?.length ? (
-            tags
-          ) : (
-            <span className="text-body-m text-text-input-placeholder truncate">{placeholder}</span>
-          )}
-        </span>
-      ) : (
-        <span className="flex flex-1 items-center gap-[8px] min-w-0">
-          {value && leadingVisual && (
-            <span className="inline-flex shrink-0 items-center">{leadingVisual}</span>
-          )}
+    // With removable tags inside, the trigger cannot be a <button>: the tags'
+    // own remove buttons would be nested in it, which is invalid HTML. It
+    // becomes a focusable combobox div that answers Enter and Space instead.
+    tagMode ? (
+      <div
+        ref={ref as unknown as Ref<HTMLDivElement>}
+        tabIndex={disabled ? -1 : 0}
+        aria-disabled={disabled || undefined}
+        className={`${classes} cursor-pointer`}
+        {...(props as unknown as HTMLAttributes<HTMLDivElement>)}
+        onKeyDown={(event) => {
+          if (event.target !== event.currentTarget) return
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault()
+            event.currentTarget.click()
+          }
+        }}
+      >
+        {showPrefixIcon && prefixIcon && (
           <span
-            className={`flex-1 truncate text-body-m ${hasValue ? 'text-text-input-filled' : 'text-text-input-placeholder'}`}
+            className={`inline-flex ${config.icon} items-center justify-center shrink-0 text-text-input-icon-rest`}
+            aria-hidden="true"
           >
-            {value || placeholder}
+            {prefixIcon}
           </span>
-        </span>
-      )}
-      <ChevronDown className={`${config.icon} shrink-0 text-text-input-icon-rest`} />
-    </button>
+        )}
+        {withSelection ? (
+          <span className="flex-1 inline-flex items-center gap-[2px] min-w-0 overflow-hidden">
+            {tags?.length ? (
+              tags
+            ) : (
+              <span className="text-body-m text-text-input-placeholder truncate">
+                {placeholder}
+              </span>
+            )}
+          </span>
+        ) : (
+          <span className="flex flex-1 items-center gap-[8px] min-w-0">
+            {value && leadingVisual && (
+              <span className="inline-flex shrink-0 items-center">{leadingVisual}</span>
+            )}
+            <span
+              className={`flex-1 truncate text-body-m ${hasValue ? 'text-text-input-filled' : 'text-text-input-placeholder'}`}
+            >
+              {value || placeholder}
+            </span>
+          </span>
+        )}
+        <ChevronDown className={`${config.icon} shrink-0 text-text-input-icon-rest`} />
+      </div>
+    ) : (
+      <button ref={ref} type="button" disabled={disabled} className={classes} {...props}>
+        {showPrefixIcon && prefixIcon && (
+          <span
+            className={`inline-flex ${config.icon} items-center justify-center shrink-0 text-text-input-icon-rest`}
+            aria-hidden="true"
+          >
+            {prefixIcon}
+          </span>
+        )}
+        {withSelection ? (
+          <span className="flex-1 inline-flex items-center gap-[2px] min-w-0 overflow-hidden">
+            {tags?.length ? (
+              tags
+            ) : (
+              <span className="text-body-m text-text-input-placeholder truncate">
+                {placeholder}
+              </span>
+            )}
+          </span>
+        ) : (
+          <span className="flex flex-1 items-center gap-[8px] min-w-0">
+            {value && leadingVisual && (
+              <span className="inline-flex shrink-0 items-center">{leadingVisual}</span>
+            )}
+            <span
+              className={`flex-1 truncate text-body-m ${hasValue ? 'text-text-input-filled' : 'text-text-input-placeholder'}`}
+            >
+              {value || placeholder}
+            </span>
+          </span>
+        )}
+        <ChevronDown className={`${config.icon} shrink-0 text-text-input-icon-rest`} />
+      </button>
+    )
   )
 })
 

@@ -224,7 +224,7 @@ function draftToJob(draft: JobDraft, id: string, owner: JobManager, today: Date)
     location,
     workplace: draft.workplace || 'Remote',
     status: 'draft',
-    manager: owner,
+    managers: [owner],
     createdBy: owner,
     totalApplicants: 0,
     newApplicants: 0,
