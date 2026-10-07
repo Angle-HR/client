@@ -1,16 +1,12 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, type ReactNode } from 'react'
 
 import { DashboardIcon } from '@/components/dashboard/nav-config'
-import {
-  DOT,
-  JOB_STATUS_META,
-  JobStatusLabel,
-  formatPostedDate,
-} from '@/components/jobs/job-status'
+import { DOT, GroupLabel, JOB_STATUS_META, formatPostedDate } from '@/components/jobs/job-status'
 import { Avatar, Checkbox, Chip } from '@/components/ui'
 
+import type { GroupMeta } from '@/components/jobs/job-status'
 import type { Job, JobStatus } from '@/lib/jobs/types'
 
 /**
@@ -75,16 +71,16 @@ function ColumnLabels() {
 }
 
 interface GroupHeaderProps {
-  status: JobStatus
+  meta: GroupMeta
   count: number
   collapsed: boolean
-  showColumnLabels: boolean
+  /** Column labels, shown on the first group's header only. */
+  columnLabels?: ReactNode
   onToggle: () => void
 }
 
-function GroupHeader({ status, count, collapsed, showColumnLabels, onToggle }: GroupHeaderProps) {
-  const meta = JOB_STATUS_META[status]
-  // Open groups rest on a neutral wash and take the status tint on hover;
+function GroupHeader({ meta, count, collapsed, columnLabels, onToggle }: GroupHeaderProps) {
+  // Open groups rest on a neutral wash and take the group's tint on hover;
   // collapsed groups wear the tint all the time. Both gain a hairline on hover,
   // drawn as an inset shadow so it does not shift the label.
   const surface = collapsed
@@ -108,7 +104,7 @@ function GroupHeader({ status, count, collapsed, showColumnLabels, onToggle }: G
             <DashboardIcon name={collapsed ? 'chev-right-solid' : 'chev-down-solid'} size={10} />
           </span>
           <span className="inline-flex items-center gap-[3px]">
-            <JobStatusLabel status={status} gapClass="gap-[2px]" />
+            <GroupLabel meta={meta} gapClass="gap-[2px]" />
             {collapsed ? (
               <span className="relative top-px inline-flex items-center gap-[3px] text-caption-m leading-17_6 text-text-tertiary">
                 <span aria-hidden="true">·</span>
@@ -117,7 +113,7 @@ function GroupHeader({ status, count, collapsed, showColumnLabels, onToggle }: G
             ) : null}
           </span>
         </button>
-        {showColumnLabels ? <ColumnLabels /> : null}
+        {columnLabels}
       </div>
     </div>
   )
@@ -170,7 +166,11 @@ function JobRow({ job, selected, menuOpen, onSelect, onOpenMenu }: JobRowProps) 
         <Chip
           tone="secondary"
           label={`${job.department} ${DOT} ${job.employmentType}`}
-          icon={<DashboardIcon name="user-group-solid" size={12} />}
+          icon={
+            <span className="inline-flex text-text-tertiary">
+              <DashboardIcon name="user-group-solid" size={12} />
+            </span>
+          }
         />
       </div>
       <div role="cell" className="flex h-full w-[100px] shrink-0 items-center px-[12px]">
@@ -236,10 +236,10 @@ function JobsTable({ groups, selectedIds, menuJobId, onSelect, onOpenMenu }: Job
         return (
           <div key={group.status} role="rowgroup" className="flex flex-col">
             <GroupHeader
-              status={group.status}
+              meta={JOB_STATUS_META[group.status]}
               count={group.jobs.length}
               collapsed={isCollapsed}
-              showColumnLabels={index === 0}
+              columnLabels={index === 0 ? <ColumnLabels /> : null}
               onToggle={() => toggleGroup(group.status)}
             />
             {isCollapsed
@@ -261,5 +261,5 @@ function JobsTable({ groups, selectedIds, menuJobId, onSelect, onOpenMenu }: Job
   )
 }
 
-export { JobsTable }
+export { GroupHeader, JobsTable, cellText, rowRest, rowSelected }
 export type { JobGroup, JobsTableProps, OpenJobMenu, SelectJob }

@@ -62,6 +62,15 @@ function useJobs() {
   })
 }
 
+function useJobTemplates() {
+  return useQuery({
+    queryKey: queryKeys.jobTemplates,
+    queryFn: requests.getJobTemplates,
+    // Fixture-backed like jobs: edits live in the cache, so never refetch.
+    staleTime: Infinity,
+  })
+}
+
 /** Invite lookup is keyed by token so a different link refetches. */
 function useInvite(token: string) {
   return useQuery({
@@ -117,6 +126,7 @@ export {
   useInvite,
   useMe,
   useJobs,
+  useJobTemplates,
   useBusinessTypes,
   useCompanyRoles,
   useCountries,

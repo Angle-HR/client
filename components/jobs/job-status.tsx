@@ -73,9 +73,14 @@ const JOB_STATUS_META: Record<JobStatus, JobStatusMeta> = {
   },
 }
 
-/** The 14px status glyph plus its label, as used in group and column headers. */
-function JobStatusLabel({ status, gapClass }: { status: JobStatus; gapClass: string }) {
-  const meta = JOB_STATUS_META[status]
+/** What a group or column header needs to draw itself. */
+type GroupMeta = Pick<
+  JobStatusMeta,
+  'label' | 'icon' | 'iconClass' | 'tintClass' | 'hoverTintClass'
+>
+
+/** The 14px glyph plus its label, as used in group and column headers. */
+function GroupLabel({ meta, gapClass }: { meta: GroupMeta; gapClass: string }) {
   return (
     <span className={`inline-flex items-center ${gapClass}`}>
       <span className={`inline-flex ${meta.iconClass}`}>
@@ -86,6 +91,10 @@ function JobStatusLabel({ status, gapClass }: { status: JobStatus; gapClass: str
       </span>
     </span>
   )
+}
+
+function JobStatusLabel({ status, gapClass }: { status: JobStatus; gapClass: string }) {
+  return <GroupLabel meta={JOB_STATUS_META[status]} gapClass={gapClass} />
 }
 
 /**
@@ -106,5 +115,5 @@ function formatPostedDate(isoDate: string): string {
   return `${day} ${MONTHS[Number(month) - 1]} ${year}`
 }
 
-export { DOT, JOB_STATUS_META, JOB_STATUS_ORDER, JobStatusLabel, formatPostedDate }
-export type { JobStatusMeta }
+export { DOT, GroupLabel, JOB_STATUS_META, JOB_STATUS_ORDER, JobStatusLabel, formatPostedDate }
+export type { GroupMeta, JobStatusMeta }

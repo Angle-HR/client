@@ -20,10 +20,12 @@ import { JobToast } from '@/components/jobs/job-toast'
 import { JobsBoard } from '@/components/jobs/jobs-board'
 import { JobsTable } from '@/components/jobs/jobs-table'
 import { SelectionToolbar } from '@/components/jobs/selection-toolbar'
+import { TemplatesPanel } from '@/components/jobs/templates/templates-panel'
 import { useJobsController } from '@/components/jobs/use-jobs-controller'
 import { Button, Tabs, TextButton, TextInput } from '@/components/ui'
 import { searchJobs, statusTargets } from '@/lib/jobs/actions'
 import { applyFilters, applySort } from '@/lib/jobs/filters'
+import { useJobTemplates } from '@/lib/queries'
 
 import type { AnchorRect } from '@/components/jobs/floating'
 import type { FilterPopover } from '@/components/jobs/job-filters'
@@ -90,6 +92,7 @@ function JobsPage() {
   const searchParams = useSearchParams()
   const controller = useJobsController()
   const { jobs, jobsQuery, dialog } = controller
+  const templateCount = useJobTemplates().data?.length ?? 0
 
   const [tab, setTab] = useState<JobsTab>('all')
   const [view, setView] = useState<JobsView>('list')
@@ -110,9 +113,9 @@ function JobsPage() {
       { key: 'all', label: 'All Job Listing', count: count('all') },
       { key: 'drafts', label: 'Drafts', count: count('drafts') },
       { key: 'archived', label: 'Archived', count: count('archived') },
-      { key: 'templates', label: 'Templates', count: 0 },
+      { key: 'templates', label: 'Templates', count: templateCount },
     ]
-  }, [jobs])
+  }, [jobs, templateCount])
 
   // Search, then filters, then sort; grouping keeps the sorted order within
   // each status. The board has its own fixed order unless a sort is chosen.
@@ -280,6 +283,8 @@ function JobsPage() {
             <TextButton
               size="sm"
               aria-haspopup="menu"
+              // Job filters and sorts do not apply to templates.
+              disabled={tab === 'templates'}
               className={barAction}
               onClick={(event) =>
                 setFilterPopover({
@@ -294,6 +299,8 @@ function JobsPage() {
             <TextButton
               size="sm"
               aria-haspopup="menu"
+              // Job filters and sorts do not apply to templates.
+              disabled={tab === 'templates'}
               className={barAction}
               onClick={(event) =>
                 setFilterPopover({
@@ -339,17 +346,21 @@ function JobsPage() {
             }
           />
         </div>
-        <FilterBar
-          jobs={tabJobs}
-          filters={filters}
-          sort={sort}
-          onFiltersChange={setFilters}
-          onSortChange={setSort}
-          onOpen={setFilterPopover}
-        />
+        {tab === 'templates' ? null : (
+          <FilterBar
+            jobs={tabJobs}
+            filters={filters}
+            sort={sort}
+            onFiltersChange={setFilters}
+            onSortChange={setSort}
+            onOpen={setFilterPopover}
+          />
+        )}
       </div>
 
-      {groups.length === 0 ? (
+      {tab === 'templates' ? (
+        <TemplatesPanel view={view} search={search} />
+      ) : groups.length === 0 ? (
         narrowed ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-[20px] text-center">
             <span className="inline-flex text-text-light">

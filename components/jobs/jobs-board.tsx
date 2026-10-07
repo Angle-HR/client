@@ -47,6 +47,15 @@ const CARD_SURFACE = {
     'outline-border-light bg-[image:linear-gradient(var(--bg-transparent-medium),var(--bg-transparent-medium))]',
 }
 
+/** Chip glyphs are tertiary in the design, whatever the chip's text colour. */
+function ChipGlyph({ name }: { name: string }) {
+  return (
+    <span className="inline-flex text-text-tertiary">
+      <DashboardIcon name={name} size={12} />
+    </span>
+  )
+}
+
 interface JobCardProps {
   job: Job
   selected: boolean
@@ -107,18 +116,18 @@ function JobCard({ job, selected, dragging, onSelect, onDragStart, onDragEnd }: 
         <Chip
           tone="secondary"
           label={`${job.department} ${DOT} ${job.employmentType}`}
-          icon={<DashboardIcon name="user-group-solid" size={12} />}
+          icon={<ChipGlyph name="user-group-solid" />}
         />
         <Chip
           fill="transparent"
           label={`${job.location} ${DOT} ${job.workplace}`}
-          icon={<DashboardIcon name="location-pin-solid" size={12} />}
+          icon={<ChipGlyph name="location-pin-solid" />}
         />
         <Chip
           fill="transparent"
           label={`${job.totalApplicants} (${job.newApplicants})`}
           aria-label={`${job.totalApplicants} applicants, ${job.newApplicants} new`}
-          icon={<DashboardIcon name="users-solid" size={12} />}
+          icon={<ChipGlyph name="users-solid" />}
         />
         <Chip
           fill="transparent"
@@ -136,7 +145,7 @@ function JobCard({ job, selected, dragging, onSelect, onDragStart, onDragEnd }: 
         <Chip
           fill="transparent"
           label={formatPostedDate(job.postedAt)}
-          icon={<DashboardIcon name="clock-solid" size={12} />}
+          icon={<ChipGlyph name="clock-solid" />}
         />
       </div>
     </article>
@@ -297,5 +306,5 @@ function JobsBoard({
   )
 }
 
-export { JobsBoard }
+export { CARD_SURFACE, ChipGlyph, JobsBoard }
 export type { JobsBoardProps }

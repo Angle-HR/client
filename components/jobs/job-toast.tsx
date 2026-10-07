@@ -16,9 +16,11 @@ interface JobToastState {
   /** Changes on every toast so a repeated message still restarts the timer. */
   id: number
   message: string
-  /** `progress` shows a spinner and stays until it is replaced. */
-  kind: 'undoable' | 'done' | 'progress'
+  /** `progress` shows a spinner and stays until it is replaced; `error` reports something that was refused. */
+  kind: 'undoable' | 'done' | 'progress' | 'error'
   onUndo?: () => void
+  /** A second line under the message, for outcomes that need explaining. */
+  detail?: string
 }
 
 const AUTO_DISMISS_MS = 6000
@@ -53,18 +55,27 @@ function JobToast({ toast, onDismiss }: { toast: JobToastState; onDismiss: () =>
       role="status"
       className="absolute right-[10px] bottom-[10px] z-30 flex w-[300px] items-start rounded-lg-10 bg-bg-secondary p-[8px] shadow-[0_4px_8px_#0000000f,0_0_4px_#0000000a] outline-[0.5px] -outline-offset-[0.5px] outline-border-transparent-medium"
     >
-      <span className="flex min-w-0 flex-1 items-center gap-[7px] py-[5px] pr-[5px] pl-[3px]">
+      <span className="flex min-w-0 flex-1 items-start gap-[7px] py-[5px] pr-[5px] pl-[3px]">
         {toast.kind === 'progress' ? (
           <span className="inline-flex animate-spin text-text-secondary">
             <DashboardIcon name="spinner-dual-solid" size={15} />
+          </span>
+        ) : toast.kind === 'error' ? (
+          <span className="inline-flex text-red-7">
+            <DashboardIcon name="x-circle-solid" size={15} />
           </span>
         ) : (
           <span className="inline-flex text-green-5">
             <DashboardIcon name="check-circle-solid" size={15} />
           </span>
         )}
-        <span className="min-w-0 flex-1 truncate pl-[3px] text-body-s leading-none font-semibold text-text-primary">
-          {toast.message}
+        <span className="flex min-w-0 flex-1 flex-col gap-[6px] pl-[3px]">
+          <span className="truncate text-body-s leading-none font-semibold text-text-primary">
+            {toast.message}
+          </span>
+          {toast.detail ? (
+            <span className="text-body-xs leading-19_2 text-text-secondary">{toast.detail}</span>
+          ) : null}
         </span>
       </span>
       <IconButton

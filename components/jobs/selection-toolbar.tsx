@@ -214,5 +214,5 @@ function SelectionToolbar({
   )
 }
 
-export { SelectionToolbar }
+export { SelectionToolbar, control as toolbarControl, surface as toolbarSurface }
 export type { SelectionToolbarProps }

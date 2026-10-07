@@ -1,15 +1,15 @@
 'use client'
 
 import { useQueryClient } from '@tanstack/react-query'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Suspense, useMemo, useState } from 'react'
 
 import { DashboardIcon } from '@/components/dashboard/nav-config'
 import { JobDetailsForm } from '@/components/jobs/create/job-details-form'
 import { JobFlowHeader } from '@/components/jobs/create/job-flow-header'
 import { Button, Divider, ListItemToggle, TextButton } from '@/components/ui'
 import { EMPTY_DRAFT, draftToJob, validateDraft } from '@/lib/jobs/draft'
-import { useMe } from '@/lib/queries'
+import { useJobTemplates, useMe } from '@/lib/queries'
 import { queryKeys } from '@/lib/query-keys'
 import { requests } from '@/lib/requests'
 
@@ -28,11 +28,26 @@ function NewJobPage() {
   const router = useRouter()
   const queryClient = useQueryClient()
   const me = useMe()
-  const [draft, setDraft] = useState<JobDraft>(EMPTY_DRAFT)
+  // "Use" on a template opens this page with the template's details filled in.
+  const templateId = useSearchParams().get('template')
+  const templates = useJobTemplates().data
+  const startingDraft = useMemo<JobDraft>(() => {
+    const template = templates?.find((item) => item.id === templateId)
+    if (!template) return EMPTY_DRAFT
+    return {
+      ...EMPTY_DRAFT,
+      title: template.title,
+      team: template.department,
+      employmentType: template.employmentType,
+    }
+  }, [templates, templateId])
+  // Null until the user edits, so a template that loads late still applies.
+  const [edited, setEdited] = useState<JobDraft | null>(null)
+  const draft = edited ?? startingDraft
   const [errors, setErrors] = useState<DraftErrors>({})
 
   function change(patch: Partial<JobDraft>) {
-    setDraft((current) => ({ ...current, ...patch }))
+    setEdited((current) => ({ ...(current ?? startingDraft), ...patch }))
     // Clear a field's error as soon as the user edits that field.
     setErrors((current) => {
       const next = { ...current }
@@ -152,4 +167,13 @@ function NewJobPage() {
   )
 }
 
-export default NewJobPage
+/** `useSearchParams` needs a Suspense boundary to keep the route statically renderable. */
+function NewJobRoute() {
+  return (
+    <Suspense fallback={null}>
+      <NewJobPage />
+    </Suspense>
+  )
+}
+
+export default NewJobRoute

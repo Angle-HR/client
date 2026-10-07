@@ -2,7 +2,9 @@ import { axiosInstance } from '@/config/axios'
 
 import { ENDPOINTS } from './endpoints'
 import { JOB_FIXTURES } from './jobs/fixtures'
+import { TEMPLATE_FIXTURES } from './jobs/templates'
 
+import type { JobTemplate } from './jobs/templates'
 import type { Job } from './jobs/types'
 import type {
   ApiResponse,
@@ -200,6 +202,7 @@ const requests = {
   // No jobs endpoints yet — resolves with local fixtures so the query layer and
   // screens are already shaped for the real call.
   getJobs: async (): Promise<Job[]> => JOB_FIXTURES,
+  getJobTemplates: async (): Promise<JobTemplate[]> => TEMPLATE_FIXTURES,
 
   getMe: async (): Promise<AuthMeData> => {
     const { data } = await axiosInstance.get<ApiResponse<AuthMeData>>(ENDPOINTS.auth.me())
