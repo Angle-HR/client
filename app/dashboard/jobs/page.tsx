@@ -4,6 +4,8 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 
 import { DashboardErrorState } from '@/components/dashboard/dashboard-states'
 import { DashboardIcon } from '@/components/dashboard/nav-config'
+import { toAnchor } from '@/components/jobs/floating'
+import { FilterBar, FilterPopovers } from '@/components/jobs/job-filters'
 import { ColumnMenu, JobRowMenu } from '@/components/jobs/job-menus'
 import {
   ClosingDateModal,
@@ -19,10 +21,14 @@ import { SelectionToolbar } from '@/components/jobs/selection-toolbar'
 import { useJobsController } from '@/components/jobs/use-jobs-controller'
 import { Button, Tabs, TextButton, TextInput } from '@/components/ui'
 import { searchJobs, statusTargets } from '@/lib/jobs/actions'
+import { applyFilters, applySort } from '@/lib/jobs/filters'
 
-import type { AnchorRect, JobRowAction } from '@/components/jobs/job-menus'
+import type { AnchorRect } from '@/components/jobs/floating'
+import type { FilterPopover } from '@/components/jobs/job-filters'
+import type { JobRowAction } from '@/components/jobs/job-menus'
 import type { JobGroup, SelectJob } from '@/components/jobs/jobs-table'
 import type { TabOption } from '@/components/ui'
+import type { JobFilter, JobSort } from '@/lib/jobs/filters'
 import type { Job, JobStatus } from '@/lib/jobs/types'
 
 type JobsTab = 'all' | 'drafts' | 'archived' | 'templates'
@@ -77,13 +83,6 @@ function byNewest(groups: JobGroup[]): JobGroup[] {
   }))
 }
 
-const toAnchor = (rect: DOMRect): AnchorRect => ({
-  top: rect.top,
-  left: rect.left,
-  right: rect.right,
-  bottom: rect.bottom,
-})
-
 function JobsPage() {
   const controller = useJobsController()
   const { jobs, jobsQuery, dialog } = controller
@@ -91,6 +90,9 @@ function JobsPage() {
   const [tab, setTab] = useState<JobsTab>('all')
   const [view, setView] = useState<JobsView>('list')
   const [search, setSearch] = useState('')
+  const [filters, setFilters] = useState<JobFilter[]>([])
+  const [sort, setSort] = useState<JobSort | null>(null)
+  const [filterPopover, setFilterPopover] = useState<FilterPopover | null>(null)
   const [selectedIds, setSelectedIds] = useState<ReadonlySet<string>>(new Set())
   const [rowMenu, setRowMenu] = useState<{ jobId: string; anchor: AnchorRect } | null>(null)
   const [columnMenu, setColumnMenu] = useState<{ status: JobStatus; anchor: AnchorRect } | null>(
@@ -108,10 +110,19 @@ function JobsPage() {
     ]
   }, [jobs])
 
+  // Search, then filters, then sort; grouping keeps the sorted order within
+  // each status. The board has its own fixed order unless a sort is chosen.
+  const tabJobs = useMemo(
+    () => jobs.filter((job) => TAB_STATUSES[tab].includes(job.status)),
+    [jobs, tab],
+  )
   const groups = useMemo(() => {
-    const grouped = groupJobs(searchJobs(jobs, search), TAB_STATUSES[tab])
-    return view === 'board' ? byNewest(grouped) : grouped
-  }, [jobs, search, tab, view])
+    const matching = applySort(applyFilters(searchJobs(tabJobs, search), filters), sort)
+    const grouped = groupJobs(matching, TAB_STATUSES[tab])
+    return view === 'board' && !sort ? byNewest(grouped) : grouped
+  }, [tabJobs, search, filters, sort, tab, view])
+  const shownCount = groups.reduce((total, group) => total + group.jobs.length, 0)
+  const narrowed = search.trim() !== '' || filters.length > 0
 
   // Jobs in the order they are on screen, which is what a Shift-click range
   // runs across.
@@ -197,11 +208,31 @@ function JobsPage() {
         }
         trailing={
           <>
-            {/* Filter and Sort open menus that are not built yet. */}
-            <TextButton size="sm" disabled className={barAction}>
+            <TextButton
+              size="sm"
+              aria-haspopup="menu"
+              className={barAction}
+              onClick={(event) =>
+                setFilterPopover({
+                  type: 'filter-menu',
+                  align: 'right',
+                  anchor: toAnchor(event.currentTarget.getBoundingClientRect()),
+                })
+              }
+            >
               <BarActionLabel icon="funnel-outline" iconSize={11} label="Filter" />
             </TextButton>
-            <TextButton size="sm" disabled className={barAction}>
+            <TextButton
+              size="sm"
+              aria-haspopup="menu"
+              className={barAction}
+              onClick={(event) =>
+                setFilterPopover({
+                  type: 'sort-menu',
+                  anchor: toAnchor(event.currentTarget.getBoundingClientRect()),
+                })
+              }
+            >
               <BarActionLabel icon="bars-arrow-up-solid" iconSize={10} label="Sort" />
             </TextButton>
             {/* The label names the view you would switch to. */}
@@ -220,7 +251,8 @@ function JobsPage() {
         }
       />
 
-      <div className="flex shrink-0 items-center px-[16px] pt-[12px] pb-[20px]">
+      {/* 12px of padding either side, plus the 8px gap to the list below. */}
+      <div className="flex shrink-0 flex-col gap-[16px] px-[16px] pt-[12px] pb-[20px]">
         <div className="w-[240px]">
           <TextInput
             size="md"
@@ -238,19 +270,50 @@ function JobsPage() {
             }
           />
         </div>
+        <FilterBar
+          jobs={tabJobs}
+          filters={filters}
+          sort={sort}
+          onFiltersChange={setFilters}
+          onSortChange={setSort}
+          onOpen={setFilterPopover}
+        />
       </div>
 
       {groups.length === 0 ? (
-        <div className="flex flex-1 flex-col items-center justify-center gap-[8px] text-center">
-          <p className="text-body-s leading-19_5 font-medium text-text-primary">
-            {search.trim() ? 'No job matching your search' : 'Nothing here yet'}
-          </p>
-          {search.trim() ? (
-            <TextButton size="sm" onClick={() => setSearch('')}>
-              Clear search
-            </TextButton>
-          ) : null}
-        </div>
+        narrowed ? (
+          <div className="flex flex-1 flex-col items-center justify-center gap-[20px] text-center">
+            <span className="inline-flex text-text-light">
+              <DashboardIcon name="funnel-outline" size={32} />
+            </span>
+            <div className="flex flex-col gap-[14px]">
+              <p className="text-body-s leading-none font-semibold text-text-secondary">
+                No job matching the filters set
+              </p>
+              <p className="text-body-s leading-none text-text-tertiary">
+                {tabJobs.length - shownCount} {tabJobs.length - shownCount === 1 ? 'job' : 'jobs'}{' '}
+                hidden by filters
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setSearch('')
+                setFilters([])
+              }}
+              className="flex h-[24px] cursor-pointer items-center gap-[4px] rounded-sm-7 px-[8px] text-body-s leading-19_5 font-medium text-text-tertiary transition-colors hover:bg-bg-transparent-light hover:text-text-primary"
+            >
+              <DashboardIcon name="x-mark-solid" size={14} />
+              Clear Filters
+            </button>
+          </div>
+        ) : (
+          <div className="flex flex-1 items-center justify-center">
+            <p className="text-body-s leading-19_5 font-medium text-text-tertiary">
+              Nothing here yet
+            </p>
+          </div>
+        )
       ) : view === 'list' ? (
         <div className="min-h-0 flex-1 overflow-auto">
           <JobsTable
@@ -291,6 +354,16 @@ function JobsPage() {
           onClear={clearSelection}
         />
       ) : null}
+
+      <FilterPopovers
+        popover={filterPopover}
+        jobs={tabJobs}
+        filters={filters}
+        sort={sort}
+        onFiltersChange={setFilters}
+        onSortChange={setSort}
+        onClose={() => setFilterPopover(null)}
+      />
 
       {controller.toast ? (
         <JobToast toast={controller.toast} onDismiss={controller.dismissToast} />

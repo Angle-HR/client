@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
-import { createPortal } from 'react-dom'
+import { type ReactNode } from 'react'
 
 import { DashboardIcon } from '@/components/dashboard/nav-config'
+import { Floating, clampLeft } from '@/components/jobs/floating'
 import { JOB_STATUS_META } from '@/components/jobs/job-status'
 import { statusTargets } from '@/lib/jobs/actions'
 
+import type { AnchorRect, FloatingProps } from '@/components/jobs/floating'
 import type { Job, JobStatus } from '@/lib/jobs/types'
 
 /**
@@ -15,16 +16,9 @@ import type { Job, JobStatus } from '@/lib/jobs/types'
  * (7964:213402); the column menu is Table/.Subcomponents/more-button
  * (7122:155007).
  *
- * Both are fixed to the viewport and portalled out, because their triggers
- * live inside scroll containers that would otherwise clip them.
+ * Both render through `Floating`, since their triggers live inside scroll
+ * containers that would otherwise clip them.
  */
-
-interface AnchorRect {
-  top: number
-  left: number
-  right: number
-  bottom: number
-}
 
 interface MenuRowProps {
   icon: string
@@ -59,67 +53,19 @@ function MenuRow({ icon, iconSize = 13, label, danger = false, onClick }: MenuRo
 interface FloatingMenuProps {
   label: string
   anchor: AnchorRect
-  /** Given the menu's measured size, where its top-left corner goes. */
-  place: (size: { width: number; height: number }) => { top: number; left: number }
+  place: FloatingProps['place']
   className: string
   onClose: () => void
   children: ReactNode
 }
 
 function FloatingMenu({ label, anchor, place, className, onClose, children }: FloatingMenuProps) {
-  const ref = useRef<HTMLUListElement>(null)
-  const [position, setPosition] = useState<{ top: number; left: number } | null>(null)
-
-  // Measured before paint so the menu never flashes in the wrong place.
-  useLayoutEffect(() => {
-    const element = ref.current
-    if (!element) return
-    setPosition(place({ width: element.offsetWidth, height: element.offsetHeight }))
-    element.querySelector<HTMLElement>('[role="menuitem"]')?.focus({ preventScroll: true })
-    // `place` is recreated every render; the anchor is what actually changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [anchor.top, anchor.left])
-
-  useEffect(() => {
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        event.stopPropagation()
-        onClose()
-        return
-      }
-      if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return
-      const items = [...(ref.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [])]
-      const index = items.indexOf(document.activeElement as HTMLElement)
-      const next = event.key === 'ArrowDown' ? index + 1 : index - 1
-      event.preventDefault()
-      items[(next + items.length) % items.length]?.focus()
-    }
-    function handlePointerDown(event: PointerEvent) {
-      if (!ref.current?.contains(event.target as Node)) onClose()
-    }
-    document.addEventListener('keydown', handleKeyDown, true)
-    document.addEventListener('pointerdown', handlePointerDown)
-    window.addEventListener('scroll', onClose, true)
-    window.addEventListener('resize', onClose)
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown, true)
-      document.removeEventListener('pointerdown', handlePointerDown)
-      window.removeEventListener('scroll', onClose, true)
-      window.removeEventListener('resize', onClose)
-    }
-  }, [onClose])
-
-  return createPortal(
-    <ul
-      ref={ref}
-      role="menu"
-      aria-label={label}
-      style={position ?? { top: 0, left: 0, visibility: 'hidden' }}
-      className={`fixed z-50 flex flex-col bg-bg-secondary outline-[0.5px] -outline-offset-[0.5px] outline-border-transparent-medium ${className}`}
-    >
-      {children}
-    </ul>,
-    document.body,
+  return (
+    <Floating anchor={anchor} place={place} className={className} onClose={onClose}>
+      <ul role="menu" aria-label={label} className="contents">
+        {children}
+      </ul>
+    </Floating>
   )
 }
 
@@ -211,10 +157,7 @@ function ColumnMenu({ label, anchor, onSelectAll, onExport, onClose }: ColumnMen
       // Centred under the trigger, 1px below it, kept inside the window.
       place={({ width }) => ({
         top: anchor.bottom + 1,
-        left: Math.max(
-          8,
-          Math.min((anchor.left + anchor.right) / 2 - width / 2, window.innerWidth - width - 8),
-        ),
+        left: clampLeft((anchor.left + anchor.right) / 2 - width / 2, width),
       })}
       className="w-[162px] rounded-lg-10 p-[4px] shadow-slots-xsmall"
     >
@@ -238,5 +181,5 @@ function ColumnMenu({ label, anchor, onSelectAll, onExport, onClose }: ColumnMen
   )
 }
 
-export { ColumnMenu, JobRowMenu }
-export type { AnchorRect, JobRowAction }
+export { ColumnMenu, JobRowMenu, MenuRow }
+export type { JobRowAction }

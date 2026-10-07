@@ -20,6 +20,7 @@ function job(overrides: Partial<Job>): Job {
     workplace: 'Remote',
     status: 'open',
     manager: { name: 'Alice', colour: 'green' },
+    createdBy: { name: 'Alice', colour: 'green' },
     totalApplicants: 30,
     newApplicants: 7,
     postedAt: '2026-10-15',

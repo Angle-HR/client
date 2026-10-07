@@ -22,6 +22,7 @@ interface Job {
   workplace: JobWorkplace
   status: JobStatus
   manager: JobManager
+  createdBy: JobManager
   totalApplicants: number
   newApplicants: number
   /** ISO date (yyyy-mm-dd). */
