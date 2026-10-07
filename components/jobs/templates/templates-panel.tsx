@@ -612,6 +612,14 @@ function TemplatesPanel({ view, search }: TemplatesPanelProps) {
                 router.push(`/dashboard/jobs/new?template=${menuTemplate.id}`)
               }}
             />
+            <MenuRow
+              icon="pencil-square-solid"
+              label="Edit"
+              onClick={() => {
+                setMenu(null)
+                router.push(`/dashboard/jobs/new?template=${menuTemplate.id}&mode=edit`)
+              }}
+            />
             {/* Renaming, like deleting, is for the template's creator. */}
             {menuTemplate.ownedByMe ? (
               <MenuRow

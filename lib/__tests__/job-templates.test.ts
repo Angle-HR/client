@@ -5,8 +5,10 @@ import {
   duplicateTemplates,
   exportTemplates,
   groupTemplates,
+  markTemplateUsed,
   partitionDeletable,
   searchTemplates,
+  sortTemplates,
 } from '../jobs/templates'
 
 import type { JobTemplate } from '../jobs/templates'
@@ -99,5 +101,33 @@ describe('exportTemplates', () => {
       'Title,Department,Employment type,Created by,Visibility,Times used,Last used',
     )
     expect(row).toBe('Frontend Developer,Development,Full-time,Alice,Everyone,3,2026-10-01')
+  })
+})
+
+describe('sortTemplates', () => {
+  const list = [
+    template({ id: 'a', title: 'Zebra', timesUsed: 1, lastUsedAt: '2026-01-01' }),
+    template({ id: 'b', title: 'Apple', timesUsed: 9, lastUsedAt: '2025-01-01' }),
+    template({ id: 'c', title: 'Mango', timesUsed: 4, lastUsedAt: '2026-06-01' }),
+  ]
+  const ids = (sort: Parameters<typeof sortTemplates>[1]) =>
+    sortTemplates(list, sort).map((t) => t.id)
+
+  it('orders by use, recency, creation and name', () => {
+    expect(ids('mostUsed')).toEqual(['b', 'c', 'a'])
+    expect(ids('recentlyUsed')).toEqual(['c', 'a', 'b'])
+    expect(ids('recentlyCreated')).toEqual(['c', 'b', 'a'])
+    expect(ids('name')).toEqual(['b', 'c', 'a'])
+  })
+})
+
+describe('markTemplateUsed', () => {
+  it('counts the use and stamps today', () => {
+    expect(
+      markTemplateUsed(template({ timesUsed: 3 }), new Date('2026-10-07T10:00:00Z')),
+    ).toMatchObject({
+      timesUsed: 4,
+      lastUsedAt: '2026-10-07',
+    })
   })
 })

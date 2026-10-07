@@ -6,6 +6,7 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'rea
 
 import { DashboardErrorState } from '@/components/dashboard/dashboard-states'
 import { DashboardIcon } from '@/components/dashboard/nav-config'
+import { ChooseTemplateModal, StartJobModal } from '@/components/jobs/create/start-modals'
 import { toAnchor } from '@/components/jobs/floating'
 import { FilterBar, FilterPopovers } from '@/components/jobs/job-filters'
 import { ColumnMenu, JobRowMenu } from '@/components/jobs/job-menus'
@@ -93,10 +94,18 @@ function JobsPage() {
   const searchParams = useSearchParams()
   const controller = useJobsController()
   const { jobs, jobsQuery, dialog } = controller
-  const templateCount = useJobTemplates().data?.length ?? 0
+  const templates = useJobTemplates().data ?? []
+  const templateCount = templates.length
   const me = useMe()
 
-  const [tab, setTab] = useState<JobsTab>('all')
+  // Deep links such as ?tab=templates open on that tab.
+  const [tab, setTab] = useState<JobsTab>(() => {
+    const requested = searchParams.get('tab')
+    return requested === 'drafts' || requested === 'archived' || requested === 'templates'
+      ? requested
+      : 'all'
+  })
+  const [starting, setStarting] = useState<'choice' | 'template' | null>(null)
   const [view, setView] = useState<JobsView>('list')
   const [search, setSearch] = useState('')
   const [filters, setFilters] = useState<JobFilter[]>([])
@@ -182,17 +191,22 @@ function JobsPage() {
     else if (action === 'assign') controller.openDialog({ type: 'assign', jobIds: [job.id] })
     else if (action === 'closing-date') {
       controller.openDialog({ type: 'closing-date', jobIds: [job.id] })
-    }
-    // Editing and assigning open flows that are built separately.
+    } else if (action === 'edit') router.push(`/dashboard/jobs/new?job=${job.id}`)
   }
 
-  // Coming back from job creation: confirm the save once, then tidy the URL.
+  // Coming back from the job form: confirm the save once, then tidy the URL.
   const { notify } = controller
   useEffect(() => {
-    if (searchParams.get('saved') !== 'draft') return
-    notify({ kind: 'done', message: 'Job saved as a draft' })
-    router.replace('/dashboard/jobs')
-  }, [searchParams, notify, router])
+    const saved = searchParams.get('saved')
+    if (!saved) return
+    const messages: Record<string, string> = {
+      draft: 'Job saved as a draft',
+      'draft-template': 'Job saved as a draft and as a template',
+      changes: 'Changes saved',
+    }
+    if (messages[saved]) notify({ kind: 'done', message: messages[saved] })
+    router.replace(tab === 'templates' ? '/dashboard/jobs?tab=templates' : '/dashboard/jobs')
+  }, [searchParams, notify, router, tab])
 
   if (jobsQuery.isError) return <DashboardErrorState kind="unknown" />
   if (jobsQuery.isPending) return null
@@ -246,6 +260,14 @@ function JobsPage() {
             </div>
           </div>
         </div>
+        <TextButton
+          size="sm"
+          href="/dashboard/help"
+          className="absolute bottom-[33px] left-1/2 -translate-x-1/2 text-text-primary!"
+          iconRight={<DashboardIcon name="arrow-top-right-on-square-solid" size={10} />}
+        >
+          Learn How to create job on OpenHR
+        </TextButton>
         {controller.toast ? (
           <JobToast toast={controller.toast} onDismiss={controller.dismissToast} />
         ) : null}
@@ -263,7 +285,7 @@ function JobsPage() {
             accent="blue"
             size="sm"
             iconPrefix={<DashboardIcon name="plus-solid" size={14} />}
-            onClick={() => router.push('/dashboard/jobs/new')}
+            onClick={() => setStarting('choice')}
           >
             Create a new job
           </Button>
@@ -480,6 +502,28 @@ function JobsPage() {
             controller.openDialog({ type: 'export', jobIds: (columnIds ?? []).map((j) => j.id) })
           }}
           onClose={() => setColumnMenu(null)}
+        />
+      ) : null}
+
+      {starting === 'choice' ? (
+        <StartJobModal
+          onClose={() => setStarting(null)}
+          onContinue={(choice) => {
+            if (choice === 'template') setStarting('template')
+            else router.push('/dashboard/jobs/new')
+          }}
+        />
+      ) : null}
+      {starting === 'template' ? (
+        <ChooseTemplateModal
+          templates={templates}
+          onBack={() => setStarting('choice')}
+          onOpenTemplates={() => {
+            setStarting(null)
+            setTab('templates')
+          }}
+          onClose={() => setStarting(null)}
+          onContinue={(id) => router.push(`/dashboard/jobs/new?template=${id}`)}
         />
       ) : null}
 

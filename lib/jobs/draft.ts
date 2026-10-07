@@ -233,6 +233,36 @@ function draftToJob(draft: JobDraft, id: string, owner: JobManager, today: Date)
   }
 }
 
+/** The form state for editing an existing job, filled from what the list knows about it. */
+function draftFromJob(job: Job): JobDraft {
+  const [year = '', month = '', day = ''] = job.closingDate?.split('-') ?? []
+  const anywhere = job.location === 'Anywhere'
+  return {
+    ...EMPTY_DRAFT,
+    title: job.title,
+    team: job.department,
+    employmentType: job.employmentType,
+    workplace: job.workplace,
+    hiringArea: anywhere ? 'anywhere' : 'area',
+    area: anywhere ? '' : job.location,
+    closingDate: { day, month, year },
+  }
+}
+
+/** An existing job with a saved draft's details applied. Status, people and applicants are kept. */
+function applyDraftToJob(job: Job, draft: JobDraft, today: Date): Job {
+  const edited = draftToJob(draft, job.id, job.createdBy, today)
+  return {
+    ...job,
+    title: edited.title,
+    department: edited.department,
+    employmentType: edited.employmentType,
+    location: edited.location,
+    workplace: edited.workplace,
+    closingDate: edited.closingDate,
+  }
+}
+
 export {
   AREA_OPTIONS,
   CURRENCY_OPTIONS,
@@ -244,6 +274,8 @@ export {
   TEAM_OPTIONS,
   TIMEZONE_OFFSET_OPTIONS,
   TIMEZONE_OPTIONS,
+  applyDraftToJob,
+  draftFromJob,
   draftToJob,
   formatAmount,
   validateDraft,

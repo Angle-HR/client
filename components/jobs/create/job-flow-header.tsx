@@ -18,27 +18,35 @@ type JobFlowStep = (typeof STEPS)[number]
 
 interface JobFlowHeaderProps {
   current: JobFlowStep
-  onSaveDraft: () => void
+  /**
+   * `create` is a new job; `edit-job` is an existing one, where the draft
+   * button becomes "Save Changes"; `edit-template` drops the later steps and
+   * starts the trail at Job Templates.
+   */
+  mode: 'create' | 'edit-job' | 'edit-template'
+  onSave: () => void
 }
 
 const stepText = 'text-body-xs leading-19_2'
 
-function JobFlowHeader({ current, onSaveDraft }: JobFlowHeaderProps) {
-  const currentIndex = STEPS.indexOf(current)
+function JobFlowHeader({ current, mode, onSave }: JobFlowHeaderProps) {
+  const steps = mode === 'edit-template' ? STEPS.slice(0, 1) : STEPS
+  const currentIndex = steps.indexOf(current)
+  const root =
+    mode === 'edit-template'
+      ? { label: 'Job Templates', href: '/dashboard/jobs?tab=templates' }
+      : { label: 'Jobs', href: '/dashboard/jobs' }
 
   return (
     <header className="flex h-[44px] shrink-0 items-center justify-between border-b-[0.5px] border-border-transparent-medium">
       <nav aria-label="Job creation steps" className="flex items-center pl-[18px]">
         <ol className="flex items-center">
           <li className="flex items-center">
-            <Link
-              href="/dashboard/jobs"
-              className={`${stepText} text-text-primary hover:underline`}
-            >
-              Jobs
+            <Link href={root.href} className={`${stepText} text-text-primary hover:underline`}>
+              {root.label}
             </Link>
           </li>
-          {STEPS.map((step, index) => {
+          {steps.map((step, index) => {
             const reached = index <= currentIndex
             return (
               <li
@@ -50,7 +58,7 @@ function JobFlowHeader({ current, onSaveDraft }: JobFlowHeaderProps) {
                     slot, then the step's own 10px lead-in. */}
                 <span
                   aria-hidden="true"
-                  className={`flex w-[21px] justify-center ${index <= currentIndex ? 'text-text-secondary' : 'text-text-tertiary'}`}
+                  className={`flex w-[21px] justify-center ${reached ? 'text-text-secondary' : 'text-text-tertiary'}`}
                 >
                   ›
                 </span>
@@ -61,8 +69,8 @@ function JobFlowHeader({ current, onSaveDraft }: JobFlowHeaderProps) {
         </ol>
       </nav>
       <div className="flex items-center gap-[10px] p-[10px]">
-        <Button variant="primary" accent="default" size="sm" onClick={onSaveDraft}>
-          Save as draft
+        <Button variant="primary" accent="default" size="sm" onClick={onSave}>
+          {mode === 'create' ? 'Save as draft' : 'Save Changes'}
         </Button>
         {/* The preview screen is not designed yet. */}
         <Button

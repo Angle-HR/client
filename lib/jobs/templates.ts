@@ -12,8 +12,8 @@ interface JobTemplate {
   department: string
   employmentType: JobEmploymentType
   createdBy: JobManager
-  /** Who can use the template. Only "Everyone" is designed so far. */
-  visibility: 'Everyone'
+  /** Who can use the template. */
+  visibility: 'Everyone' | 'Just me'
   timesUsed: number
   /** ISO date (yyyy-mm-dd). */
   lastUsedAt: string
@@ -109,6 +109,39 @@ const TEMPLATE_FIXTURES: JobTemplate[] = [
   },
 ]
 
+type TemplateSort = 'mostUsed' | 'recentlyUsed' | 'recentlyCreated' | 'name'
+
+const TEMPLATE_SORTS: { value: TemplateSort; label: string }[] = [
+  { value: 'mostUsed', label: 'Most used' },
+  { value: 'recentlyUsed', label: 'Recently used' },
+  { value: 'recentlyCreated', label: 'Recently created' },
+  { value: 'name', label: 'Name (A–Z)' },
+]
+
+/** A sorted copy for the template chooser. "Recently created" keeps list order reversed: new templates are appended. */
+function sortTemplates(templates: JobTemplate[], sort: TemplateSort): JobTemplate[] {
+  const copy = [...templates]
+  switch (sort) {
+    case 'mostUsed':
+      return copy.sort((a, b) => b.timesUsed - a.timesUsed)
+    case 'recentlyUsed':
+      return copy.sort((a, b) => b.lastUsedAt.localeCompare(a.lastUsedAt))
+    case 'recentlyCreated':
+      return copy.reverse()
+    case 'name':
+      return copy.sort((a, b) => a.title.localeCompare(b.title))
+  }
+}
+
+/** The template after one more use today. */
+function markTemplateUsed(template: JobTemplate, today: Date): JobTemplate {
+  return {
+    ...template,
+    timesUsed: template.timesUsed + 1,
+    lastUsedAt: today.toISOString().slice(0, 10),
+  }
+}
+
 /** Pinned first, then everything else — the order the designer's note sets. Empty groups are dropped. */
 function groupTemplates(templates: JobTemplate[]): TemplateGroup[] {
   const groups: TemplateGroup[] = [
@@ -197,11 +230,14 @@ function exportTemplates(templates: JobTemplate[], format: 'csv' | 'json'): stri
 
 export {
   TEMPLATE_FIXTURES,
+  TEMPLATE_SORTS,
   duplicateName,
   duplicateTemplates,
   exportTemplates,
   groupTemplates,
+  markTemplateUsed,
   partitionDeletable,
   searchTemplates,
+  sortTemplates,
 }
-export type { JobTemplate, TemplateGroup, TemplateGroupKey }
+export type { JobTemplate, TemplateGroup, TemplateGroupKey, TemplateSort }

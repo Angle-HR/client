@@ -14,17 +14,21 @@ interface ModalProps {
   icon?: ReactNode
   onClose: () => void
   children: ReactNode
+  /** Shell width in px. 400 for confirmations; wider for pickers. */
+  width?: 400 | 500 | 700
 }
 
 /**
- * A centred dialog: a 400px tinted shell with a 42px title bar, and the content
+ * A centred dialog: a tinted shell (400px by default) with a 42px title bar, and the content
  * in a white card inset 3px from the shell. Figma: the confirmation and form
  * modals across the job flow (e.g. 7964:213223).
  *
  * Escape and the scrim both close it, focus moves into the dialog on open and
  * returns to whatever opened it on close.
  */
-function Modal({ open, title, icon, onClose, children }: ModalProps): ReactNode {
+const WIDTHS = { 400: 'w-[400px]', 500: 'w-[500px]', 700: 'w-[700px]' } as const
+
+function Modal({ open, title, icon, onClose, children, width = 400 }: ModalProps): ReactNode {
   const titleId = useId()
   const panelRef = useRef<HTMLDivElement>(null)
 
@@ -77,7 +81,7 @@ function Modal({ open, title, icon, onClose, children }: ModalProps): ReactNode 
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className="relative z-50 flex w-[400px] max-w-full flex-col rounded-lg-12 bg-bg-primary pb-[3px] outline-none"
+        className={`relative z-50 flex max-w-full flex-col rounded-lg-12 bg-bg-primary pb-[3px] outline-none ${WIDTHS[width]}`}
       >
         <div className="flex h-[42px] shrink-0 items-center justify-between">
           <h2

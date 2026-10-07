@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest'
 
-import { EMPTY_DRAFT, draftToJob, formatAmount, validateDraft } from '../jobs/draft'
+import {
+  EMPTY_DRAFT,
+  applyDraftToJob,
+  draftFromJob,
+  draftToJob,
+  formatAmount,
+  validateDraft,
+} from '../jobs/draft'
+
+import type { Job } from '../jobs/types'
 
 const today = new Date(2026, 9, 7)
 const owner = { name: 'Alice', colour: 'green' } as const
@@ -95,5 +104,58 @@ describe('draftToJob', () => {
       today,
     )
     expect(job.location).toBe('Dublin')
+  })
+})
+
+describe('editing an existing job', () => {
+  const job: Job = {
+    id: 'job-9',
+    title: 'Data Analyst',
+    department: 'Analytics',
+    employmentType: 'Part-time',
+    location: 'Ireland',
+    workplace: 'Remote',
+    status: 'open',
+    managers: [owner],
+    createdBy: owner,
+    totalApplicants: 29,
+    newApplicants: 4,
+    postedAt: '2026-10-15',
+    closingDate: '2026-12-22',
+  }
+
+  it('fills the form from the job', () => {
+    expect(draftFromJob(job)).toMatchObject({
+      title: 'Data Analyst',
+      team: 'Analytics',
+      employmentType: 'Part-time',
+      workplace: 'Remote',
+      hiringArea: 'area',
+      area: 'Ireland',
+      closingDate: { day: '22', month: '12', year: '2026' },
+    })
+  })
+
+  it('treats an "Anywhere" job as hiring anywhere', () => {
+    expect(draftFromJob({ ...job, location: 'Anywhere' })).toMatchObject({
+      hiringArea: 'anywhere',
+      area: '',
+    })
+  })
+
+  it('applies edits without touching status, people or applicants', () => {
+    const edited = applyDraftToJob(
+      job,
+      { ...draftFromJob(job), title: 'Senior Data Analyst' },
+      today,
+    )
+    expect(edited).toMatchObject({
+      id: 'job-9',
+      title: 'Senior Data Analyst',
+      status: 'open',
+      totalApplicants: 29,
+      postedAt: '2026-10-15',
+      closingDate: '2026-12-22',
+    })
   })
 })
