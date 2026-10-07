@@ -1,11 +1,14 @@
 'use client'
 
-import { type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 
 import { DashboardIcon } from '@/components/dashboard/nav-config'
+import { CreateTeamModal } from '@/components/jobs/create/create-team-modal'
 import {
   BannerInfo,
   Checkbox,
+  Chip,
+  CountryFlag,
   DateInput,
   Divider,
   InputSelection,
@@ -16,8 +19,10 @@ import {
   RichTextInput,
   TextInput,
 } from '@/components/ui'
+import { toIsoDate } from '@/lib/jobs/actions'
 import {
   AREA_OPTIONS,
+  COMPANY_ADDRESS,
   CURRENCY_OPTIONS,
   EXPERIENCE_OPTIONS,
   INDUSTRY_OPTIONS,
@@ -133,10 +138,52 @@ const PAY_PERIODS: { value: PayPeriod; label: string }[] = [
 ]
 
 const single = (value: string | string[]) => (Array.isArray(value) ? (value[0] ?? '') : value)
+const many = (value: string | string[]) => (Array.isArray(value) ? value : [value])
+
+const flagFor = (area: string) => AREA_OPTIONS.find((option) => option.value === area)?.flag
+
+/** A round 14px flag, as the area options and chips show one. */
+function AreaFlag({ area }: { area: string }) {
+  const flag = flagFor(area)
+  if (!flag) return null
+  return (
+    <span className="inline-flex size-[14px] shrink-0 overflow-hidden rounded-full outline-[0.5px] -outline-offset-[0.5px] outline-border-transparent-light">
+      <CountryFlag code={flag} decorative width={14} height={14} className="object-cover" />
+    </span>
+  )
+}
+
+const AREA_SELECT_OPTIONS = AREA_OPTIONS.map((option) => ({
+  value: option.value,
+  label: option.label,
+  icon: <AreaFlag area={option.value} />,
+}))
 
 function JobDetailsForm({ draft, errors, onChange }: JobDetailsFormProps) {
+  // Teams created from this form, on top of the workspace's own.
+  const [createdTeams, setCreatedTeams] = useState<string[]>([])
+  const [creatingTeam, setCreatingTeam] = useState(false)
+  const teamNames = [...TEAM_OPTIONS.map((team) => team.value), ...createdTeams]
+  // A job being edited may belong to a team this list does not know yet.
+  if (draft.team && !teamNames.includes(draft.team)) teamNames.push(draft.team)
+
+  function setAreas(areas: string[]) {
+    onChange({ areas, sameAsCompanyAddress: areas.includes(COMPANY_ADDRESS) })
+  }
+
   return (
     <>
+      {creatingTeam ? (
+        <CreateTeamModal
+          existing={teamNames}
+          onCreate={(name) => {
+            setCreatedTeams((teams) => [...teams, name])
+            onChange({ team: name })
+            setCreatingTeam(false)
+          }}
+          onClose={() => setCreatingTeam(false)}
+        />
+      ) : null}
       <section className="relative flex flex-col gap-[24px]">
         <SectionTitle>Job title &amp; Department</SectionTitle>
         <div className="flex flex-col gap-[24px]">
@@ -154,10 +201,15 @@ function JobDetailsForm({ draft, errors, onChange }: JobDetailsFormProps) {
               <InputSelection
                 label="Team/Department"
                 placeholder="Select a team"
-                options={TEAM_OPTIONS}
+                options={teamNames.map((team) => ({ value: team, label: team }))}
                 value={draft.team}
                 onChange={(value) => onChange({ team: single(value) })}
                 errorText={errors.team}
+                footerAction={{
+                  label: 'Create new team',
+                  icon: <DashboardIcon name="plus-solid" size={14} />,
+                  onClick: () => setCreatingTeam(true),
+                }}
               />
             </div>
             {/* Dates can be typed straight in; past dates are rejected. */}
@@ -166,6 +218,7 @@ function JobDetailsForm({ draft, errors, onChange }: JobDetailsFormProps) {
               value={draft.closingDate}
               onChange={(closingDate) => onChange({ closingDate })}
               errorText={errors.closingDate}
+              min={toIsoDate(new Date())}
               className="w-[182px] shrink-0"
             />
             <div className="w-[100px] shrink-0">
@@ -204,14 +257,43 @@ function JobDetailsForm({ draft, errors, onChange }: JobDetailsFormProps) {
           </Group>
 
           <div className="flex flex-col gap-[20px]">
+            {draft.hiringArea === 'anywhere' ? (
+              <p className="flex h-[9px] items-center text-body-xs leading-none font-medium text-text-secondary">
+                Anywhere covers the UK, EU, US, India, Kenya and Nigeria.
+              </p>
+            ) : null}
+
             {draft.hiringArea === 'area' ? (
-              <InputSelection
-                label="Select an area"
-                placeholder="Search for a country or region"
-                options={AREA_OPTIONS}
-                value={draft.area}
-                onChange={(value) => onChange({ area: single(value) })}
-              />
+              <>
+                {/* Chosen places sit under the field as chips, so the field
+                    itself stays a search box. */}
+                <InputSelection
+                  label="Country"
+                  placeholder="Search"
+                  options={AREA_SELECT_OPTIONS}
+                  multiple
+                  withSelection={false}
+                  searchable
+                  value={draft.areas}
+                  onChange={(value) => setAreas(many(value))}
+                  showHelper
+                  helperText="Enter the city, state or country where this role is based."
+                />
+                {draft.areas.length > 0 ? (
+                  <div className="flex flex-wrap gap-[6px]">
+                    {draft.areas.map((area) => (
+                      <Chip
+                        key={area}
+                        label={area}
+                        icon={<AreaFlag area={area} />}
+                        withIcon={Boolean(flagFor(area))}
+                        removable
+                        onRemove={() => setAreas(draft.areas.filter((item) => item !== area))}
+                      />
+                    ))}
+                  </div>
+                ) : null}
+              </>
             ) : null}
 
             {draft.hiringArea === 'timezone' ? (
@@ -221,6 +303,7 @@ function JobDetailsForm({ draft, errors, onChange }: JobDetailsFormProps) {
                     label="Select a timezone"
                     placeholder="Search for a timezone"
                     options={TIMEZONE_OPTIONS}
+                    searchable
                     value={draft.timezone}
                     onChange={(value) => onChange({ timezone: single(value) })}
                   />
@@ -237,12 +320,28 @@ function JobDetailsForm({ draft, errors, onChange }: JobDetailsFormProps) {
               </div>
             ) : null}
 
-            <Checkbox
-              size="sm"
-              label="Show on career page"
-              checked={draft.showLocationOnCareerPage}
-              onChange={(event) => onChange({ showLocationOnCareerPage: event.target.checked })}
-            />
+            <div className="flex flex-col gap-[8px]">
+              {draft.hiringArea === 'area' ? (
+                <Checkbox
+                  size="sm"
+                  label="Same as company address"
+                  checked={draft.sameAsCompanyAddress}
+                  onChange={(event) =>
+                    setAreas(
+                      event.target.checked
+                        ? [...new Set([COMPANY_ADDRESS, ...draft.areas])]
+                        : draft.areas.filter((area) => area !== COMPANY_ADDRESS),
+                    )
+                  }
+                />
+              ) : null}
+              <Checkbox
+                size="sm"
+                label="Show on career page"
+                checked={draft.showLocationOnCareerPage}
+                onChange={(event) => onChange({ showLocationOnCareerPage: event.target.checked })}
+              />
+            </div>
           </div>
 
           <Rule />
@@ -332,6 +431,8 @@ function JobDetailsForm({ draft, errors, onChange }: JobDetailsFormProps) {
                 label="Industry"
                 placeholder="Select an industry"
                 options={INDUSTRY_OPTIONS}
+                searchable
+                allowCustom
                 value={draft.industry}
                 onChange={(value) => onChange({ industry: single(value) })}
               />
@@ -377,8 +478,10 @@ function JobDetailsForm({ draft, errors, onChange }: JobDetailsFormProps) {
             placeholder="Add skills"
             options={SKILL_OPTIONS}
             multiple
+            searchable
+            allowCustom
             value={draft.skills}
-            onChange={(value) => onChange({ skills: Array.isArray(value) ? value : [value] })}
+            onChange={(value) => onChange({ skills: many(value) })}
             showHelper
             helperText="Add relevant to the jobs skills and keywords so candidates can find this role."
           />
@@ -410,30 +513,32 @@ function JobDetailsForm({ draft, errors, onChange }: JobDetailsFormProps) {
               <div className="w-[194px] shrink-0">
                 <InputSelection
                   label="Currency"
+                  placeholder="Select Currency"
                   options={CURRENCY_OPTIONS}
+                  searchable
                   value={draft.currency}
                   onChange={(value) => onChange({ currency: single(value) })}
                 />
               </div>
               <div className="w-[194px] shrink-0">
                 <TextInput
-                  label={draft.payType === 'range' ? 'Minimum' : 'Amount'}
+                  label={draft.payType === 'range' ? 'Minimum' : 'Pay amount'}
                   placeholder="0"
                   value={draft.payMin}
                   onChange={(event) => onChange({ payMin: formatAmount(event.target.value) })}
                   errorText={errors.pay}
                 />
               </div>
-              {draft.payType === 'range' ? (
-                <div className="w-[194px] shrink-0">
-                  <TextInput
-                    label="Maximum"
-                    placeholder="0"
-                    value={draft.payMax}
-                    onChange={(event) => onChange({ payMax: formatAmount(event.target.value) })}
-                  />
-                </div>
-              ) : null}
+              {/* An exact amount has no maximum: the field stays, switched off. */}
+              <div className="w-[194px] shrink-0">
+                <TextInput
+                  label="Maximum"
+                  placeholder={draft.payType === 'range' ? '0' : '-'}
+                  value={draft.payType === 'range' ? draft.payMax : ''}
+                  disabled={draft.payType !== 'range'}
+                  onChange={(event) => onChange({ payMax: formatAmount(event.target.value) })}
+                />
+              </div>
             </div>
             <div className="flex gap-[6px]">
               {PAY_PERIODS.map((period) => (

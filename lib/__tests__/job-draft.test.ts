@@ -7,6 +7,7 @@ import {
   draftToJob,
   formatAmount,
   validateDraft,
+  validateTeamName,
 } from '../jobs/draft'
 
 import type { Job } from '../jobs/types'
@@ -73,7 +74,7 @@ describe('draftToJob', () => {
         team: 'Product',
         workplace: 'Hybrid',
         hiringArea: 'area',
-        area: 'Ireland',
+        areas: ['Ireland'],
       },
       'job-x',
       owner,
@@ -134,7 +135,7 @@ describe('editing an existing job', () => {
       employmentType: 'Part-time',
       workplace: 'Remote',
       hiringArea: 'area',
-      area: 'Ireland',
+      areas: ['Ireland'],
       closingDate: { day: '22', month: '12', year: '2026' },
     })
   })
@@ -142,7 +143,7 @@ describe('editing an existing job', () => {
   it('treats an "Anywhere" job as hiring anywhere', () => {
     expect(draftFromJob({ ...job, location: 'Anywhere' })).toMatchObject({
       hiringArea: 'anywhere',
-      area: '',
+      areas: [],
     })
   })
 
@@ -164,5 +165,22 @@ describe('editing an existing job', () => {
       lastViewedAt: '2026-10-15',
       closingDate: '2026-12-22',
     })
+  })
+})
+
+describe('validateTeamName', () => {
+  const existing = ['Engineering', 'People/HR']
+
+  it('accepts a new, plainly named team', () => {
+    expect(validateTeamName(' Lola ', existing)).toBeNull()
+    expect(validateTeamName('R&D / Labs', existing)).toBeNull()
+  })
+
+  it('refuses an empty name, special characters and duplicates', () => {
+    expect(validateTeamName('  ', existing)).toBe('Enter a team name.')
+    expect(validateTeamName('Lola!', existing)).toBe(
+      'Remove special characters from the team name.',
+    )
+    expect(validateTeamName('engineering', existing)).toBe('A team with this name already exists.')
   })
 })

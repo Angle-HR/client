@@ -4,6 +4,7 @@ import {
   forwardRef,
   type ButtonHTMLAttributes,
   type HTMLAttributes,
+  type KeyboardEvent,
   type ReactNode,
   type Ref,
 } from 'react'
@@ -27,6 +28,20 @@ interface SelectionFieldProps extends Omit<
   tags?: ReactNode[]
   placeholder?: string
   value?: string
+  /**
+   * Turns the value area into a text box, for fields whose options are
+   * filtered — or added to — by typing.
+   */
+  search?: SelectionFieldSearch
+}
+
+interface SelectionFieldSearch {
+  value: string
+  onChange: (value: string) => void
+  onKeyDown?: (event: KeyboardEvent<HTMLInputElement>) => void
+  onFocus?: () => void
+  placeholder?: string
+  'aria-label'?: string
 }
 
 const sizeConfig: Record<
@@ -64,6 +79,7 @@ const SelectionField = forwardRef<HTMLButtonElement, SelectionFieldProps>(functi
     tags,
     placeholder,
     value,
+    search,
     disabled,
     className = '',
     ...props
@@ -83,22 +99,39 @@ const SelectionField = forwardRef<HTMLButtonElement, SelectionFieldProps>(functi
       ? 'bg-bg-input-error border-border-input-error'
       : disabled
         ? 'bg-bg-input-disabled border-border-input-disabled pointer-events-none opacity-60'
-        : 'bg-bg-input-placeholder border-border-input-placeholder hover:border-border-input-hover focus-visible:border-border-input-focus! focus-visible:outline-none cursor-pointer',
+        : 'bg-bg-input-placeholder border-border-input-placeholder hover:border-border-input-hover focus-visible:border-border-input-focus! focus-within:border-border-input-focus! focus-visible:outline-none cursor-pointer',
     className,
   ].join(' ')
 
   // Boolean() rather than a comparison: TypeScript would narrow `tags` through
   // a compared alias, and both branches below render the same children.
-  const tagMode = Boolean(tags)
+  const tagMode = Boolean(tags) || Boolean(search)
+
+  const searchBox = search ? (
+    <input
+      value={search.value}
+      onChange={(event) => search.onChange(event.target.value)}
+      onKeyDown={search.onKeyDown}
+      onFocus={search.onFocus}
+      // The field toggles its list on click; a click in the text box only opens it.
+      onClick={(event) => event.stopPropagation()}
+      placeholder={search.placeholder}
+      aria-label={search['aria-label']}
+      disabled={disabled}
+      autoComplete="off"
+      className="min-w-[40px] flex-1 bg-transparent text-body-m text-text-input-filled outline-none placeholder:text-text-input-placeholder"
+    />
+  ) : null
 
   return (
     // With removable tags inside, the trigger cannot be a <button>: the tags'
     // own remove buttons would be nested in it, which is invalid HTML. It
     // becomes a focusable combobox div that answers Enter and Space instead.
+    // The same goes for a field with a text box in it.
     tagMode ? (
       <div
         ref={ref as unknown as Ref<HTMLDivElement>}
-        tabIndex={disabled ? -1 : 0}
+        tabIndex={disabled || search ? -1 : 0}
         aria-disabled={disabled || undefined}
         className={`${classes} cursor-pointer`}
         {...(props as unknown as HTMLAttributes<HTMLDivElement>)}
@@ -120,8 +153,11 @@ const SelectionField = forwardRef<HTMLButtonElement, SelectionFieldProps>(functi
         )}
         {withSelection ? (
           <span className="flex-1 inline-flex items-center gap-[2px] min-w-0 overflow-hidden">
-            {tags?.length ? (
-              tags
+            {tags?.length || searchBox ? (
+              <>
+                {tags}
+                {searchBox}
+              </>
             ) : (
               <span className="text-body-m text-text-input-placeholder truncate">
                 {placeholder}
@@ -133,11 +169,13 @@ const SelectionField = forwardRef<HTMLButtonElement, SelectionFieldProps>(functi
             {value && leadingVisual && (
               <span className="inline-flex shrink-0 items-center">{leadingVisual}</span>
             )}
-            <span
-              className={`flex-1 truncate text-body-m ${hasValue ? 'text-text-input-filled' : 'text-text-input-placeholder'}`}
-            >
-              {value || placeholder}
-            </span>
+            {searchBox ?? (
+              <span
+                className={`flex-1 truncate text-body-m ${hasValue ? 'text-text-input-filled' : 'text-text-input-placeholder'}`}
+              >
+                {value || placeholder}
+              </span>
+            )}
           </span>
         )}
         <ChevronDown className={`${config.icon} shrink-0 text-text-input-icon-rest`} />
@@ -181,4 +219,4 @@ const SelectionField = forwardRef<HTMLButtonElement, SelectionFieldProps>(functi
 })
 
 export { SelectionField }
-export type { SelectionFieldProps, SelectionFieldSize, SelectionFieldState }
+export type { SelectionFieldProps, SelectionFieldSearch, SelectionFieldSize, SelectionFieldState }

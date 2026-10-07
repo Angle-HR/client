@@ -22,8 +22,9 @@ interface JobDraft {
   closingDate: { day: string; month: string; year: string }
   jobId: string
   hiringArea: HiringArea
-  /** Used when hiring in a specific area. */
-  area: string
+  /** Used when hiring in specific areas: one or more cities, countries or regions. */
+  areas: string[]
+  sameAsCompanyAddress: boolean
   /** Used when hiring in a specific timezone. */
   timezone: string
   timezoneOffset: string
@@ -52,9 +53,10 @@ const EMPTY_DRAFT: JobDraft = {
   closingDate: { day: '', month: '', year: '' },
   jobId: '',
   hiringArea: 'anywhere',
-  area: '',
+  areas: [],
+  sameAsCompanyAddress: false,
   timezone: '',
-  timezoneOffset: '',
+  timezoneOffset: '+/-0 hours',
   showLocationOnCareerPage: true,
   workplace: '',
   travel: '',
@@ -66,7 +68,7 @@ const EMPTY_DRAFT: JobDraft = {
   experience: '',
   skills: [],
   payType: 'range',
-  currency: 'GBP',
+  currency: '',
   payMin: '',
   payMax: '',
   payPeriod: 'annually',
@@ -76,48 +78,47 @@ const EMPTY_DRAFT: JobDraft = {
 
 const option = (value: string) => ({ value, label: value })
 
-const TEAM_OPTIONS = [
-  'Analytics',
-  'Content',
-  'Design',
-  'Development',
-  'Engineering',
-  'IT Support',
-  'Management',
-  'Marketing',
-  'Product',
-  'Research',
-].map(option)
+const TEAM_OPTIONS = ['Engineering', 'Design', 'Sales', 'Marketing', 'Operations', 'People/HR'].map(
+  option,
+)
+
+/** A team name as the "Create new team" dialog accepts it, or the reason it does not. */
+function validateTeamName(name: string, existing: string[]): string | null {
+  const trimmed = name.trim()
+  if (!trimmed) return 'Enter a team name.'
+  if (!/^[\p{L}\p{N} &/-]+$/u.test(trimmed)) return 'Remove special characters from the team name.'
+  if (existing.some((team) => team.toLowerCase() === trimmed.toLowerCase())) {
+    return 'A team with this name already exists.'
+  }
+  return null
+}
 
 const INDUSTRY_OPTIONS = [
   '💻 Tech / Software',
-  '🏦 Finance / Banking',
-  '🏥 Healthcare',
-  '🎓 Education',
+  '💰 Finance / Fintech',
   '🛍️ Retail / E-commerce',
-  '🏭 Manufacturing',
-  '🎬 Media / Entertainment',
-  '🏗️ Construction / Real estate',
-  '✈️ Travel / Hospitality',
+  '🍽️ Hospitality / Food & Drink',
+  '💼 Professional Services',
+  '💇 Beauty & Personal Care',
+  '🚚 Logistics / Transport',
 ].map(option)
 
 const SENIORITY_OPTIONS = [
   'Internship',
   'Entry Level',
-  'Associate',
-  'Mid-Senior Level',
+  'Mid Level',
   'Senior',
   'Lead',
-  'Director',
+  'Manager',
   'Executive',
 ].map(option)
 
 const EXPERIENCE_OPTIONS = [
+  'No experience required',
   '0–1 year',
-  '1–3 years',
-  '3–5 years',
-  '5–8 years',
-  '8–10 years',
+  '2–3 years',
+  '4–6 years',
+  '7–10 years',
   '10+ years',
 ].map(option)
 
@@ -139,41 +140,66 @@ const SKILL_OPTIONS = [
   'Stakeholder management',
 ].map(option)
 
-const CURRENCY_OPTIONS = ['GBP', 'EUR', 'USD', 'CAD', 'AUD', 'NGN', 'SEK', 'NOK', 'CHF'].map(option)
+/** `keywords` lets a currency be found by its code, name or symbol. */
+const CURRENCY_OPTIONS = [
+  { value: 'USD', label: '$ USD', keywords: 'us dollar dollars' },
+  { value: 'GBP', label: '£ GBP', keywords: 'pound sterling' },
+  { value: 'EUR', label: '€ Euros', keywords: 'eur euro' },
+  { value: 'NGN', label: '₦ Naira', keywords: 'ngn nigeria' },
+  { value: 'INR', label: '₹ Rupees', keywords: 'inr india rupee' },
+  { value: 'PLN', label: 'zł Polish złoty', keywords: 'pln zloty poland' },
+]
 
+/** `keywords` carries the abbreviation, so typing "CET" finds Central European Time. */
 const TIMEZONE_OPTIONS = [
-  'Dublin (Greenwich Mean Time) [+01:00]',
-  'London (Greenwich Mean Time) [+01:00]',
-  'Lagos (West Africa Time) [+01:00]',
-  'Berlin (Central European Time) [+02:00]',
-  'New York (Eastern Time) [-04:00]',
-  'Toronto (Eastern Time) [-04:00]',
-  'San Francisco (Pacific Time) [-07:00]',
-  'Sydney (Australian Eastern Time) [+10:00]',
-].map(option)
+  { name: 'Algiers (Central European Time) [+01:00]', keywords: 'CET' },
+  { name: 'Andorra (Central European Time) [+01:00]', keywords: 'CET' },
+  { name: 'Budapest (Central European Time) [+01:00]', keywords: 'CET' },
+  { name: 'Belgrade (Central European Time) [+01:00]', keywords: 'CET' },
+  { name: 'Berlin (Central European Time) [+01:00]', keywords: 'CET' },
+  { name: 'Casablanca (Western European Time) [+01:00]', keywords: 'WET' },
+  { name: 'Dublin (Greenwich Mean Time) [+01:00]', keywords: 'GMT IST' },
+  { name: 'London (British standard Time) [+01:00]', keywords: 'BST GMT' },
+  { name: 'Lagos (West Africa Time) [+01:00]', keywords: 'WAT' },
+  { name: 'New York (Eastern Time) [-04:00]', keywords: 'ET EST EDT' },
+  { name: 'Toronto (Eastern Time) [-04:00]', keywords: 'ET EST EDT' },
+  { name: 'San Francisco (Pacific Time) [-07:00]', keywords: 'PT PST PDT' },
+  { name: 'Sydney (Australian Eastern Time) [+10:00]', keywords: 'AET AEST' },
+].map(({ name, keywords }) => ({ value: name, label: name, keywords }))
 
 const TIMEZONE_OFFSET_OPTIONS = [
-  'Exact timezone',
-  '+/-1 hour',
+  '+/-0 hours',
+  '+/-1 hours',
   '+/-2 hours',
   '+/-3 hours',
   '+/-4 hours',
+  '+/-5 hours',
+  '+/-6 hours',
 ].map(option)
 
+/** Places a role can be based in. `flag` is the code of the flag shown beside it. */
 const AREA_OPTIONS = [
-  'United Kingdom',
-  'Ireland',
-  'Germany',
-  'France',
-  'Netherlands',
-  'Sweden',
-  'Spain',
-  'Italy',
-  'United States',
-  'Canada',
-  'Australia',
-  'Nigeria',
-].map(option)
+  { value: 'London, United Kingdom', flag: 'gb' },
+  { value: 'European Union', flag: 'eu' },
+  { value: 'Lagos, Nigeria', flag: 'ng' },
+  { value: 'United Kingdom', flag: 'gb' },
+  { value: 'Ireland', flag: 'ie' },
+  { value: 'Germany', flag: 'de' },
+  { value: 'France', flag: 'fr' },
+  { value: 'Netherlands', flag: 'nl' },
+  { value: 'Sweden', flag: 'se' },
+  { value: 'Spain', flag: 'es' },
+  { value: 'Italy', flag: 'it' },
+  { value: 'United States', flag: 'us' },
+  { value: 'Canada', flag: 'ca' },
+  { value: 'Australia', flag: 'au' },
+  { value: 'India', flag: 'in' },
+  { value: 'Kenya', flag: 'ke' },
+  { value: 'Nigeria', flag: 'ng' },
+].map(({ value, flag }) => ({ value, label: value, flag }))
+
+/** Where the company is registered; stands in until the workspace profile is served. */
+const COMPANY_ADDRESS = 'London, United Kingdom'
 
 type DraftErrors = Partial<Record<'title' | 'team' | 'closingDate' | 'pay', string>>
 
@@ -211,8 +237,8 @@ function formatAmount(input: string): string {
 function draftToJob(draft: JobDraft, id: string, owner: JobManager, today: Date): Job {
   const { day, month, year } = draft.closingDate
   const location =
-    draft.hiringArea === 'area' && draft.area
-      ? draft.area
+    draft.hiringArea === 'area' && draft.areas.length > 0
+      ? (draft.areas[0] ?? '')
       : draft.hiringArea === 'timezone' && draft.timezone
         ? (draft.timezone.split(' (')[0] ?? draft.timezone)
         : 'Anywhere'
@@ -247,7 +273,7 @@ function draftFromJob(job: Job): JobDraft {
     employmentType: job.employmentType,
     workplace: job.workplace,
     hiringArea: anywhere ? 'anywhere' : 'area',
-    area: anywhere ? '' : job.location,
+    areas: anywhere ? [] : [job.location],
     closingDate: { day, month, year },
   }
 }
@@ -269,6 +295,7 @@ function applyDraftToJob(job: Job, draft: JobDraft, today: Date): Job {
 
 export {
   AREA_OPTIONS,
+  COMPANY_ADDRESS,
   CURRENCY_OPTIONS,
   EMPTY_DRAFT,
   EXPERIENCE_OPTIONS,
@@ -283,5 +310,6 @@ export {
   draftToJob,
   formatAmount,
   validateDraft,
+  validateTeamName,
 }
 export type { DraftErrors, HiringArea, JobDraft, PayPeriod, PayType, TravelFrequency }

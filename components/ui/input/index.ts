@@ -12,3 +12,6 @@ export type { LabelWrapperProps } from './label-wrapper'
 
 export { DateInput, EMPTY_DATE } from './date-input'
 export type { DateInputProps, DateParts } from './date-input'
+
+export { Calendar } from './calendar'
+export type { CalendarProps } from './calendar'
