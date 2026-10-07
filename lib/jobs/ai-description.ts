@@ -17,6 +17,38 @@
  */
 type AiAccess = 'unavailable' | 'restricted' | 'disconnected' | 'connected'
 
+/**
+ * Why connecting an AI app failed. Figma: the error sheet 8973:614574, whose
+ * note says the buttons' own flows are still to be designed.
+ */
+type ConnectError = 'general' | 'key' | 'server'
+
+interface ConnectErrorCopy {
+  message: string
+  detail: string
+  action: string
+}
+
+const CONNECT_ERRORS: Record<ConnectError, ConnectErrorCopy> = {
+  general: {
+    message: "MCP couldn't connect.",
+    detail: 'Check the endpoint and try again',
+    action: 'Try again',
+  },
+  key: {
+    message: 'Key not valid',
+    // "try again" is spelt "ty again" in the design; corrected here.
+    detail:
+      'Your API key is wrong or has expired. Create a new one in Account settings > API, or try again.',
+    action: 'Create a new key',
+  },
+  server: {
+    message: "Open HR isn't responding",
+    detail: 'This is on our side. Try again in a few minutes.',
+    action: 'Try again',
+  },
+}
+
 type Improvement = 'salary' | 'tasks' | 'growth' | 'hiring'
 
 interface ImprovementOption {
@@ -154,6 +186,7 @@ function describeChange(html: string, instruction: string): string {
 }
 
 export {
+  CONNECT_ERRORS,
   GENERATE_STEPS,
   IMPROVEMENTS,
   describeChange,
@@ -165,4 +198,4 @@ export {
   plainText,
   shortenDescription,
 }
-export type { AiAccess, DraftRequest, Improvement, ImprovementOption }
+export type { AiAccess, ConnectError, DraftRequest, Improvement, ImprovementOption }

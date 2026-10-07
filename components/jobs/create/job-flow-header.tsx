@@ -66,6 +66,13 @@ function JobFlowHeader({ current, mode, onSave }: JobFlowHeaderProps) {
               </li>
             )
           })}
+          {/* The template trail ends on a separator in the design, with no
+              step after it. */}
+          {mode === 'edit-template' ? (
+            <li aria-hidden="true" className={`flex items-center ${stepText} text-text-secondary`}>
+              <span className="flex w-[21px] justify-center">›</span>
+            </li>
+          ) : null}
         </ol>
       </nav>
       <div className="flex items-center gap-[10px] p-[10px]">

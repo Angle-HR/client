@@ -35,7 +35,7 @@ import {
 } from '@/lib/jobs/draft'
 
 import type { JobToastState } from '@/components/jobs/job-toast'
-import type { AiAccess } from '@/lib/jobs/ai-description'
+import type { AiAccess, ConnectError } from '@/lib/jobs/ai-description'
 import type {
   DraftErrors,
   HiringArea,
@@ -61,7 +61,7 @@ interface JobDetailsFormProps {
     access: AiAccess
     onAccessChange: (access: AiAccess) => void
     workspace: string
-    connectFails?: boolean
+    connectError?: ConnectError
   }
   onToast: (toast: Omit<JobToastState, 'id'>) => void
 }
@@ -421,7 +421,7 @@ function JobDetailsForm({ draft, errors, onChange, ai, onToast }: JobDetailsForm
           workspace={ai.workspace}
           access={ai.access}
           onAccessChange={ai.onAccessChange}
-          connectFails={ai.connectFails}
+          connectError={ai.connectError}
           onToast={onToast}
         />
         <Tips top={250}>

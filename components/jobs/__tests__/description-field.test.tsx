@@ -8,11 +8,11 @@ import type { AiAccess } from '@/lib/jobs/ai-description'
 
 function Field({
   access,
-  connectFails,
+  connectError,
   onToast = () => {},
 }: {
   access: AiAccess
-  connectFails?: boolean
+  connectError?: 'general' | 'key' | 'server'
   onToast?: Parameters<typeof DescriptionField>[0]['onToast']
 }) {
   const [value, setValue] = useState('')
@@ -26,7 +26,7 @@ function Field({
       workspace="Acme"
       access={current}
       onAccessChange={setCurrent}
-      connectFails={connectFails}
+      connectError={connectError}
       onToast={onToast}
     />
   )
@@ -92,7 +92,7 @@ describe('DescriptionField', () => {
 
   it('reports a connection that fails and offers another try', () => {
     const onToast = vi.fn()
-    render(<Field access="disconnected" connectFails onToast={onToast} />)
+    render(<Field access="disconnected" connectError="general" onToast={onToast} />)
     fireEvent.click(screen.getByRole('button', { name: 'Generate' }))
     fireEvent.click(screen.getByRole('button', { name: 'Done' }))
 
@@ -101,6 +101,23 @@ describe('DescriptionField', () => {
     expect(screen.queryByLabelText('MCP endpoint')).not.toBeInTheDocument()
     act(() => toast.action.onClick())
     expect(screen.getByLabelText('MCP endpoint')).toBeInTheDocument()
+  })
+
+  it('says when the key is wrong or the service is down', () => {
+    const onToast = vi.fn()
+    const { unmount } = render(<Field access="disconnected" connectError="key" onToast={onToast} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Generate' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }))
+    expect(onToast.mock.calls[0]?.[0]).toMatchObject({
+      message: 'Key not valid',
+      action: { label: 'Create a new key' },
+    })
+    unmount()
+
+    render(<Field access="disconnected" connectError="server" onToast={onToast} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Generate' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }))
+    expect(onToast.mock.calls[1]?.[0]).toMatchObject({ message: "Open HR isn't responding" })
   })
 
   it('edits and clears a draft from the Edit with AI menu', () => {

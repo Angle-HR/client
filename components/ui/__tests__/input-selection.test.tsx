@@ -85,3 +85,26 @@ describe('InputSelection, footer action', () => {
     expect(screen.getByRole('combobox')).toHaveAttribute('aria-expanded', 'false')
   })
 })
+
+describe('InputSelection, plain', () => {
+  it('picks an option from the list and closes', () => {
+    const onChange = vi.fn()
+    render(
+      <InputSelection
+        label="Team"
+        options={[
+          { value: 'design', label: 'Design' },
+          { value: 'sales', label: 'Sales' },
+        ]}
+        onChange={onChange}
+      />,
+    )
+    const trigger = screen.getByRole('combobox')
+    fireEvent.click(trigger)
+    fireEvent.click(screen.getByText('Sales'))
+
+    expect(onChange).toHaveBeenCalledWith('sales')
+    expect(trigger).toHaveAttribute('aria-expanded', 'false')
+    expect(trigger).toHaveTextContent('Sales')
+  })
+})

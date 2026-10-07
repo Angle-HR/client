@@ -79,8 +79,8 @@ function NewJobPage() {
   const [choosingTemplate, setChoosingTemplate] = useState(false)
   const [toast, setToast] = useState<JobToastState | null>(null)
   // There is no AI service yet, so access starts as "may connect one". `?ai=`
-  // reaches the other states: unavailable, restricted, connected, or fails
-  // (connecting reports an error).
+  // reaches the other states: unavailable, restricted, connected, and the
+  // three ways connecting can fail (fails, bad-key, down).
   const aiParam = params.get('ai')
   const [aiAccess, setAiAccess] = useState<AiAccess>(
     aiParam === 'unavailable' || aiParam === 'restricted' || aiParam === 'connected'
@@ -254,7 +254,14 @@ function NewJobPage() {
               access: aiAccess,
               onAccessChange: setAiAccess,
               workspace: me.data?.legal_full_name || me.data?.first_name || 'workspace',
-              connectFails: aiParam === 'fails',
+              connectError:
+                aiParam === 'fails'
+                  ? 'general'
+                  : aiParam === 'bad-key'
+                    ? 'key'
+                    : aiParam === 'down'
+                      ? 'server'
+                      : undefined,
             }}
             onToast={(next) => setToast({ ...next, id: Date.now() })}
           />

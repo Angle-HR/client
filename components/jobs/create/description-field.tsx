@@ -7,6 +7,7 @@ import { Floating, toAnchor } from '@/components/jobs/floating'
 import { PanelHeader, panel, rowBase, rowText } from '@/components/jobs/job-filters'
 import { Button, Modal, ModalActions, RichTextInput } from '@/components/ui'
 import {
+  CONNECT_ERRORS,
   GENERATE_STEPS,
   IMPROVEMENTS,
   describeChange,
@@ -20,7 +21,7 @@ import {
 
 import type { AnchorRect } from '@/components/jobs/floating'
 import type { JobToastState } from '@/components/jobs/job-toast'
-import type { AiAccess } from '@/lib/jobs/ai-description'
+import type { AiAccess, ConnectError } from '@/lib/jobs/ai-description'
 
 /**
  * The job description editor and its AI drafting. Figma: "Adding description
@@ -40,8 +41,8 @@ interface DescriptionFieldProps {
   workspace: string
   access: AiAccess
   onAccessChange: (access: AiAccess) => void
-  /** With `connect-fails`, connecting reports an error, so that state can be reached. */
-  connectFails?: boolean
+  /** Makes connecting fail in this way, so the error states can be reached. */
+  connectError?: ConnectError
   onToast: (toast: Omit<JobToastState, 'id'>) => void
 }
 
@@ -185,7 +186,7 @@ function DescriptionField({
   workspace,
   access,
   onAccessChange,
-  connectFails = false,
+  connectError,
   onToast,
 }: DescriptionFieldProps) {
   // True once AI has written what is in the editor, which is when edits apply.
@@ -248,12 +249,15 @@ function DescriptionField({
 
   function connect() {
     setConnecting(false)
-    if (connectFails) {
+    if (connectError) {
+      const copy = CONNECT_ERRORS[connectError]
       onToast({
         kind: 'error',
-        message: "MCP couldn't connect.",
-        detail: 'Check the endpoint and try again',
-        action: { label: 'Try again', onClick: () => setConnecting(true) },
+        message: copy.message,
+        detail: copy.detail,
+        // Creating a key has no screen yet, so every follow-up reopens the
+        // connection dialog.
+        action: { label: copy.action, onClick: () => setConnecting(true) },
       })
       return
     }
