@@ -1,55 +1,36 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
 
-import { Button } from '@/components/ui'
-import { WaitlistLogo } from '@/components/waitlist/waitlist-logo'
-import { clearSession, getAccessToken, getRefreshToken } from '@/lib/auth-session'
+import { DashboardErrorState, WelcomeEmptyState } from '@/components/dashboard/dashboard-states'
 import { useMe } from '@/lib/queries'
-import { requests } from '@/lib/requests'
 
 function DashboardPage() {
   const router = useRouter()
   const me = useMe()
 
-  // Nothing signed in — the 401 interceptor already gave the refresh token its
-  // one chance before clearing the session.
-  useEffect(() => {
-    if (!getAccessToken()) router.replace('/login')
-  }, [router])
-
-  async function handleSignOut() {
-    const refreshToken = getRefreshToken()
-    try {
-      // Revoking is best-effort: the API treats logout as idempotent, and the
-      // local session has to end either way.
-      if (refreshToken) await requests.logout({ refresh_token: refreshToken })
-    } finally {
-      clearSession()
-      router.replace('/login')
-    }
+  if (me.isError) {
+    // Offline is its own state in the design; anything else is the generic
+    // failure, which is the only one that offers support.
+    const offline = typeof navigator !== 'undefined' && navigator.onLine === false
+    return (
+      <DashboardErrorState
+        kind={offline ? 'connection' : 'unknown'}
+        onContactSupport={() => router.push('/login/help')}
+      />
+    )
   }
 
-  const greeting = me.data?.first_name || me.data?.legal_full_name || me.data?.email
+  // KYB status is not on the API yet (backend flagged it as out of scope until
+  // job-publish gating), so a workspace is treated as still under review until
+  // it says otherwise.
+  const verification = me.data?.onboarding?.status === 'completed' ? 'verified' : 'pending'
 
   return (
-    <div className="relative flex min-h-dvh flex-col bg-bg-secondary px-[24px] pb-[24px] pt-[32px]">
-      <header className="flex shrink-0 items-center justify-between gap-[16px]">
-        <WaitlistLogo />
-        <Button variant="secondary" accent="default" size="md" onClick={() => void handleSignOut()}>
-          Sign out
-        </Button>
-      </header>
-      <main className="flex flex-1 flex-col items-center justify-center gap-[8px]">
-        <h1 className="text-heading-3 font-semibold tracking-wide text-text-primary">DASHBOARD</h1>
-        {greeting ? (
-          <p className="text-body-l font-medium leading-21 text-text-secondary">
-            Signed in as {greeting}
-          </p>
-        ) : null}
-      </main>
-    </div>
+    <WelcomeEmptyState
+      verification={verification}
+      onCreateJob={() => router.push('/dashboard/jobs')}
+    />
   )
 }
 

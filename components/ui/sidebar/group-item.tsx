@@ -11,6 +11,8 @@ interface SidebarGroupItemProps {
   title: string
   items: SidebarItemData[]
   open?: boolean
+  /** Rail mode: the group title is dropped and items render icon-only. */
+  collapsed?: boolean
   onToggle?: (open: boolean) => void
   className?: string
 }
@@ -22,6 +24,7 @@ function SidebarGroupItem({
   title,
   items,
   open = true,
+  collapsed = false,
   onToggle,
   className = '',
 }: SidebarGroupItemProps) {
@@ -29,18 +32,22 @@ function SidebarGroupItem({
 
   return (
     <section className={`flex w-full flex-col items-start ${className}`} aria-label={title}>
-      <SidebarTitle
-        label={title}
-        closed={!open}
-        controls={listId}
-        onToggle={onToggle ? () => onToggle(!open) : undefined}
-      />
+      {/* The rail has no room for a title, and collapsing a group there would
+          leave no way to reopen it — so groups always render open when collapsed. */}
+      {!collapsed && (
+        <SidebarTitle
+          label={title}
+          closed={!open}
+          controls={listId}
+          onToggle={onToggle ? () => onToggle(!open) : undefined}
+        />
+      )}
       <div
         id={listId}
         // Removed from the tab order while collapsed — visually hiding via
         // height alone would leave the items keyboard-reachable.
-        inert={!open}
-        className={`grid w-full transition-[grid-template-rows] duration-200 ease-out motion-reduce:transition-none ${open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
+        inert={!collapsed && !open}
+        className={`grid w-full transition-[grid-template-rows] duration-200 ease-out motion-reduce:transition-none ${collapsed || open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
       >
         <ul className="flex min-h-0 flex-col gap-[2px] overflow-hidden">
           {items.map((item, i) => (
