@@ -22,7 +22,8 @@ function LabelWrapper({
     <div className={`flex flex-col gap-[2px] ${className}`}>
       <label
         htmlFor={htmlFor}
-        className="text-[12px] leading-none font-semibold text-text-tertiary"
+        // Trimmed to the cap height and inset 3px, like every field label in Figma.
+        className="flex h-[9px] items-center pl-[3px] text-body-xs leading-none font-medium-550 text-text-tertiary"
       >
         {label}
         {required && (

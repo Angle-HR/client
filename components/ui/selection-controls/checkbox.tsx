@@ -113,7 +113,10 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Checkbox(
   ].join(' ')
 
   const wrapperClasses = [
-    'inline-flex items-center gap-[8px]',
+    // The small checkbox sits tight against a quieter 12px label in Figma.
+    size === 'sm'
+      ? 'inline-flex items-center gap-[2px] p-px'
+      : 'inline-flex items-center gap-[8px]',
     textPosition === 'left' ? 'flex-row-reverse' : '',
     className,
   ].join(' ')
@@ -151,7 +154,7 @@ const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Checkbox(
       </span>
       {textPosition !== 'none' && label && (
         <span
-          className={`text-body-s font-medium text-text-primary ${disabled ? 'opacity-40' : ''}`}
+          className={`${size === 'sm' ? 'text-body-xs leading-19_2 text-text-secondary' : 'text-body-s font-medium text-text-primary'} ${disabled ? 'opacity-40' : ''}`}
         >
           {label}
         </span>

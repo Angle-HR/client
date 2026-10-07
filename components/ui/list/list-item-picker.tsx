@@ -53,7 +53,8 @@ const ListItemPicker = forwardRef<HTMLButtonElement, ListItemPickerProps>(functi
 
   const layoutClasses =
     layout === 'horizontal'
-      ? 'flex-col items-center text-center w-[120px] py-[18px] gap-[12px]'
+      ? // 17px + the 1px border = the design's 18px inset from a 74px card.
+        'flex-col items-center text-center w-[120px] py-[17px] gap-[12px]'
       : 'flex-row items-start w-[188px] px-[18px] py-[14px] gap-[8px]'
 
   const classes = [
@@ -84,8 +85,16 @@ const ListItemPicker = forwardRef<HTMLButtonElement, ListItemPickerProps>(functi
           {icon}
         </span>
       )}
-      <span className={`flex flex-col py-[4px] ${layout === 'vertical' ? 'gap-[12px]' : ''}`}>
-        {showTitle && <span className="body-xs-semibold">{title}</span>}
+      {/* Stacked pickers trim the title to its 9px cap height, which is what
+          makes the card 74px tall in Figma. */}
+      <span className={`flex flex-col ${layout === 'vertical' ? 'gap-[12px] py-[4px]' : ''}`}>
+        {showTitle && (
+          <span
+            className={`body-xs-semibold ${layout === 'horizontal' ? 'flex h-[9px] items-center leading-none' : ''}`}
+          >
+            {title}
+          </span>
+        )}
         {layout === 'vertical' && showSubtext && subText && (
           <span
             className={`text-body-xs w-[127px] font-regular ${

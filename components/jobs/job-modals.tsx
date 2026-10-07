@@ -3,9 +3,18 @@
 import { useState } from 'react'
 
 import { DashboardIcon } from '@/components/dashboard/nav-config'
-import { BannerInfo, Button, Modal, ModalActions, RadioButton } from '@/components/ui'
+import {
+  BannerInfo,
+  Button,
+  DateInput,
+  EMPTY_DATE,
+  Modal,
+  ModalActions,
+  RadioButton,
+} from '@/components/ui'
 import { parseFutureDate } from '@/lib/jobs/actions'
 
+import type { DateParts } from '@/components/ui'
 import type { JobStatus } from '@/lib/jobs/types'
 
 /**
@@ -129,29 +138,9 @@ interface ClosingDateModalProps {
 }
 
 function ClosingDateModal({ onSave, onClose }: ClosingDateModalProps) {
-  const [day, setDay] = useState('')
-  const [month, setMonth] = useState('')
-  const [year, setYear] = useState('')
-  const isoDate = parseFutureDate(day, month, year, new Date())
-  const complete = day.length > 0 && month.length > 0 && year.length === 4
-
-  const segment = (
-    value: string,
-    onChange: (next: string) => void,
-    placeholder: string,
-    maxLength: number,
-    label: string,
-    widthClass: string,
-  ) => (
-    <input
-      value={value}
-      onChange={(event) => onChange(event.target.value.replace(/\D/g, '').slice(0, maxLength))}
-      inputMode="numeric"
-      placeholder={placeholder}
-      aria-label={label}
-      className={`${widthClass} bg-transparent text-body-m leading-21 text-text-primary outline-none placeholder:text-text-input-placeholder`}
-    />
-  )
+  const [date, setDate] = useState<DateParts>(EMPTY_DATE)
+  const isoDate = parseFutureDate(date.day, date.month, date.year, new Date())
+  const complete = date.day.length > 0 && date.month.length > 0 && date.year.length === 4
 
   return (
     <Modal
@@ -161,38 +150,14 @@ function ClosingDateModal({ onSave, onClose }: ClosingDateModalProps) {
       onClose={onClose}
     >
       <p className={bodyText}>This updates the closing date on your published listing.</p>
-      <div className="flex w-[202px] flex-col gap-[6px]">
-        <span
-          id="closing-date-label"
-          className="pl-[3px] text-body-xs leading-none font-medium-550 text-text-tertiary"
-        >
-          Enter a new closing date
-        </span>
-        {/* Typed directly, as the dev note asks; past dates are rejected. */}
-        <div
-          role="group"
-          aria-labelledby="closing-date-label"
-          className={`flex h-[32px] items-center gap-[4px] rounded-sm-8 border bg-bg-input-placeholder pl-[8px] transition-colors focus-within:border-border-input-focus ${complete && !isoDate ? 'border-border-input-error' : 'border-border-input-placeholder'}`}
-        >
-          {segment(day, setDay, 'DD', 2, 'Day', 'w-[22px]')}
-          <span aria-hidden="true" className="text-body-m leading-21 text-text-input-placeholder">
-            ·
-          </span>
-          {segment(month, setMonth, 'MM', 2, 'Month', 'w-[24px]')}
-          <span aria-hidden="true" className="text-body-m leading-21 text-text-input-placeholder">
-            ·
-          </span>
-          {segment(year, setYear, 'YYYY', 4, 'Year', 'w-[40px]')}
-          <span className="ml-auto flex size-[32px] items-center justify-center text-text-input-placeholder">
-            <DashboardIcon name="calendar-date-range-outline" size={14} />
-          </span>
-        </div>
-        {complete && !isoDate ? (
-          <span role="alert" className="pl-[3px] text-body-xs leading-19_2 text-text-error">
-            Enter a valid date that is today or later.
-          </span>
-        ) : null}
-      </div>
+      {/* Typed directly, as the dev note asks; past dates are rejected. */}
+      <DateInput
+        label="Enter a new closing date"
+        value={date}
+        onChange={setDate}
+        errorText={complete && !isoDate ? 'Enter a valid date that is today or later.' : undefined}
+        className="w-[202px]"
+      />
       <ModalActions>
         <Button variant="primary" accent="default" size="md" onClick={onClose}>
           Cancel

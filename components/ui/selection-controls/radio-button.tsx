@@ -15,7 +15,7 @@ const RadioButton = forwardRef<HTMLInputElement, RadioButtonProps>(function Radi
   ref,
 ) {
   const circleClasses = [
-    'h-[16px] w-[16px] rounded-full border transition-colors flex items-center justify-center shrink-0',
+    'h-[15px] w-[15px] rounded-full border transition-colors flex items-center justify-center shrink-0',
     checked
       ? 'bg-bg-selection-controls-selected border-bg-selection-controls-selected'
       : 'bg-bg-selection-controls-empty border-border-selection-controls-rest',
@@ -26,9 +26,10 @@ const RadioButton = forwardRef<HTMLInputElement, RadioButtonProps>(function Radi
 
   return (
     <label
-      className={`inline-flex items-center gap-[8px] ${textPosition === 'left' ? 'flex-row-reverse' : ''} ${className}`}
+      // Figma: a 22px control with the label butted against it, 3px padded.
+      className={`inline-flex items-center ${textPosition === 'left' ? 'flex-row-reverse' : ''} ${className}`}
     >
-      <span className="relative inline-flex items-center justify-center h-[24px] w-[24px] shrink-0">
+      <span className="relative inline-flex h-[22px] w-[22px] shrink-0 items-center justify-center">
         <input
           ref={ref}
           type="radio"
@@ -43,7 +44,7 @@ const RadioButton = forwardRef<HTMLInputElement, RadioButtonProps>(function Radi
       </span>
       {textPosition !== 'none' && label && (
         <span
-          className={`text-body-s font-medium text-text-primary ${disabled ? 'opacity-40' : ''}`}
+          className={`px-[3px] text-body-s leading-19_5 text-text-primary ${disabled ? 'opacity-40' : ''}`}
         >
           {label}
         </span>

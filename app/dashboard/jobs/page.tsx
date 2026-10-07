@@ -1,6 +1,8 @@
 'use client'
 
-import { useCallback, useMemo, useRef, useState } from 'react'
+import Image from 'next/image'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { DashboardErrorState } from '@/components/dashboard/dashboard-states'
 import { DashboardIcon } from '@/components/dashboard/nav-config'
@@ -84,6 +86,8 @@ function byNewest(groups: JobGroup[]): JobGroup[] {
 }
 
 function JobsPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const controller = useJobsController()
   const { jobs, jobsQuery, dialog } = controller
 
@@ -174,8 +178,72 @@ function JobsPage() {
     // Editing and assigning open flows that are built separately.
   }
 
+  // Coming back from job creation: confirm the save once, then tidy the URL.
+  const { notify } = controller
+  useEffect(() => {
+    if (searchParams.get('saved') !== 'draft') return
+    notify({ kind: 'done', message: 'Job saved as a draft' })
+    router.replace('/dashboard/jobs')
+  }, [searchParams, notify, router])
+
   if (jobsQuery.isError) return <DashboardErrorState kind="unknown" />
   if (jobsQuery.isPending) return null
+
+  // Nothing created yet: the first-job invitation replaces the whole list.
+  // Figma: 8973:608566.
+  if (jobs.length === 0) {
+    return (
+      <div className="relative flex min-h-0 flex-1 flex-col">
+        <header className="flex h-[44px] shrink-0 items-center border-b-[0.5px] border-border-transparent-medium">
+          <h1 className="pl-[18px] text-body-xs leading-19_2 text-text-primary">Jobs</h1>
+        </header>
+        <div className="flex flex-1 flex-col items-center justify-center gap-[32px] pb-[140px]">
+          <Image
+            aria-hidden="true"
+            alt=""
+            src="/dashboard/illustration/empty-screen.svg"
+            width={180}
+            height={149}
+            className="h-[149px] w-[180px] max-w-none shrink-0"
+          />
+          <div className="flex w-[273px] flex-col items-center gap-[24px] text-center">
+            <div className="flex flex-col gap-[12px]">
+              <p className="-my-[5px] text-body-m leading-21 font-semibold text-text-primary">
+                Create your first job
+              </p>
+              <p className="-my-[5px] text-body-xs leading-19_2 text-text-secondary">
+                Post a role, track candidates, and onboard them
+              </p>
+            </div>
+            <div className="flex flex-col items-center gap-[10px]">
+              <Button
+                variant="primary"
+                accent="blue"
+                size="sm"
+                iconSuffix={<DashboardIcon name="plus-solid" size={14} />}
+                onClick={() => router.push('/dashboard/jobs/new')}
+              >
+                Create a new job
+              </Button>
+              {/* The AI-assisted flow is still being designed. */}
+              <Button
+                variant="tertiary"
+                accent="blue"
+                size="sm"
+                disabled
+                iconSuffix={<DashboardIcon name="sparkles-solid" size={14} />}
+              >
+                Create with AI
+              </Button>
+            </div>
+          </div>
+        </div>
+        {controller.toast ? (
+          <JobToast toast={controller.toast} onDismiss={controller.dismissToast} />
+        ) : null}
+      </div>
+    )
+  }
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
@@ -187,6 +255,7 @@ function JobsPage() {
             accent="blue"
             size="sm"
             iconPrefix={<DashboardIcon name="plus-solid" size={14} />}
+            onClick={() => router.push('/dashboard/jobs/new')}
           >
             Create a new job
           </Button>
@@ -428,4 +497,13 @@ function JobsPage() {
   )
 }
 
-export default JobsPage
+/** `useSearchParams` needs a Suspense boundary to keep the route statically renderable. */
+function JobsRoute() {
+  return (
+    <Suspense fallback={null}>
+      <JobsPage />
+    </Suspense>
+  )
+}
+
+export default JobsRoute

@@ -52,7 +52,14 @@ function useMe(enabled = true) {
 }
 
 function useJobs() {
-  return useQuery({ queryKey: queryKeys.jobs, queryFn: requests.getJobs })
+  return useQuery({
+    queryKey: queryKeys.jobs,
+    queryFn: requests.getJobs,
+    // While jobs come from fixtures, edits live only in this cache. A refetch
+    // would hand back the untouched fixtures and silently undo them, so the
+    // list is never considered stale. Remove once the jobs API exists.
+    staleTime: Infinity,
+  })
 }
 
 /** Invite lookup is keyed by token so a different link refetches. */

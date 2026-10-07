@@ -179,6 +179,7 @@ function useJobsController() {
     jobs,
     dialog,
     toast,
+    notify,
     openDialog: setDialog,
     closeDialog: () => setDialog(null),
     dismissToast: useCallback(() => setToast(null), []),

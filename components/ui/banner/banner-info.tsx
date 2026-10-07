@@ -11,9 +11,16 @@ interface BannerInfoProps {
  */
 function BannerInfo({ title, body, className = '' }: BannerInfoProps) {
   return (
-    <div role="note" className={`flex flex-col gap-[4px] ${className}`}>
-      <p className="text-[13px] leading-[19.5px] font-medium text-text-blue-accent">{title}</p>
-      <p className="text-[12px] leading-[16px] text-text-secondary">{body}</p>
+    // Figma: a 1px accent rule down the left, 10px side padding, and 12px
+    // between the cap-height text boxes (2px between CSS line boxes).
+    <div
+      role="note"
+      className={`flex flex-col gap-[2px] border-l border-border-banner-info px-[10px] ${className}`}
+    >
+      <p className="-mt-[1.5px] text-body-s leading-19_5 font-medium text-text-blue-accent">
+        {title}
+      </p>
+      <p className="-mb-[1.5px] text-body-xs leading-19_2 text-text-secondary">{body}</p>
     </div>
   )
 }
