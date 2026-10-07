@@ -1,11 +1,13 @@
 'use client'
 
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
+import { Fragment, useEffect, useId, useRef, useState, type ReactNode } from 'react'
 
 import { Avatar } from '../avatar/avatar'
 import { IconButton } from '../button/icon-button'
-import { SidebarIcon } from '../icons'
+import { ChevronRight, SidebarIcon } from '../icons'
 import { ListItemDefault } from '../list/list-item-default'
+import { ListItemSelected } from '../list/list-item-selected'
+import { ListItemWithIcon } from '../list/list-item-with-icon'
 import { Divider } from '../notification/divider'
 import { Slots } from '../slots/slots'
 
@@ -25,6 +27,8 @@ interface CompanySelectorMenuItem {
   icon?: ReactNode
   onClick?: () => void
   submenu?: CompanySelectorSubmenuItem[]
+  /** Starts a new group — the Figma menu splits its rows with dividers. */
+  dividerBefore?: boolean
 }
 
 interface CompanySelectorCompany {
@@ -48,6 +52,11 @@ interface CompanySelectorProps {
   onSwitchCompany?: (companyId: string) => void
   open?: boolean
   onToggle?: (open: boolean) => void
+  /**
+   * Rail mode: the workspace name and chevron drop away, leaving the avatar
+   * stacked above the toggle — Figma's `openSidebar=false` variant.
+   */
+  collapsed?: boolean
   iconButtonLabel?: string
   onIconButtonIcon?: ReactNode
   onIconButtonClick?: () => void
@@ -61,6 +70,7 @@ function CompanySelector({
   onSwitchCompany,
   open: controlledOpen,
   onToggle,
+  collapsed = false,
   iconButtonLabel = 'Open sidebar settings',
   onIconButtonIcon,
   onIconButtonClick,
@@ -100,7 +110,9 @@ function CompanySelector({
   return (
     <div
       ref={wrapperRef}
-      className={`relative flex w-[204px] items-center gap-[12px] ${className}`}
+      className={`relative flex gap-[12px] ${
+        collapsed ? 'flex-col items-start justify-center' : 'w-full items-center'
+      } ${className}`}
     >
       <button
         type="button"
@@ -108,9 +120,16 @@ function CompanySelector({
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={listId}
-        className="min-w-0 flex-1 cursor-pointer rounded-sm-8 p-[7px] text-left transition-colors hover:bg-bg-transparent-light"
+        aria-label={collapsed ? currentCompany.name : undefined}
+        className={`cursor-pointer rounded-sm-8 p-[7px] text-left transition-colors hover:bg-bg-transparent-light ${
+          collapsed ? 'shrink-0' : 'min-w-0 flex-1'
+        }`}
       >
-        <CompanySelectorItem name={currentCompany.name} avatarUrl={currentCompany.avatarUrl} />
+        <CompanySelectorItem
+          name={currentCompany.name}
+          avatarUrl={currentCompany.avatarUrl}
+          hideName={collapsed}
+        />
       </button>
 
       <IconButton
@@ -154,25 +173,46 @@ function CompanySelector({
                 </li>
               </>
             )}
-            {menuItems.map((item) => (
-              <ListItemDefault
-                key={item.key}
-                mainText={item.label}
-                icon={item.icon}
-                withIcon={!!item.icon}
-                state={submenuKey === item.key ? 'hover' : 'rest'}
-                selected={submenuKey === item.key}
-                onClick={() => {
-                  if (item.submenu) {
-                    setSubmenuKey((k) => (k === item.key ? null : item.key))
-                    return
-                  }
-                  item.onClick?.()
-                  setOpen(false)
-                }}
-                className="w-full!"
-              />
-            ))}
+            {menuItems.map((item) => {
+              const isActive = submenuKey === item.key
+              const handleClick = () => {
+                if (item.submenu) {
+                  setSubmenuKey((k) => (k === item.key ? null : item.key))
+                  return
+                }
+                item.onClick?.()
+                setOpen(false)
+              }
+              return (
+                <Fragment key={item.key}>
+                  {item.dividerBefore && (
+                    <li role="presentation">
+                      <Divider padded />
+                    </li>
+                  )}
+                  {/* Rows that open a flyout are Figma's "List Item/with Icon",
+                      carrying the trailing chevron. */}
+                  {item.submenu ? (
+                    <ListItemWithIcon
+                      mainText={item.label}
+                      icon={item.icon}
+                      withIcon={!!item.icon}
+                      trailingIcon={<ChevronRight className="size-[14px] text-text-tertiary" />}
+                      state={isActive ? 'hover' : 'rest'}
+                      onClick={handleClick}
+                    />
+                  ) : (
+                    <ListItemDefault
+                      mainText={item.label}
+                      icon={item.icon}
+                      withIcon={!!item.icon}
+                      onClick={handleClick}
+                      className="w-full!"
+                    />
+                  )}
+                </Fragment>
+              )
+            })}
           </ul>
         </Slots>
       )}
@@ -192,12 +232,11 @@ function CompanySelector({
         >
           <ul role="listbox" className="flex w-full flex-col gap-[2px]">
             {activeSubmenu.map((sub) => (
-              <ListItemDefault
+              <ListItemSelected
                 key={sub.key}
                 mainText={sub.label}
                 icon={sub.icon}
                 withIcon={!!sub.icon}
-                state={sub.selected ? 'hover' : 'rest'}
                 selected={sub.selected}
                 onClick={() => {
                   sub.onClick?.()

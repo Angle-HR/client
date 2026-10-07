@@ -27,7 +27,7 @@ function SidebarTitle({
   if (!hoverable) {
     return (
       <h3
-        className={`flex h-[28px] w-[204px] items-center gap-[4px] px-[8px] py-[7px] text-[12px] leading-[19.2px] font-medium text-text-secondary ${className}`}
+        className={`flex h-[28px] w-full items-center gap-[4px] px-[8px] py-[7px] text-[12px] leading-[19.2px] font-medium text-text-secondary ${className}`}
       >
         {label}
       </h3>
@@ -40,7 +40,7 @@ function SidebarTitle({
       onClick={onToggle}
       aria-expanded={!closed}
       aria-controls={controls}
-      className={`group flex h-[28px] w-[204px] cursor-pointer items-center gap-[4px] rounded-sm-7 px-[8px] py-[7px] text-left text-[12px] leading-[19.2px] font-medium text-text-secondary transition-colors hover:bg-bg-transparent-lighter hover:text-text-primary ${className}`}
+      className={`group flex h-[28px] w-full cursor-pointer items-center gap-[4px] rounded-sm-7 px-[8px] py-[7px] text-left text-[12px] leading-[19.2px] font-medium text-text-secondary transition-colors hover:bg-bg-transparent-lighter hover:text-text-primary ${className}`}
     >
       {label}
       <ChevronDown
