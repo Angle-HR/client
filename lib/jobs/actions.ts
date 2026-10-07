@@ -121,6 +121,16 @@ function exportJobs(jobs: Job[], format: 'csv' | 'json'): string {
   return [header.join(','), ...lines].join('\n')
 }
 
+/**
+ * A date as yyyy-mm-dd in the user's own timezone. `toISOString` would report
+ * the UTC day, which is yesterday for anyone east of Greenwich after midnight.
+ */
+function toIsoDate(date: Date): string {
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${date.getFullYear()}-${month}-${day}`
+}
+
 /** A valid calendar date that is not in the past, as yyyy-mm-dd; otherwise null. */
 function parseFutureDate(day: string, month: string, year: string, today: Date): string | null {
   if (!/^\d{1,2}$/.test(day) || !/^\d{1,2}$/.test(month) || !/^\d{4}$/.test(year)) return null
@@ -136,12 +146,27 @@ function parseFutureDate(day: string, month: string, year: string, today: Date):
   return `${year}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 }
 
+const US_LOCATIONS = new Set(['usa', 'us', 'united states'])
+
+/**
+ * Whether deleting these jobs would delete United States hiring records, which
+ * is when the delete confirmation shows the EEOC retention notice. Until
+ * applicants carry their own country, a job based in the US stands for it.
+ */
+function needsRetentionNotice(jobs: Pick<Job, 'location' | 'totalApplicants'>[]): boolean {
+  return jobs.some(
+    (job) => job.totalApplicants > 0 && US_LOCATIONS.has(job.location.trim().toLowerCase()),
+  )
+}
+
 export {
   JOB_STATUS_ORDER,
   STATUS_TARGETS,
   exportJobs,
+  needsRetentionNotice,
   parseFutureDate,
   searchJobs,
   statusChangeMessage,
   statusTargets,
+  toIsoDate,
 }

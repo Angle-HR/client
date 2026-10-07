@@ -5,19 +5,19 @@ import type { Job, JobManager } from './types'
  * until the API serves it.
  */
 const TEAM_MEMBERS: JobManager[] = [
-  { name: 'Alice', colour: 'green' },
-  { name: 'Bob', colour: 'yellow' },
+  { name: 'Alice', colour: 'green', avatarUrl: '/dashboard/avatars/alice.png' },
+  { name: 'Bob', colour: 'yellow', avatarUrl: '/dashboard/avatars/bob.png' },
   { name: 'Charlie', colour: 'aqua' },
   { name: 'Diana', colour: 'red' },
-  { name: 'Dylan', colour: 'orange' },
+  { name: 'Dylan', colour: 'orange', avatarUrl: '/dashboard/avatars/dylan.png' },
   { name: 'Fiona', colour: 'purple' },
   { name: 'Isabella', colour: 'orange' },
   { name: 'Jerry', colour: 'fuchsia' },
-  { name: 'Jordan', colour: 'teal' },
+  { name: 'Jordan', colour: 'teal', avatarUrl: '/dashboard/avatars/bob.png' },
   { name: 'Lucas', colour: 'blue' },
-  { name: 'Oluwasegun', colour: 'teal' },
-  { name: 'Owen', colour: 'grey' },
-  { name: 'Samantha', colour: 'purple' },
+  { name: 'Oluwasegun', colour: 'teal', avatarUrl: '/dashboard/avatars/oluwasegun.png' },
+  { name: 'Owen', colour: 'grey', avatarUrl: '/dashboard/avatars/owen.png' },
+  { name: 'Samantha', colour: 'purple', avatarUrl: '/dashboard/avatars/samantha.png' },
 ]
 
 /** "Alice", "Alice and Dylan", "Alice, Samantha and Dylan". */

@@ -10,16 +10,20 @@ import type { Job, JobManager } from './types'
  */
 
 const MANAGERS = {
-  alice: { name: 'Alice', colour: 'green' },
-  bob: { name: 'Bob', colour: 'yellow' },
+  alice: { name: 'Alice', colour: 'green', avatarUrl: '/dashboard/avatars/alice.png' },
+  bob: { name: 'Bob', colour: 'yellow', avatarUrl: '/dashboard/avatars/bob.png' },
   charlie: { name: 'Charlie', colour: 'aqua' },
   diana: { name: 'Diana', colour: 'red' },
   fiona: { name: 'Fiona', colour: 'purple' },
   isabella: { name: 'Isabella', colour: 'orange' },
   jerry: { name: 'Jerry', colour: 'fuchsia' },
   lucas: { name: 'Lucas', colour: 'blue' },
-  oluwasegun: { name: 'Oluwasegun', colour: 'teal' },
-  owen: { name: 'Owen', colour: 'grey' },
+  oluwasegun: {
+    name: 'Oluwasegun',
+    colour: 'teal',
+    avatarUrl: '/dashboard/avatars/oluwasegun.png',
+  },
+  owen: { name: 'Owen', colour: 'grey', avatarUrl: '/dashboard/avatars/owen.png' },
 } satisfies Record<string, JobManager>
 
 // Creator is not part of the design's table, so each fixture is created by its
@@ -299,7 +303,15 @@ const JOB_FIXTURES: Job[] = (
       newApplicants: 4,
       postedAt: '2025-01-14',
     },
-  ] satisfies Omit<Job, 'createdBy'>[]
-).map((job) => ({ ...job, createdBy: job.managers[0] ?? MANAGERS.alice }))
+  ] satisfies Omit<Job, 'createdBy' | 'createdAt' | 'lastModifiedAt' | 'lastViewedAt'>[]
+).map((job) => ({
+  ...job,
+  createdBy: job.managers[0] ?? MANAGERS.alice,
+  // The design's table has no such columns, so the fixtures start them all on
+  // the posting date; edits move `lastModifiedAt` forward.
+  createdAt: job.postedAt,
+  lastModifiedAt: job.postedAt,
+  lastViewedAt: job.postedAt,
+}))
 
 export { JOB_FIXTURES }

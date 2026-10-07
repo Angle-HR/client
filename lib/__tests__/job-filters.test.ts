@@ -21,6 +21,9 @@ function job(overrides: Partial<Job>): Job {
     totalApplicants: 30,
     newApplicants: 7,
     postedAt: '2026-10-01',
+    createdAt: '2026-10-01',
+    lastModifiedAt: '2026-10-01',
+    lastViewedAt: '2026-10-01',
     ...overrides,
   }
 }
@@ -35,6 +38,9 @@ const jobs = [
     managers: [alice],
     totalApplicants: 30,
     postedAt: '2026-10-05',
+    createdAt: '2026-10-05',
+    lastModifiedAt: '2026-10-05',
+    lastViewedAt: '2026-10-05',
   }),
   job({
     id: 'b',
@@ -43,6 +49,9 @@ const jobs = [
     managers: [bob],
     totalApplicants: 5,
     postedAt: '2026-09-20',
+    createdAt: '2026-09-20',
+    lastModifiedAt: '2026-09-20',
+    lastViewedAt: '2026-09-20',
   }),
   job({
     id: 'c',
@@ -51,6 +60,9 @@ const jobs = [
     managers: [bob],
     totalApplicants: 0,
     postedAt: '2025-01-10',
+    createdAt: '2025-01-10',
+    lastModifiedAt: '2025-01-10',
+    lastViewedAt: '2025-01-10',
   }),
 ]
 

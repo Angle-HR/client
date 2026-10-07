@@ -1,3 +1,5 @@
+import { toIsoDate } from './actions'
+
 import type { JobEmploymentType, JobManager } from './types'
 
 /**
@@ -29,8 +31,16 @@ interface TemplateGroup {
   templates: JobTemplate[]
 }
 
-const alice: JobManager = { name: 'Alice', colour: 'green' }
-const oluwasegun: JobManager = { name: 'Oluwasegun', colour: 'teal' }
+const alice: JobManager = {
+  name: 'Alice',
+  colour: 'green',
+  avatarUrl: '/dashboard/avatars/alice.png',
+}
+const oluwasegun: JobManager = {
+  name: 'Oluwasegun',
+  colour: 'teal',
+  avatarUrl: '/dashboard/avatars/oluwasegun.png',
+}
 const fiona: JobManager = { name: 'Fiona', colour: 'purple' }
 const charlie: JobManager = { name: 'Charlie', colour: 'aqua' }
 
@@ -138,7 +148,7 @@ function markTemplateUsed(template: JobTemplate, today: Date): JobTemplate {
   return {
     ...template,
     timesUsed: template.timesUsed + 1,
-    lastUsedAt: today.toISOString().slice(0, 10),
+    lastUsedAt: toIsoDate(today),
   }
 }
 

@@ -3,8 +3,8 @@
 import { useState } from 'react'
 
 import { DashboardIcon } from '@/components/dashboard/nav-config'
+import { PersonAvatar } from '@/components/jobs/person-avatar'
 import {
-  Avatar,
   BannerInfo,
   Button,
   DateInput,
@@ -111,10 +111,10 @@ function DeleteJobsModal({
       icon={<DashboardIcon name="trash-solid" size={14} />}
       onClose={onClose}
     >
-      <div className="flex flex-col gap-[16px]">
+      {/* The notice sits a full 28px below the copy, like the actions below it. */}
+      <div className="flex flex-col gap-[28px]">
         <p className={bodyText}>
-          Are you sure you want to delete job(s) and all its {applicantCount} applicants will be
-          permanently. You can&apos;t undo this.
+          {`Are you sure you want to delete job(s) and all its ${applicantCount} applicants will be permanently. You can't undo this.`}
         </p>
         {showRetentionNotice ? (
           <BannerInfo
@@ -231,14 +231,7 @@ function AssignJobsModal({ me, current, onSave, onClose }: AssignJobsModalProps)
           options={people.map((person) => ({
             value: person.name,
             label: person.name,
-            icon: (
-              <Avatar
-                size={16}
-                type="initials"
-                text={person.name.charAt(0)}
-                colour={person.colour}
-              />
-            ),
+            icon: <PersonAvatar person={person} size={16} />,
           }))}
           value={names}
           onChange={(value) => setNames(Array.isArray(value) ? value : [value])}

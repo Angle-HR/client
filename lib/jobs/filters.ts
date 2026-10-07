@@ -20,7 +20,8 @@ type FilterField =
   | 'managedBy'
   | 'applicants'
 
-type FilterOperator = 'is' | 'isNot'
+/** `is` matches any chosen value, `isNot` none of them, `and` every one of them. */
+type FilterOperator = 'is' | 'isNot' | 'and'
 
 interface JobFilter {
   field: FilterField
@@ -33,6 +34,7 @@ interface FilterOption {
   label: string
   /** People options show an initials avatar. */
   avatarColour?: AvatarColour
+  avatarUrl?: string
   /** Status options show the status glyph. */
   status?: JobStatus
 }
@@ -47,6 +49,8 @@ interface FilterFieldConfig {
   icon: string
   /** Fields with long lists get a search box in their picker. */
   searchable: boolean
+  /** Short fixed lists open as a flyout beside the menu instead of replacing it. */
+  flyout?: boolean
 }
 
 /** Menu order, with the labels and icons from the design. */
@@ -57,6 +61,7 @@ const FILTER_FIELDS: Record<FilterField, FilterFieldConfig> = {
     operatorLabel: 'by',
     icon: 'tag-solid',
     searchable: false,
+    flyout: true,
   },
   assignee: {
     label: 'Assigned to…',
@@ -85,6 +90,7 @@ const FILTER_FIELDS: Record<FilterField, FilterFieldConfig> = {
     operatorLabel: 'is',
     icon: 'briefcase-solid',
     searchable: false,
+    flyout: true,
   },
   createdBy: {
     label: 'Created by',
@@ -217,6 +223,7 @@ function filterOptions(jobs: Job[], field: FilterField): FilterOption[] {
             value: person.name,
             label: person.name,
             avatarColour: person.colour,
+            avatarUrl: person.avatarUrl,
           })
         }
       }
@@ -235,9 +242,11 @@ function applyFilters(jobs: Job[], filters: JobFilter[], today: Date = new Date(
   if (active.length === 0) return jobs
   return jobs.filter((job) =>
     active.every((filter) => {
-      const matches = fieldValues(job, filter.field, today).some((value) =>
-        filter.values.includes(value),
-      )
+      const jobValues = fieldValues(job, filter.field, today)
+      // "And" only differs from "is" for fields a job can have several of.
+      if (filter.operator === 'and')
+        return filter.values.every((value) => jobValues.includes(value))
+      const matches = jobValues.some((value) => filter.values.includes(value))
       return filter.operator === 'is' ? matches : !matches
     }),
   )
@@ -259,8 +268,11 @@ type SortField =
   | 'managedBy'
   | 'totalApplicants'
   | 'newApplicants'
+  | 'dateCreated'
   | 'datePosted'
   | 'closingDate'
+  | 'lastViewed'
+  | 'lastModified'
 
 type SortDirection = 'asc' | 'desc'
 
@@ -274,8 +286,11 @@ const SORT_FIELDS: Record<SortField, { label: string; icon: string }> = {
   managedBy: { label: 'Managed by (A-Z)', icon: 'user-circle-solid' },
   totalApplicants: { label: 'Total Applicant', icon: 'hashtag-solid' },
   newApplicants: { label: 'New Applicant', icon: 'hashtag-solid' },
+  dateCreated: { label: 'Date Created', icon: 'calendar-solid' },
   datePosted: { label: 'Date posted', icon: 'calendar-solid' },
   closingDate: { label: 'Closing date', icon: 'calendar-solid' },
+  lastViewed: { label: 'Last viewed', icon: 'clock-outline' },
+  lastModified: { label: 'Last modified', icon: 'clock-outline' },
 }
 
 const SORT_FIELD_ORDER = Object.keys(SORT_FIELDS) as SortField[]
@@ -290,8 +305,14 @@ function sortKey(job: Job, field: SortField): string | number {
       return job.totalApplicants
     case 'newApplicants':
       return job.newApplicants
+    case 'dateCreated':
+      return job.createdAt
     case 'datePosted':
       return job.postedAt
+    case 'lastViewed':
+      return job.lastViewedAt
+    case 'lastModified':
+      return job.lastModifiedAt
     case 'closingDate':
       return job.closingDate ?? ''
   }

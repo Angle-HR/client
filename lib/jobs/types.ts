@@ -10,6 +10,8 @@ interface JobManager {
   name: string
   /** Initials-avatar tint; stands in until managers carry a photo. */
   colour: AvatarColour
+  /** Photo, for people who have uploaded one. */
+  avatarUrl?: string
 }
 
 interface Job {
@@ -28,6 +30,10 @@ interface Job {
   newApplicants: number
   /** ISO date (yyyy-mm-dd). */
   postedAt: string
+  /** ISO dates (yyyy-mm-dd) the list can be sorted by. */
+  createdAt: string
+  lastModifiedAt: string
+  lastViewedAt: string
   /** ISO date (yyyy-mm-dd). Only set once a closing date has been chosen. */
   closingDate?: string
 }

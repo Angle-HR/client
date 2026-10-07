@@ -4,8 +4,10 @@ import { useMemo, useState } from 'react'
 
 import { DashboardIcon } from '@/components/dashboard/nav-config'
 import { Floating, clampLeft, toAnchor } from '@/components/jobs/floating'
+import { StartThumbnail } from '@/components/jobs/job-art'
 import { DOT } from '@/components/jobs/job-status'
-import { Avatar, Button, Chip, Modal, ModalActions, Tag, TextInput } from '@/components/ui'
+import { PersonAvatar } from '@/components/jobs/person-avatar'
+import { Button, Chip, Modal, ModalActions, Tag, TextInput } from '@/components/ui'
 import { TEMPLATE_SORTS, searchTemplates, sortTemplates } from '@/lib/jobs/templates'
 
 import type { AnchorRect } from '@/components/jobs/floating'
@@ -23,26 +25,22 @@ const START_OPTIONS: {
   value: StartChoice
   title: string
   description: string
-  icon: string
   comingSoon?: boolean
 }[] = [
   {
     value: 'manual',
     title: 'Create manually',
     description: 'Write the job details yourself.',
-    icon: 'pencil-square-solid',
   },
   {
     value: 'template',
     title: 'Use a template',
     description: "Start from a template you've saved before.",
-    icon: 'rectangle-group-solid',
   },
   {
     value: 'ai',
     title: 'Create with AI',
     description: 'Describe the role and AI drafts it for you.',
-    icon: 'sparkles-solid',
     comingSoon: true,
   },
 ]
@@ -83,9 +81,7 @@ function StartJobModal({ onContinue, onClose }: StartJobModalProps) {
               onClick={() => option.value !== 'ai' && setChoice(option.value)}
               className={`flex h-[70px] w-full items-center gap-[14px] rounded-[16px] p-[16px] text-left outline-1 -outline-offset-1 transition-colors disabled:cursor-not-allowed ${selected ? 'bg-blue-alpha-5 outline-border-input-focus' : 'cursor-pointer bg-bg-transparent-lighter outline-transparent hover:bg-bg-transparent-light disabled:hover:bg-bg-transparent-lighter'}`}
             >
-              <span className="flex h-[36px] w-[47px] shrink-0 items-center justify-center rounded-lg-10 border-[0.5px] border-text-light text-text-secondary">
-                <DashboardIcon name={option.icon} size={20} />
-              </span>
+              <StartThumbnail kind={option.value} />
               <span className="flex min-w-0 flex-1 flex-col gap-[2px]">
                 <span className="flex items-center gap-[10px]">
                   <span className="text-body-l leading-21 font-semibold text-text-primary">
@@ -237,14 +233,7 @@ function ChooseTemplateModal({
                       fill="transparent"
                       tone="secondary"
                       label={template.createdBy.name}
-                      icon={
-                        <Avatar
-                          size={14}
-                          type="initials"
-                          text={template.createdBy.name.charAt(0)}
-                          colour={template.createdBy.colour}
-                        />
-                      }
+                      icon={<PersonAvatar person={template.createdBy} />}
                       className="max-w-full min-w-0"
                     />
                   </span>

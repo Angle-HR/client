@@ -1,4 +1,4 @@
-import { parseFutureDate } from './actions'
+import { parseFutureDate, toIsoDate } from './actions'
 
 import type { Job, JobEmploymentType, JobManager, JobWorkplace } from './types'
 
@@ -228,7 +228,10 @@ function draftToJob(draft: JobDraft, id: string, owner: JobManager, today: Date)
     createdBy: owner,
     totalApplicants: 0,
     newApplicants: 0,
-    postedAt: today.toISOString().slice(0, 10),
+    postedAt: toIsoDate(today),
+    createdAt: toIsoDate(today),
+    lastModifiedAt: toIsoDate(today),
+    lastViewedAt: toIsoDate(today),
     closingDate: parseFutureDate(day, month, year, today) ?? undefined,
   }
 }
@@ -260,6 +263,7 @@ function applyDraftToJob(job: Job, draft: JobDraft, today: Date): Job {
     location: edited.location,
     workplace: edited.workplace,
     closingDate: edited.closingDate,
+    lastModifiedAt: toIsoDate(today),
   }
 }
 

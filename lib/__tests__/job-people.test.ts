@@ -50,6 +50,9 @@ describe('jobs with several managers', () => {
     totalApplicants: 1,
     newApplicants: 0,
     postedAt: '2026-10-01',
+    createdAt: '2026-10-01',
+    lastModifiedAt: '2026-10-01',
+    lastViewedAt: '2026-10-01',
   }
 
   it('match a manager filter on any of their managers', () => {
@@ -58,6 +61,15 @@ describe('jobs with several managers', () => {
     ).toHaveLength(1)
     expect(
       applyFilters([job], [{ field: 'managedBy', operator: 'isNot', values: ['Dylan'] }]),
+    ).toHaveLength(0)
+  })
+
+  it('match "and" only when they have every chosen manager', () => {
+    expect(
+      applyFilters([job], [{ field: 'managedBy', operator: 'and', values: ['Alice', 'Dylan'] }]),
+    ).toHaveLength(1)
+    expect(
+      applyFilters([job], [{ field: 'managedBy', operator: 'and', values: ['Alice', 'Bob'] }]),
     ).toHaveLength(0)
   })
 

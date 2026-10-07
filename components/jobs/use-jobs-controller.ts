@@ -3,7 +3,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useMemo, useRef, useState } from 'react'
 
-import { exportJobs, statusChangeMessage } from '@/lib/jobs/actions'
+import { exportJobs, statusChangeMessage, toIsoDate } from '@/lib/jobs/actions'
 import { assignedMessage } from '@/lib/jobs/people'
 import { useJobs } from '@/lib/queries'
 import { queryKeys } from '@/lib/query-keys'
@@ -36,6 +36,8 @@ function download(filename: string, contents: string, mimeType: string) {
   URL.revokeObjectURL(url)
 }
 
+const todayIso = () => toIsoDate(new Date())
+
 function useJobsController() {
   const jobsQuery = useJobs()
   const queryClient = useQueryClient()
@@ -64,7 +66,9 @@ function useJobsController() {
     (jobIds: string[], status: JobStatus) => {
       const ids = new Set(jobIds)
       const undo = edit((current) =>
-        current.map((job) => (ids.has(job.id) ? { ...job, status } : job)),
+        current.map((job) =>
+          ids.has(job.id) ? { ...job, status, lastModifiedAt: todayIso() } : job,
+        ),
       )
       notify({
         kind: 'undoable',
@@ -124,6 +128,8 @@ function useJobsController() {
             jobIds.length === 1
               ? 'Link copied to your clipboard'
               : `${jobIds.length} links copied to your clipboard`,
+          // The design offers Undo here; undoing a copy means emptying the clipboard.
+          onUndo: () => void navigator.clipboard.writeText(''),
         })
       } catch {
         notify({ kind: 'done', message: 'Could not copy the link' })
@@ -180,13 +186,17 @@ function useJobsController() {
       const ids = new Set(dialog.jobIds)
       const chosen = scope === 'all' ? jobs : jobs.filter((job) => ids.has(job.id))
       setDialog(null)
+      // The file is built in the browser, so the wait is only long enough for
+      // the "Exporting" state the design shows to be seen.
       notify({ kind: 'progress', message: 'Exporting selection' })
-      download(
-        `jobs.${format}`,
-        exportJobs(chosen, format),
-        format === 'csv' ? 'text/csv;charset=utf-8' : 'application/json',
-      )
-      notify({ kind: 'done', message: 'Selection exported' })
+      window.setTimeout(() => {
+        download(
+          `jobs.${format}`,
+          exportJobs(chosen, format),
+          format === 'csv' ? 'text/csv;charset=utf-8' : 'application/json',
+        )
+        notify({ kind: 'done', message: 'Selection exported' })
+      }, 900)
     },
   }
 

@@ -121,6 +121,9 @@ describe('editing an existing job', () => {
     totalApplicants: 29,
     newApplicants: 4,
     postedAt: '2026-10-15',
+    createdAt: '2026-10-15',
+    lastModifiedAt: '2026-10-15',
+    lastViewedAt: '2026-10-15',
     closingDate: '2026-12-22',
   }
 
@@ -155,6 +158,10 @@ describe('editing an existing job', () => {
       status: 'open',
       totalApplicants: 29,
       postedAt: '2026-10-15',
+      createdAt: '2026-10-15',
+      // Saving stamps the edit with today's date, in local time.
+      lastModifiedAt: '2026-10-07',
+      lastViewedAt: '2026-10-15',
       closingDate: '2026-12-22',
     })
   })

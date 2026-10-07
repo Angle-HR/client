@@ -1,5 +1,6 @@
 import { DashboardIcon } from '@/components/dashboard/nav-config'
-import { Avatar, Chip } from '@/components/ui'
+import { PersonAvatar } from '@/components/jobs/person-avatar'
+import { Chip } from '@/components/ui'
 import { listNames } from '@/lib/jobs/people'
 
 import type { JobManager } from '@/lib/jobs/types'
@@ -23,9 +24,7 @@ function ManagersChip({ managers }: { managers: JobManager[] }) {
         fill="transparent"
         tone="secondary"
         label={first.name}
-        icon={
-          <Avatar size={14} type="initials" text={first.name.charAt(0)} colour={first.colour} />
-        }
+        icon={<PersonAvatar person={first} />}
         className="max-w-full min-w-0"
       />
     )
@@ -41,7 +40,7 @@ function ManagersChip({ managers }: { managers: JobManager[] }) {
     >
       {shown.map((manager, index) => (
         <span key={manager.name} className={index === 0 ? 'inline-flex' : '-ml-[4px] inline-flex'}>
-          <Avatar size={14} type="initials" text={manager.name.charAt(0)} colour={manager.colour} />
+          <PersonAvatar person={manager} />
         </span>
       ))}
       <span className="-ml-[4px] inline-flex size-[14px] items-center justify-center rounded-xs-4 bg-bg-avatar-blue text-text-avatar-blue outline-[0.5px] -outline-offset-[0.5px] outline-border-transparent-light">

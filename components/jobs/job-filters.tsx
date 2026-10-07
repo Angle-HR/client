@@ -5,7 +5,7 @@ import { useState, type ReactNode } from 'react'
 import { DashboardIcon } from '@/components/dashboard/nav-config'
 import { Floating, clampLeft, toAnchor } from '@/components/jobs/floating'
 import { JOB_STATUS_META } from '@/components/jobs/job-status'
-import { Avatar } from '@/components/ui'
+import { PersonAvatar } from '@/components/jobs/person-avatar'
 import {
   FILTER_FIELDS,
   FILTER_FIELD_ORDER,
@@ -44,15 +44,15 @@ type FilterPopover =
 // The floating panel every picker shares: 220px, hairline, 10/12 radii.
 const panel = 'w-[220px] rounded-t-lg-10 rounded-b-lg-12 px-px pt-px pb-[5px] shadow-md'
 const rowBase =
-  'group flex h-[32px] w-full cursor-pointer items-center gap-[8px] rounded-sm-8 pr-[8px] pl-[6px] text-left transition-colors hover:bg-bg-transparent-light focus-visible:bg-bg-transparent-light focus-visible:outline-none'
+  'group flex h-[32px] w-full cursor-pointer items-center gap-[6px] rounded-sm-8 pr-[8px] pl-[6px] text-left transition-colors hover:bg-bg-transparent-light focus-visible:bg-bg-transparent-light focus-visible:outline-none'
 const rowText =
   'min-w-0 flex-1 truncate text-body-s leading-19_5 text-text-secondary group-hover:text-text-primary group-focus-visible:text-text-primary'
 const hairline = 'border-b border-border-transparent-light'
 
-/** Below the trigger, with its right edge 8.5px inside the trigger's — where the design hangs the Filter and Sort menus. */
+/** Below the trigger, right edges aligned — where the design hangs the Filter and Sort menus. */
 const belowRight = (anchor: AnchorRect) => (size: { width: number }) => ({
   top: anchor.bottom + 3,
-  left: clampLeft(anchor.right - 8.5 - size.width, size.width),
+  left: clampLeft(anchor.right - size.width, size.width),
 })
 
 /** Below the trigger, left edges aligned. */
@@ -91,17 +91,18 @@ function PanelHeader({
 
 /** The tick box inside an option row. Drawn, not an input: the row is the control. */
 function CheckMark({ checked }: { checked: boolean }) {
+  // Rows space their icon 6px from the label; a tick box sits 8px away.
   return (
     <span
       aria-hidden="true"
-      className={`flex size-[14px] shrink-0 items-center justify-center rounded-sm-5 transition-colors ${checked ? 'bg-bg-selection-controls-selected text-white' : 'border border-border-selection-controls-rest'}`}
+      className={`mr-[2px] flex size-[14px] shrink-0 items-center justify-center rounded-sm-5 transition-colors ${checked ? 'bg-bg-selection-controls-selected text-white' : 'border border-border-selection-controls-rest'}`}
     >
       {checked ? <DashboardIcon name="check-outline" size={12} /> : null}
     </span>
   )
 }
 
-function OptionVisual({ option }: { option: FilterOption }) {
+function OptionVisual({ option, onChip = false }: { option: FilterOption; onChip?: boolean }) {
   if (option.status) {
     return (
       <span className={`inline-flex ${JOB_STATUS_META[option.status].iconClass}`}>
@@ -111,11 +112,10 @@ function OptionVisual({ option }: { option: FilterOption }) {
   }
   if (option.avatarColour) {
     return (
-      <Avatar
-        size={16}
-        type="initials"
-        text={option.label.charAt(0)}
-        colour={option.avatarColour}
+      <PersonAvatar
+        person={{ name: option.label, colour: option.avatarColour, avatarUrl: option.avatarUrl }}
+        size={onChip ? 14 : 16}
+        circular={onChip}
       />
     )
   }
@@ -224,9 +224,11 @@ interface FilterMenuProps {
   onClose: () => void
 }
 
-/** The "Filter" menu: pick a field, then tick its values in the same panel. */
+/** The "Filter" menu: pick a field, then tick its values. Long lists replace the menu; short fixed ones (status, employment type) fly out beside it. */
 function FilterMenu({ jobs, filters, anchor, align, onChange, onClose }: FilterMenuProps) {
   const [field, setField] = useState<FilterField | null>(null)
+  const [query, setQuery] = useState('')
+  const [flyout, setFlyout] = useState<{ field: FilterField; top: number } | null>(null)
   const place = align === 'right' ? belowRight(anchor) : belowLeft(anchor)
   const current = field ? filters.find((filter) => filter.field === field) : undefined
 
@@ -244,10 +246,27 @@ function FilterMenu({ jobs, filters, anchor, align, onChange, onClose }: FilterM
     }
   }
 
+  function toggleValue(target: FilterField, value: string) {
+    const values = filters.find((filter) => filter.field === target)?.values ?? []
+    setValues(
+      target,
+      values.includes(value) ? values.filter((v) => v !== value) : [...values, value],
+    )
+  }
+
+  const term = query.trim().toLowerCase()
+  const fields = FILTER_FIELD_ORDER.filter((key) =>
+    FILTER_FIELDS[key].label.toLowerCase().includes(term),
+  )
+  const flyoutValues = flyout
+    ? (filters.find((filter) => filter.field === flyout.field)?.values ?? [])
+    : []
+
   return (
     <Floating
       anchor={anchor}
       place={place}
+      // `fixed` already anchors the absolutely placed flyout below.
       className={panel}
       onClose={onClose}
       focusFirstItem={false}
@@ -280,38 +299,111 @@ function FilterMenu({ jobs, filters, anchor, align, onChange, onClose }: FilterM
             iconLabel="Close"
             onIconClick={onClose}
           />
+          <div className={`flex h-[36px] shrink-0 items-center px-[10px] ${hairline}`}>
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Filter by…"
+              aria-label="Find a filter"
+              className="w-full bg-transparent text-body-m leading-21 text-text-primary outline-none placeholder:text-text-tertiary"
+            />
+          </div>
           <ul
             role="menu"
             aria-label="Filter by"
             className="flex flex-col gap-[2px] px-[4px] pt-[4px]"
           >
-            {FILTER_FIELD_ORDER.map((key) => {
+            {fields.map((key) => {
+              const config = FILTER_FIELDS[key]
               const count = filters.find((filter) => filter.field === key)?.values.length ?? 0
+              const open = flyout?.field === key
+              // The flyout hangs 6px above its row, measured from the panel.
+              const openFlyout = (row: HTMLElement) => {
+                const panelTop = row.closest('.fixed')?.getBoundingClientRect().top ?? 0
+                setFlyout({ field: key, top: row.getBoundingClientRect().top - panelTop - 6 })
+              }
               return (
                 <li key={key} role="none">
                   <button
                     type="button"
                     role="menuitem"
-                    onClick={() => setField(key)}
-                    className={rowBase}
+                    aria-haspopup={config.flyout ? 'menu' : undefined}
+                    aria-expanded={config.flyout ? open : undefined}
+                    onMouseEnter={(event) =>
+                      config.flyout ? openFlyout(event.currentTarget) : setFlyout(null)
+                    }
+                    onFocus={(event) =>
+                      config.flyout ? openFlyout(event.currentTarget) : setFlyout(null)
+                    }
+                    onClick={(event) =>
+                      config.flyout ? openFlyout(event.currentTarget) : setField(key)
+                    }
+                    className={`${rowBase} ${open ? 'bg-bg-transparent-light' : ''}`}
                   >
-                    <span className="inline-flex text-text-tertiary">
-                      <DashboardIcon name={FILTER_FIELDS[key].icon} size={14} />
+                    <span
+                      className={`inline-flex ${open ? 'text-text-secondary' : 'text-text-tertiary'}`}
+                    >
+                      <DashboardIcon name={config.icon} size={14} />
                     </span>
-                    <span className={rowText}>{FILTER_FIELDS[key].label}</span>
+                    <span className={rowText}>{config.label}</span>
                     {count > 0 ? (
                       <span className="text-caption-s leading-none font-medium text-text-primary">
                         {count}
                       </span>
                     ) : null}
-                    <span className="inline-flex text-text-light">
-                      <DashboardIcon name="chevron-right-solid" size={14} />
-                    </span>
+                    {config.flyout ? null : (
+                      <span className="inline-flex text-text-light">
+                        <DashboardIcon name="chevron-right-solid" size={14} />
+                      </span>
+                    )}
                   </button>
                 </li>
               )
             })}
+            {fields.length === 0 ? (
+              <li className="px-[6px] py-[8px] text-body-s leading-19_5 text-text-tertiary">
+                No matches
+              </li>
+            ) : null}
           </ul>
+
+          {flyout ? (
+            <ul
+              role="menu"
+              aria-label={FILTER_FIELDS[flyout.field].label}
+              style={{ top: flyout.top }}
+              className="absolute right-full flex w-[165px] flex-col gap-[2px] rounded-t-lg-10 rounded-b-lg-12 bg-bg-secondary p-[5px] shadow-md outline-[0.5px] -outline-offset-[0.5px] outline-border-transparent-medium"
+            >
+              {filterOptions(jobs, flyout.field).map((option) => {
+                const checked = flyoutValues.includes(option.value)
+                return (
+                  <li key={option.value} role="none">
+                    <button
+                      type="button"
+                      role="menuitemcheckbox"
+                      aria-checked={checked}
+                      onClick={() => toggleValue(flyout.field, option.value)}
+                      className={`${rowBase} ${checked ? 'bg-bg-transparent-light' : ''}`}
+                    >
+                      {option.status ? (
+                        <span
+                          className={`inline-flex ${checked ? 'text-text-secondary' : 'text-text-tertiary'}`}
+                        >
+                          <DashboardIcon name={JOB_STATUS_META[option.status].icon} size={14} />
+                        </span>
+                      ) : null}
+                      <span className={rowText}>{option.label}</span>
+                      {checked ? (
+                        <span className="inline-flex text-text-secondary">
+                          <DashboardIcon name="check-outline" size={14} />
+                        </span>
+                      ) : null}
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+          ) : null}
         </>
       )}
     </Floating>
@@ -396,7 +488,10 @@ function SortMenu({ sort, anchor, onChange, onClose }: SortMenuProps) {
             </li>
           )
         })}
-        <li role="separator" className="mx-[-4px] my-[1px] h-px bg-border-transparent-light" />
+        <li
+          role="separator"
+          className="mx-[-4px] -mt-[2px] mb-[2px] h-px bg-border-transparent-light"
+        />
         <DirectionRows
           direction={sort?.direction ?? null}
           onPick={(direction) => onChange({ field: sort?.field ?? 'datePosted', direction })}
@@ -488,6 +583,9 @@ function FilterBar({
             filter.values.length === 1
               ? options.find((option) => option.value === filter.values[0])
               : undefined
+          const people = options.filter(
+            (option) => option.avatarColour && filter.values.includes(option.value),
+          )
           return (
             <div key={filter.field} className={chip}>
               <span className={segment}>
@@ -509,7 +607,11 @@ function FilterBar({
                 }
                 className={`${segmentButton} text-text-tertiary`}
               >
-                {filter.operator === 'is' ? config.operatorLabel : `not ${config.operatorLabel}`}
+                {filter.operator === 'is'
+                  ? config.operatorLabel
+                  : filter.operator === 'and'
+                    ? 'and'
+                    : `not ${config.operatorLabel}`}
               </button>
               <button
                 type="button"
@@ -521,10 +623,28 @@ function FilterBar({
                     anchor: toAnchor(event.currentTarget.getBoundingClientRect()),
                   })
                 }
-                className={`${segmentButton} ${only?.avatarColour ? 'gap-[3px]' : ''}`}
+                className={`${segmentButton} ${people.length > 0 ? 'gap-[3px]' : ''}`}
               >
-                {/* A single value shows its own avatar or status glyph. */}
-                {only ? <OptionVisual option={only} /> : null}
+                {/* One value shows its own avatar or status glyph; several
+                    people show as a stack of two with a "more" tile. */}
+                {only ? <OptionVisual option={only} onChip /> : null}
+                {!only && people.length > 0 ? (
+                  <span className="inline-flex items-center">
+                    {people.slice(0, 2).map((person, i) => (
+                      <span
+                        key={person.value}
+                        className={i === 0 ? 'inline-flex' : '-ml-[4px] inline-flex'}
+                      >
+                        <OptionVisual option={person} onChip />
+                      </span>
+                    ))}
+                    {people.length > 2 ? (
+                      <span className="-ml-[4px] inline-flex size-[14px] items-center justify-center rounded-full bg-bg-avatar-blue text-text-avatar-blue outline-[0.5px] -outline-offset-[0.5px] outline-border-transparent-light">
+                        <DashboardIcon name="ellipsis-horizontal-solid" size={10} />
+                      </span>
+                    ) : null}
+                  </span>
+                ) : null}
                 {summariseValues(options, filter.values)}
               </button>
               <RemoveSegment
@@ -615,7 +735,11 @@ function FilterPopovers({
         className={`${panel} pt-[5px]`}
         onClose={onClose}
       >
-        <ul role="menu" aria-label="Sort direction" className="flex flex-col gap-[2px] px-[4px]">
+        <ul
+          role="menu"
+          aria-label="Sort direction"
+          className="flex flex-col gap-[2px] px-[4px] pt-[4px]"
+        >
           <DirectionRows
             direction={sort?.direction ?? null}
             onPick={(direction) => {
@@ -635,10 +759,20 @@ function FilterPopovers({
 
   if (popover.type === 'operator') {
     const config = FILTER_FIELDS[filter.field]
-    const operators: { value: FilterOperator; label: string }[] = [
-      { value: 'is', label: config.operatorLabel },
-      { value: 'isNot', label: `not ${config.operatorLabel}` },
+    // The design lists six conditions. "By", "To" and "On" are the plain
+    // match under each field's own preposition, so they behave as "Is".
+    const operators: { key: string; value: FilterOperator; label: string }[] = [
+      { key: 'is', value: 'is', label: 'Is' },
+      { key: 'isNot', value: 'isNot', label: 'Is not' },
+      { key: 'and', value: 'and', label: 'And' },
+      { key: 'by', value: 'is', label: 'By' },
+      { key: 'to', value: 'is', label: 'To' },
+      { key: 'on', value: 'is', label: 'On' },
     ]
+    const activeKey =
+      filter.operator === 'is'
+        ? (operators.find((o) => o.label.toLowerCase() === config.operatorLabel)?.key ?? 'is')
+        : filter.operator
     return (
       <Floating
         anchor={popover.anchor}
@@ -646,21 +780,25 @@ function FilterPopovers({
         className={`${panel} pt-[5px]`}
         onClose={onClose}
       >
-        <ul role="menu" aria-label="Condition" className="flex flex-col gap-[2px] px-[4px]">
+        <ul
+          role="menu"
+          aria-label="Condition"
+          className="flex flex-col gap-[2px] px-[4px] pt-[4px]"
+        >
           {operators.map((operator) => (
-            <li key={operator.value} role="none">
+            <li key={operator.key} role="none">
               <button
                 type="button"
                 role="menuitemradio"
-                aria-checked={filter.operator === operator.value}
+                aria-checked={activeKey === operator.key}
                 onClick={() => {
                   update({ operator: operator.value })
                   onClose()
                 }}
                 className={rowBase}
               >
-                <span className={`${rowText} first-letter:uppercase`}>{operator.label}</span>
-                {filter.operator === operator.value ? (
+                <span className={rowText}>{operator.label}</span>
+                {activeKey === operator.key ? (
                   <span className="inline-flex text-text-secondary">
                     <DashboardIcon name="check-outline" size={14} />
                   </span>

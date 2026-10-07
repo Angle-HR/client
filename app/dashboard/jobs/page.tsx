@@ -8,6 +8,7 @@ import { DashboardErrorState } from '@/components/dashboard/dashboard-states'
 import { DashboardIcon } from '@/components/dashboard/nav-config'
 import { ChooseTemplateModal, StartJobModal } from '@/components/jobs/create/start-modals'
 import { toAnchor } from '@/components/jobs/floating'
+import { FunnelArt } from '@/components/jobs/job-art'
 import { FilterBar, FilterPopovers } from '@/components/jobs/job-filters'
 import { ColumnMenu, JobRowMenu } from '@/components/jobs/job-menus'
 import {
@@ -25,7 +26,7 @@ import { SelectionToolbar } from '@/components/jobs/selection-toolbar'
 import { TemplatesPanel } from '@/components/jobs/templates/templates-panel'
 import { useJobsController } from '@/components/jobs/use-jobs-controller'
 import { Button, Tabs, TextButton, TextInput } from '@/components/ui'
-import { searchJobs, statusTargets } from '@/lib/jobs/actions'
+import { needsRetentionNotice, searchJobs, statusTargets } from '@/lib/jobs/actions'
 import { applyFilters, applySort } from '@/lib/jobs/filters'
 import { useJobTemplates, useMe } from '@/lib/queries'
 
@@ -389,15 +390,17 @@ function JobsPage() {
         <TemplatesPanel view={view} search={search} />
       ) : groups.length === 0 ? (
         narrowed ? (
-          <div className="flex flex-1 flex-col items-center justify-center gap-[20px] text-center">
-            <span className="inline-flex text-text-light">
-              <DashboardIcon name="funnel-outline" size={32} />
+          // The design sets the block 14px above the centre of the list area, and
+          // trims each line to its 9px cap height.
+          <div className="flex flex-1 flex-col items-center justify-center gap-[20px] pb-[28px] text-center">
+            <span className="flex size-[50px] items-center justify-center">
+              <FunnelArt />
             </span>
             <div className="flex flex-col gap-[14px]">
-              <p className="text-body-s leading-none font-semibold text-text-secondary">
+              <p className="flex h-[9px] items-center justify-center text-body-s leading-none font-semibold whitespace-nowrap text-text-secondary">
                 No job matching the filters set
               </p>
-              <p className="text-body-s leading-none text-text-tertiary">
+              <p className="flex h-[9px] items-center justify-center text-body-s leading-none whitespace-nowrap text-text-tertiary">
                 {tabJobs.length - shownCount} {tabJobs.length - shownCount === 1 ? 'job' : 'jobs'}{' '}
                 hidden by filters
               </p>
@@ -537,6 +540,7 @@ function JobsPage() {
       {dialog?.type === 'delete' ? (
         <DeleteJobsModal
           applicantCount={dialogJobs.reduce((total, job) => total + job.totalApplicants, 0)}
+          showRetentionNotice={needsRetentionNotice(dialogJobs)}
           onConfirm={controller.confirmDialog.delete}
           onClose={controller.closeDialog}
         />

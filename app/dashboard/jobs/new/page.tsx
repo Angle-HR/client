@@ -10,6 +10,7 @@ import { JobFlowHeader } from '@/components/jobs/create/job-flow-header'
 import { ChooseTemplateModal } from '@/components/jobs/create/start-modals'
 import { JobToast } from '@/components/jobs/job-toast'
 import { Button, Divider, ListItemToggle, TextButton } from '@/components/ui'
+import { toIsoDate } from '@/lib/jobs/actions'
 import {
   EMPTY_DRAFT,
   applyDraftToJob,
@@ -162,7 +163,7 @@ function NewJobPage() {
           createdBy: owner,
           visibility: 'Just me',
           timesUsed: 0,
-          lastUsedAt: today.toISOString().slice(0, 10),
+          lastUsedAt: toIsoDate(today),
           pinned: false,
           ownedByMe: true,
         },

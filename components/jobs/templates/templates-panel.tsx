@@ -11,9 +11,9 @@ import { DOT, GroupLabel, formatPostedDate } from '@/components/jobs/job-status'
 import { JobToast } from '@/components/jobs/job-toast'
 import { CARD_SURFACE, ChipGlyph } from '@/components/jobs/jobs-board'
 import { GroupHeader, cellText, rowRest, rowSelected } from '@/components/jobs/jobs-table'
+import { PersonAvatar } from '@/components/jobs/person-avatar'
 import { toolbarControl, toolbarSurface } from '@/components/jobs/selection-toolbar'
 import {
-  Avatar,
   Button,
   Checkbox,
   Chip,
@@ -87,14 +87,7 @@ function CreatorChip({ template }: { template: JobTemplate }) {
       fill="transparent"
       tone="secondary"
       label={template.createdBy.name}
-      icon={
-        <Avatar
-          size={14}
-          type="initials"
-          text={template.createdBy.name.charAt(0)}
-          colour={template.createdBy.colour}
-        />
-      }
+      icon={<PersonAvatar person={template.createdBy} />}
       className="max-w-full min-w-0"
     />
   )

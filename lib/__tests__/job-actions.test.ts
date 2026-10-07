@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest'
 
 import {
   exportJobs,
+  needsRetentionNotice,
   parseFutureDate,
   searchJobs,
   statusChangeMessage,
   statusTargets,
+  toIsoDate,
 } from '../jobs/actions'
 
 import type { Job } from '../jobs/types'
@@ -24,6 +26,9 @@ function job(overrides: Partial<Job>): Job {
     totalApplicants: 30,
     newApplicants: 7,
     postedAt: '2026-10-15',
+    createdAt: '2026-10-15',
+    lastModifiedAt: '2026-10-15',
+    lastViewedAt: '2026-10-15',
     ...overrides,
   }
 }
@@ -118,5 +123,25 @@ describe('parseFutureDate', () => {
     expect(parseFutureDate('6', '10', '2026', today)).toBeNull()
     expect(parseFutureDate('31', '02', '2027', today)).toBeNull()
     expect(parseFutureDate('', '12', '2026', today)).toBeNull()
+  })
+})
+
+describe('toIsoDate', () => {
+  it('uses the local calendar day, not the UTC one', () => {
+    expect(toIsoDate(new Date(2026, 9, 7, 0, 30))).toBe('2026-10-07')
+    expect(toIsoDate(new Date(2026, 0, 5, 23, 59))).toBe('2026-01-05')
+  })
+})
+
+describe('needsRetentionNotice', () => {
+  it('is set by a US job that has applicants', () => {
+    expect(needsRetentionNotice([{ location: 'USA', totalApplicants: 3 }])).toBe(true)
+    expect(needsRetentionNotice([{ location: ' united states ', totalApplicants: 1 }])).toBe(true)
+  })
+
+  it('is not set by jobs elsewhere or by a US job nobody applied to', () => {
+    expect(needsRetentionNotice([{ location: 'UK', totalApplicants: 9 }])).toBe(false)
+    expect(needsRetentionNotice([{ location: 'USA', totalApplicants: 0 }])).toBe(false)
+    expect(needsRetentionNotice([])).toBe(false)
   })
 })
