@@ -6,6 +6,7 @@ import { ChipRemoveButton } from './chip-remove-button'
 
 type ChipFill = 'default' | 'accent' | 'transparent'
 type ChipState = 'rest' | 'hover' | 'placeholder' | 'disabled' | 'loading'
+type ChipTone = 'primary' | 'secondary'
 
 interface ChipProps {
   label: string
@@ -13,6 +14,8 @@ interface ChipProps {
   state?: ChipState
   removable?: boolean
   boldText?: boolean
+  /** Label colour. Secondary is the quieter grey used for metadata chips. */
+  tone?: ChipTone
   withIcon?: boolean
   icon?: ReactNode
   onRemove?: () => void
@@ -67,6 +70,7 @@ function Chip({
   state: controlledState,
   removable = false,
   boldText = false,
+  tone = 'primary',
   withIcon = true,
   icon,
   onRemove,
@@ -124,14 +128,14 @@ function Chip({
         </span>
       ) : (
         <>
-          <span className="inline-flex items-center gap-[2px]">
+          <span className="inline-flex items-center gap-[3px]">
             {withIcon && icon && (
               <span className="inline-flex h-[14px] w-[14px] items-center justify-center shrink-0 rounded-xs-4 overflow-hidden">
                 {icon}
               </span>
             )}
             <span
-              className={`text-body-xs text-text-primary pl-[1px] ${boldText ? 'font-medium' : ''} ${removable && !isHovered ? 'pr-[4px]' : removable ? 'pr-0' : 'pr-[4px]'}`}
+              className={`text-body-s leading-19_5 pl-[1px] ${tone === 'secondary' ? 'text-text-secondary' : 'text-text-primary'} ${boldText ? 'font-medium' : ''} ${removable && !isHovered ? 'pr-[4px]' : removable ? 'pr-0' : 'pr-[4px]'}`}
             >
               {label}
             </span>
@@ -154,4 +158,4 @@ function Chip({
 }
 
 export { Chip }
-export type { ChipProps, ChipFill, ChipState }
+export type { ChipTone, ChipProps, ChipFill, ChipState }

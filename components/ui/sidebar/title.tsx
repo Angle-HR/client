@@ -1,6 +1,6 @@
 'use client'
 
-import { ChevronDown } from '../icons'
+import { MaskIcon } from '../icons/mask-icon'
 
 interface SidebarTitleProps {
   label: string
@@ -43,8 +43,11 @@ function SidebarTitle({
       className={`group flex h-[28px] w-full cursor-pointer items-center gap-[4px] rounded-sm-7 px-[8px] py-[7px] text-left text-[12px] leading-[19.2px] font-medium text-text-secondary transition-colors hover:bg-bg-transparent-lighter hover:text-text-primary ${className}`}
     >
       {label}
-      <ChevronDown
-        className={`size-[10px] shrink-0 text-current transition-transform duration-150 ease-out ${closed ? '-rotate-90' : ''}`}
+      {/* The design uses the library's solid caret here, not a chevron. */}
+      <MaskIcon
+        src="/dashboard/icons/chev-down-solid.svg"
+        size={10}
+        className={`transition-transform duration-150 ease-out ${closed ? '-rotate-90' : ''}`}
       />
     </button>
   )

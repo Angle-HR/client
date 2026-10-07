@@ -1,5 +1,7 @@
 'use client'
 
+import { useState } from 'react'
+
 import { Notification } from '../notification/notification'
 
 import type {
@@ -45,11 +47,14 @@ function SidebarItem({
   onClick,
   className = '',
 }: SidebarItemProps) {
+  // Where the collapsed rail's tooltip should sit, or null while hidden.
+  const [tooltipAt, setTooltipAt] = useState<{ top: number; left: number } | null>(null)
+
   if (loading) {
     return (
       <div
         aria-hidden="true"
-        className={`flex h-[27px] items-center gap-[8px] rounded-sm-7 px-[8px] py-[7px] ${collapsed ? 'w-[36px]' : 'w-full'} ${className}`}
+        className={`flex h-[27px] items-center gap-[8px] rounded-sm-7 px-[8px] py-[7px] ${collapsed ? 'w-[29px]' : 'w-full'} ${className}`}
       >
         <div className="h-full w-full rounded-xs-4 bg-gradient-to-r from-bg-gradient-transparent-light to-bg-gradient-transparent-lighter" />
       </div>
@@ -72,13 +77,25 @@ function SidebarItem({
         <span className="absolute top-0 right-0 size-[4px] rounded-sm-7 border-[0.5px] border-border-notification bg-bg-notification" />
       )}
       {/* Tooltip stands in for the hidden label — hidden from AT because the
-          control already carries it as its accessible name. */}
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute left-[34px] z-20 hidden items-center rounded-sm-6 bg-bg-black px-[8px] py-[6px] text-[13px] leading-[19.5px] font-medium whitespace-nowrap text-text-inverted-white shadow-sm group-hover/item:flex"
-      >
-        {label}
-      </span>
+          control already carries it as its accessible name. It is fixed to the
+          viewport rather than absolutely placed: the nav list scrolls, and a
+          scroll container clips anything that pokes out sideways. */}
+      {tooltipAt ? (
+        <span
+          aria-hidden="true"
+          style={{ top: tooltipAt.top + 2, left: tooltipAt.left + 34 }}
+          className="pointer-events-none fixed z-50 flex h-[21px] items-center rounded-sm-6 bg-dark-grey-1 px-[8px] text-[13px] leading-[19.5px] font-medium whitespace-nowrap text-white shadow-[0_2px_4px_#00000014,0_0_4px_#00000005]"
+        >
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 6 10"
+            className="absolute top-1/2 -left-[5px] h-[10px] w-[6px] -translate-y-1/2 fill-dark-grey-1"
+          >
+            <path d="M6 0v10L.5 5.7a.9.9 0 0 1 0-1.4L6 0Z" />
+          </svg>
+          {label}
+        </span>
+      ) : null}
     </>
   ) : (
     <>
@@ -112,15 +129,24 @@ function SidebarItem({
     </>
   )
 
-  const sharedClasses = `group/item relative flex h-[27px] items-center gap-[8px] rounded-sm-7 px-[8px] py-[7px] text-text-secondary transition-colors ${collapsed ? 'w-[36px] justify-center' : 'w-full'} ${stateClasses} ${active ? activeClasses : ''} ${className}`
+  const sharedClasses = `group/item relative flex h-[27px] items-center gap-[8px] rounded-sm-7 px-[8px] py-[7px] text-text-secondary transition-colors ${collapsed ? 'w-[29px]' : 'w-full'} ${stateClasses} ${active ? activeClasses : ''} ${className}`
+  const showTooltip = (element: HTMLElement) => {
+    if (!collapsed) return
+    const rect = element.getBoundingClientRect()
+    setTooltipAt({ top: rect.top, left: rect.left })
+  }
   const sharedProps: Pick<
     AnchorHTMLAttributes<HTMLAnchorElement> & ButtonHTMLAttributes<HTMLButtonElement>,
-    'onClick'
+    'onClick' | 'onMouseEnter' | 'onMouseLeave' | 'onFocus' | 'onBlur'
   > & {
     'aria-current'?: 'page'
     'aria-label'?: string
   } = {
     onClick: onClick as MouseEventHandler<HTMLAnchorElement & HTMLButtonElement>,
+    onMouseEnter: (event) => showTooltip(event.currentTarget),
+    onMouseLeave: () => setTooltipAt(null),
+    onFocus: (event) => showTooltip(event.currentTarget),
+    onBlur: () => setTooltipAt(null),
     'aria-current': active ? 'page' : undefined,
     // Collapsed hides the text, so the name has to come from somewhere.
     'aria-label': collapsed ? label : undefined,

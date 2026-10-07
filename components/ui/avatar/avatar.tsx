@@ -51,7 +51,7 @@ const sizeClasses: Record<AvatarSize, string> = {
 
 const textSizeClasses: Record<AvatarSize, string> = {
   12: 'text-[6px]',
-  14: 'text-[7px]',
+  14: 'text-caption-s',
   16: 'text-[8px]',
   18: 'text-[9px]',
   20: 'text-[9px]',

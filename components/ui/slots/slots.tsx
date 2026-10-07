@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 
 type SlotsBackground = 'neutral' | 'light'
 type SlotsShadow = 'xsmall' | 'small' | 'medium'
@@ -14,6 +14,7 @@ interface SlotsProps {
   /** Shows top/bottom fade hints when the slot's content overflows and is scrolled. */
   scrollable?: boolean
   className?: string
+  style?: CSSProperties
 }
 
 const bgClasses: Record<SlotsBackground, string> = {
@@ -44,6 +45,7 @@ function Slots({
   padding = 'default',
   scrollable = false,
   className = '',
+  style,
 }: SlotsProps) {
   const contentRef = useRef<HTMLDivElement>(null)
   const [atTop, setAtTop] = useState(true)
@@ -72,12 +74,14 @@ function Slots({
     }
   }, [scrollable])
 
+  // The hairline is an inset outline, so like a Figma stroke it takes no
+  // layout space and the content starts exactly at the padding.
   // Figma pairs a lighter hairline border with Light + tight padding only;
   // every other combination (including all of neutral) uses border/light.
   const border =
     background === 'light' && padding === 'tight'
-      ? 'border-border-transparent-medium'
-      : 'border-border-light'
+      ? 'outline-border-transparent-medium'
+      : 'outline-border-light'
 
   // Only one position utility may ever be present at once. Tailwind's
   // cascade order (not class-attribute order) decides which wins when two
@@ -90,7 +94,8 @@ function Slots({
 
   return (
     <div
-      className={`${needsOwnPositioning ? 'relative ' : ''}flex overflow-clip rounded-lg-10 border-[0.5px] ${border} ${bgClasses[background]} ${shadowClasses[shadow]} ${className}`}
+      className={`${needsOwnPositioning ? 'relative ' : ''}flex overflow-clip rounded-lg-10 outline-[0.5px] -outline-offset-[0.5px] ${border} ${bgClasses[background]} ${shadowClasses[shadow]} ${className}`}
+      style={style}
     >
       <div
         ref={contentRef}

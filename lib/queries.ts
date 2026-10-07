@@ -51,6 +51,10 @@ function useMe(enabled = true) {
   return useQuery({ queryKey: queryKeys.me, queryFn: requests.getMe, enabled })
 }
 
+function useJobs() {
+  return useQuery({ queryKey: queryKeys.jobs, queryFn: requests.getJobs })
+}
+
 /** Invite lookup is keyed by token so a different link refetches. */
 function useInvite(token: string) {
   return useQuery({
@@ -105,6 +109,7 @@ export {
   useIdentificationRequirements,
   useInvite,
   useMe,
+  useJobs,
   useBusinessTypes,
   useCompanyRoles,
   useCountries,

@@ -30,7 +30,7 @@ function ListItemContent({
 }: ListItemContentProps) {
   return (
     <span
-      className={`inline-flex items-center gap-[4px] min-w-0 ${danger ? 'text-text-error' : ''} ${className}`}
+      className={`inline-flex items-center gap-[6px] min-w-0 ${danger ? 'text-text-error' : ''} ${className}`}
     >
       {withIcon && icon && (
         <span
@@ -41,7 +41,7 @@ function ListItemContent({
       )}
       <span className="inline-flex items-center gap-[4px] min-w-0 truncate">
         <span
-          className={`text-body-s font-medium truncate ${danger ? 'text-text-error' : 'text-text-primary'}`}
+          className={`text-body-s truncate ${danger ? 'text-text-error' : 'text-text-secondary group-hover/list-item:text-text-primary group-aria-selected/list-item:text-text-primary'}`}
         >
           {mainText}
         </span>

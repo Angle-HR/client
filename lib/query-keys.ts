@@ -10,6 +10,7 @@ const queryKeys = {
   onboardingIndustries: ['onboarding', 'industries'] as const,
   onboardingStatus: ['onboarding', 'status'] as const,
   me: ['auth', 'me'] as const,
+  jobs: ['jobs'] as const,
   invite: (token: string) => ['auth', 'invite', token] as const,
   identificationRequirements: (countryId: string) =>
     ['onboarding', 'identification-requirements', countryId] as const,
