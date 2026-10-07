@@ -35,6 +35,50 @@ function FunnelArt() {
   )
 }
 
+/**
+ * The monitor over the "Create your first job" invitation, with a briefcase on
+ * its screen. Figma: Frame 1400002040 in 8973:608566.
+ */
+function FirstJobArt() {
+  return (
+    // 147.4px tall in the design; the stand's feet overhang by a stroke.
+    <span aria-hidden="true" className="relative h-[147.4px] w-[180px] shrink-0">
+      <svg
+        width={180}
+        height={149}
+        viewBox="0 0 180 149"
+        fill="none"
+        className="absolute top-0 left-0 max-w-none"
+      >
+        <path
+          d="M111.632 147.025V102.664H67.3906V147.025H111.632Z"
+          className="stroke-text-secondary"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M111.632 147.941H105.578M67.3906 147.941H73.5314M68.3906 145.141H110.632"
+          className="stroke-text-tertiary"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <rect
+          x="0.5"
+          y="0.5"
+          width="178.073"
+          height="102.149"
+          rx="3"
+          className="stroke-text-tertiary"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+      <span className="absolute top-[37px] left-[75px] inline-flex text-text-primary">
+        <DashboardIcon name="briefcase-solid" size={28} />
+      </span>
+    </span>
+  )
+}
+
 type StartThumbnailKind = 'manual' | 'template' | 'ai'
 
 /**
@@ -111,5 +155,5 @@ function StartThumbnail({ kind }: { kind: StartThumbnailKind }) {
   )
 }
 
-export { FunnelArt, StartThumbnail }
+export { FirstJobArt, FunnelArt, StartThumbnail }
 export type { StartThumbnailKind }

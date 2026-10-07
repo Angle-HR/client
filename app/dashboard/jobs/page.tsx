@@ -1,6 +1,5 @@
 'use client'
 
-import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
@@ -8,7 +7,7 @@ import { DashboardErrorState } from '@/components/dashboard/dashboard-states'
 import { DashboardIcon } from '@/components/dashboard/nav-config'
 import { ChooseTemplateModal, StartJobModal } from '@/components/jobs/create/start-modals'
 import { toAnchor } from '@/components/jobs/floating'
-import { FunnelArt } from '@/components/jobs/job-art'
+import { FirstJobArt, FunnelArt } from '@/components/jobs/job-art'
 import { FilterBar, FilterPopovers } from '@/components/jobs/job-filters'
 import { ColumnMenu, JobRowMenu } from '@/components/jobs/job-menus'
 import {
@@ -188,7 +187,8 @@ function JobsPage() {
     if (action === 'duplicate') controller.duplicate([job.id])
     else if (action === 'copy-link') void controller.copyLinks([job.id])
     else if (action === 'delete') controller.openDialog({ type: 'delete', jobIds: [job.id] })
-    else if (action === 'export') controller.openDialog({ type: 'export', jobIds: [job.id] })
+    else if (action === 'export')
+      controller.openDialog({ type: 'export', jobIds: [job.id], single: true })
     else if (action === 'assign') controller.openDialog({ type: 'assign', jobIds: [job.id] })
     else if (action === 'closing-date') {
       controller.openDialog({ type: 'closing-date', jobIds: [job.id] })
@@ -221,14 +221,7 @@ function JobsPage() {
           <h1 className="pl-[18px] text-body-xs leading-19_2 text-text-primary">Jobs</h1>
         </header>
         <div className="flex flex-1 flex-col items-center justify-center gap-[32px] pb-[140px]">
-          <Image
-            aria-hidden="true"
-            alt=""
-            src="/dashboard/illustration/empty-screen.svg"
-            width={180}
-            height={149}
-            className="h-[149px] w-[180px] max-w-none shrink-0"
-          />
+          <FirstJobArt />
           <div className="flex w-[273px] flex-col items-center gap-[24px] text-center">
             <div className="flex flex-col gap-[12px]">
               <p className="-my-[5px] text-body-m leading-21 font-semibold text-text-primary">
@@ -248,12 +241,20 @@ function JobsPage() {
               >
                 Create a new job
               </Button>
-              {/* The AI-assisted flow is still being designed. */}
+              {/* The AI-assisted flow is not designed yet; the designer's own
+                  toast says so. */}
               <Button
                 variant="tertiary"
                 accent="blue"
                 size="sm"
-                disabled
+                onClick={() =>
+                  notify({
+                    kind: 'info',
+                    message: 'AI integration coming soon',
+                    detail:
+                      "We're building a way to connect your own AI to Open HR. We'll let you know when it's ready",
+                  })
+                }
                 iconSuffix={<DashboardIcon name="sparkles-solid" size={14} />}
               >
                 Create with AI
@@ -264,7 +265,7 @@ function JobsPage() {
         <TextButton
           size="sm"
           href="/dashboard/help"
-          className="absolute bottom-[33px] left-1/2 -translate-x-1/2 text-text-primary!"
+          className="absolute bottom-[29px] left-1/2 -translate-x-1/2 text-text-primary!"
           iconRight={<DashboardIcon name="arrow-top-right-on-square-solid" size={10} />}
         >
           Learn How to create job on OpenHR
@@ -362,7 +363,7 @@ function JobsPage() {
             size="md"
             showLabel={false}
             aria-label="Search jobs"
-            placeholder="Search"
+            placeholder={tab === 'templates' ? 'Search templates' : 'Search'}
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             showPrefixIcon
@@ -571,6 +572,7 @@ function JobsPage() {
       {dialog?.type === 'export' ? (
         <ExportJobsModal
           selectedCount={dialog.jobIds.length}
+          single={dialog.single}
           onExport={controller.confirmDialog.export}
           onClose={controller.closeDialog}
         />

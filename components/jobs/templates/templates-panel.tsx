@@ -131,7 +131,7 @@ function RenameModal({
       icon={<DashboardIcon name="pencil-square-solid" size={14} />}
       onClose={onClose}
     >
-      <div className="flex flex-col gap-[24px]">
+      <div className="flex flex-col gap-[28px]">
         <TextInput label="Old Name" value={template.title} readOnly disabled />
         <TextInput
           label="Enter new name"
@@ -168,7 +168,9 @@ function ExportTemplatesModal({
 }) {
   const [scope, setScope] = useState<'all' | 'selected'>(selectedCount > 0 ? 'selected' : 'all')
   const [format, setFormat] = useState<'csv' | 'json'>('csv')
-  const groupLabel = 'mb-[10px] px-[4px] text-body-s leading-none text-text-primary'
+  // Trimmed to the 9px cap height, like the design's labels.
+  const groupLabel =
+    'mb-[10px] flex h-[9px] items-center px-[4px] text-body-s leading-none text-text-primary'
   return (
     <Modal
       open
@@ -648,7 +650,7 @@ function TemplatesPanel({ view, search }: TemplatesPanelProps) {
                 setDialog({ type: 'export', ids: [menuTemplate.id] })
               }}
             />
-            <li role="presentation" className="h-[2px]" />
+            <li role="presentation" className="h-px" />
             <MenuRow
               icon="trash-solid"
               iconSize={14}

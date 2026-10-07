@@ -80,7 +80,10 @@ function DateInput({
     />
   )
   const dot = (
-    <span aria-hidden="true" className="text-body-m leading-21 text-text-input-placeholder">
+    <span
+      aria-hidden="true"
+      className="w-[14px] text-center text-body-m leading-21 text-text-input-placeholder"
+    >
       ·
     </span>
   )
@@ -93,13 +96,13 @@ function DateInput({
       <div
         role="group"
         aria-labelledby={labelId}
-        className={`flex h-[32px] items-center gap-[4px] rounded-sm-8 border bg-bg-input-placeholder pl-[8px] transition-colors focus-within:border-border-input-focus focus-within:bg-bg-input-focus hover:border-border-input-hover ${errorText ? 'border-border-input-error' : 'border-border-input-placeholder'}`}
+        className={`flex h-[32px] items-center gap-[4px] rounded-sm-8 border bg-bg-input-placeholder pl-[7px] transition-colors focus-within:border-border-input-focus focus-within:bg-bg-input-focus hover:border-border-input-hover ${errorText ? 'border-border-input-error' : 'border-border-input-placeholder'}`}
       >
-        {segment('day', 'DD', 'Day', 'w-[22px]')}
+        {segment('day', 'DD', 'Day', 'w-[20px]')}
         {dot}
-        {segment('month', 'MM', 'Month', 'w-[24px]')}
+        {segment('month', 'MM', 'Month', 'w-[25px]')}
         {dot}
-        {segment('year', 'YYYY', 'Year', 'w-[40px]')}
+        {segment('year', 'YYYY', 'Year', 'w-[37px]')}
         <button
           type="button"
           aria-label="Open calendar"

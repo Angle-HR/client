@@ -267,42 +267,52 @@ type ExportFormat = 'csv' | 'json'
 interface ExportJobsModalProps {
   /** How many jobs are selected; the "Selected" option is hidden at zero. */
   selectedCount: number
+  /** Exporting one job from its own menu: there is no scope to choose. */
+  single?: boolean
   onExport: (scope: ExportScope, format: ExportFormat) => void
   onClose: () => void
 }
 
-function ExportJobsModal({ selectedCount, onExport, onClose }: ExportJobsModalProps) {
+function ExportJobsModal({
+  selectedCount,
+  single = false,
+  onExport,
+  onClose,
+}: ExportJobsModalProps) {
   const [scope, setScope] = useState<ExportScope>(selectedCount > 0 ? 'selected' : 'all')
   const [format, setFormat] = useState<ExportFormat>('csv')
-  const groupLabel = 'px-[4px] text-body-s leading-none text-text-primary'
+  // Trimmed to the 9px cap height, like the design's labels.
+  const groupLabel = 'flex h-[9px] items-center px-[4px] text-body-s leading-none text-text-primary'
 
   return (
     <Modal
       open
-      title="Export Jobs"
+      title={single ? 'Export Job' : 'Export Jobs'}
       icon={<DashboardIcon name="arrow-up-tray-solid" size={14} />}
       onClose={onClose}
     >
       <p className={bodyText}>
         Includes titles, departments, status, managers, dates, and applicant counts.
       </p>
-      <fieldset className="flex flex-col gap-[10px]">
-        <legend className={`${groupLabel} mb-[10px]`}>Selection:</legend>
-        <RadioButton
-          name="export-scope"
-          label="All jobs"
-          checked={scope === 'all'}
-          onChange={() => setScope('all')}
-        />
-        {selectedCount > 0 ? (
+      {single ? null : (
+        <fieldset className="flex flex-col gap-[10px]">
+          <legend className={`${groupLabel} mb-[10px]`}>Selection:</legend>
           <RadioButton
             name="export-scope"
-            label={`Selected (${selectedCount})`}
-            checked={scope === 'selected'}
-            onChange={() => setScope('selected')}
+            label="All jobs"
+            checked={scope === 'all'}
+            onChange={() => setScope('all')}
           />
-        ) : null}
-      </fieldset>
+          {selectedCount > 0 ? (
+            <RadioButton
+              name="export-scope"
+              label={`Selected (${selectedCount})`}
+              checked={scope === 'selected'}
+              onChange={() => setScope('selected')}
+            />
+          ) : null}
+        </fieldset>
+      )}
       <fieldset className="flex flex-col gap-[10px]">
         <legend className={`${groupLabel} mb-[10px]`}>As:</legend>
         <RadioButton

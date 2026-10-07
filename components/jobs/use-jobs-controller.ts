@@ -24,7 +24,7 @@ type JobDialog =
   | { type: 'status'; jobIds: string[]; status: Exclude<JobStatus, 'open'> }
   | { type: 'delete'; jobIds: string[] }
   | { type: 'closing-date'; jobIds: string[] }
-  | { type: 'export'; jobIds: string[] }
+  | { type: 'export'; jobIds: string[]; single?: boolean }
   | { type: 'assign'; jobIds: string[] }
 
 function download(filename: string, contents: string, mimeType: string) {
