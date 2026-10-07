@@ -78,7 +78,9 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function Textare
       {showLabel && label && (
         <label
           htmlFor={fieldId}
-          className="text-body-xs font-medium-550 text-text-secondary h-[9px] leading-none pl-[2px]"
+          // The same label as every other field: tertiary, inset 3px and centred
+          // in its cap-height box.
+          className="flex h-[9px] items-center pl-[3px] text-body-xs leading-none font-medium-550 text-text-tertiary"
         >
           {label}
           {required && (

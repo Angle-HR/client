@@ -294,10 +294,10 @@ function ChooseTemplateModal({
           anchor={sortAnchor}
           onClose={() => setSortAnchor(null)}
           place={({ width }) => ({
-            top: sortAnchor.bottom + 2,
+            top: sortAnchor.bottom + 3,
             left: clampLeft(sortAnchor.right - width, width),
           })}
-          className="w-[165px] rounded-t-lg-10 rounded-b-lg-12 p-[5px] shadow-md"
+          className="w-[146px] rounded-t-lg-10 rounded-b-lg-12 p-[5px] shadow-md"
         >
           <ul role="menu" aria-label="Sort templates" className="flex flex-col gap-[2px]">
             {TEMPLATE_SORTS.map((item) => (

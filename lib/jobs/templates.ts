@@ -14,6 +14,8 @@ interface JobTemplate {
   department: string
   employmentType: JobEmploymentType
   createdBy: JobManager
+  /** What the template is for, as its creator described it. */
+  description?: string
   /** Who can use the template. */
   visibility: 'Everyone' | 'Just me'
   timesUsed: number
@@ -238,7 +240,67 @@ function exportTemplates(templates: JobTemplate[], format: 'csv' | 'json'): stri
   return [header, ...rows.map((row) => Object.values(row).map(cell).join(','))].join('\n')
 }
 
+interface TemplateDetails {
+  name: string
+  description: string
+  /** Whether other people in the organisation may use the template. */
+  shared: boolean
+}
+
+type TemplateDetailErrors = Partial<Record<'name' | 'description', string>>
+
+/**
+ * Problems with what was typed into "Save job details as template". The
+ * description rule is the dialog's own hint: no special characters, 30 words.
+ */
+function validateTemplateDetails(
+  details: Pick<TemplateDetails, 'name' | 'description'>,
+  existingNames: string[],
+): TemplateDetailErrors {
+  const errors: TemplateDetailErrors = {}
+  const name = details.name.trim()
+  if (!name) errors.name = 'Enter a name for the template.'
+  else if (existingNames.some((existing) => existing.toLowerCase() === name.toLowerCase())) {
+    errors.name = 'A template with this name already exists.'
+  }
+
+  const description = details.description.trim()
+  if (description) {
+    if (!/^[\p{L}\p{N}\s.,'’&/()-]+$/u.test(description)) {
+      errors.description = 'Remove special characters from the description.'
+    } else if (description.split(/\s+/).length > 30) {
+      errors.description = 'Keep the description to 30 words or fewer.'
+    }
+  }
+  return errors
+}
+
+/** The template a job's details become when they are saved as one. */
+function templateFromDetails(
+  details: TemplateDetails,
+  job: { department: string; employmentType: JobEmploymentType },
+  owner: JobManager,
+  id: string,
+  today: string,
+): JobTemplate {
+  return {
+    id,
+    title: details.name.trim(),
+    description: details.description.trim() || undefined,
+    department: job.department,
+    employmentType: job.employmentType,
+    createdBy: owner,
+    visibility: details.shared ? 'Everyone' : 'Just me',
+    timesUsed: 0,
+    lastUsedAt: today,
+    pinned: false,
+    ownedByMe: true,
+  }
+}
+
 export {
+  templateFromDetails,
+  validateTemplateDetails,
   TEMPLATE_FIXTURES,
   TEMPLATE_SORTS,
   duplicateName,
@@ -250,4 +312,11 @@ export {
   searchTemplates,
   sortTemplates,
 }
-export type { JobTemplate, TemplateGroup, TemplateGroupKey, TemplateSort }
+export type {
+  TemplateDetailErrors,
+  TemplateDetails,
+  JobTemplate,
+  TemplateGroup,
+  TemplateGroupKey,
+  TemplateSort,
+}

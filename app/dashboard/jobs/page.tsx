@@ -202,7 +202,6 @@ function JobsPage() {
     if (!saved) return
     const messages: Record<string, string> = {
       draft: 'Job saved as a draft',
-      'draft-template': 'Job saved as a draft and as a template',
       changes: 'Changes saved',
     }
     if (messages[saved]) notify({ kind: 'done', message: messages[saved] })

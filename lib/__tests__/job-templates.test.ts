@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  templateFromDetails,
+  validateTemplateDetails,
   duplicateName,
   duplicateTemplates,
   exportTemplates,
@@ -129,5 +131,68 @@ describe('markTemplateUsed', () => {
       timesUsed: 4,
       lastUsedAt: '2026-10-07',
     })
+  })
+})
+
+describe('saving job details as a template', () => {
+  const owner = { name: 'Alice', colour: 'green' } as const
+
+  it('accepts a name and an optional plain description', () => {
+    expect(
+      validateTemplateDetails({ name: '🎨 Product design Template', description: '' }, []),
+    ).toEqual({})
+    expect(
+      validateTemplateDetails(
+        { name: 'Designer', description: "For the team's design hires." },
+        [],
+      ),
+    ).toEqual({})
+  })
+
+  it('refuses an empty or duplicate name', () => {
+    expect(validateTemplateDetails({ name: '  ', description: '' }, []).name).toBe(
+      'Enter a name for the template.',
+    )
+    expect(validateTemplateDetails({ name: 'designer', description: '' }, ['Designer']).name).toBe(
+      'A template with this name already exists.',
+    )
+  })
+
+  it('holds the description to its hint: no special characters, 30 words', () => {
+    expect(
+      validateTemplateDetails({ name: 'A', description: 'Great #1 role!' }, []).description,
+    ).toBe('Remove special characters from the description.')
+    const long = Array.from({ length: 31 }, () => 'word').join(' ')
+    expect(validateTemplateDetails({ name: 'A', description: long }, []).description).toBe(
+      'Keep the description to 30 words or fewer.',
+    )
+  })
+
+  it('builds the template, shared or private', () => {
+    const job = { department: 'Design', employmentType: 'Full-time' } as const
+    const shared = templateFromDetails(
+      { name: ' Designer ', description: ' For design hires ', shared: true },
+      job,
+      owner,
+      'tpl-1',
+      '2026-10-08',
+    )
+    expect(shared).toMatchObject({
+      id: 'tpl-1',
+      title: 'Designer',
+      description: 'For design hires',
+      visibility: 'Everyone',
+      ownedByMe: true,
+      timesUsed: 0,
+    })
+    expect(
+      templateFromDetails(
+        { name: 'X', description: '', shared: false },
+        job,
+        owner,
+        't',
+        '2026-10-08',
+      ),
+    ).toMatchObject({ visibility: 'Just me', description: undefined })
   })
 })

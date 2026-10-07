@@ -7,6 +7,7 @@ import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { DashboardIcon } from '@/components/dashboard/nav-config'
 import { JobDetailsForm } from '@/components/jobs/create/job-details-form'
 import { JobFlowHeader } from '@/components/jobs/create/job-flow-header'
+import { SaveTemplateModal } from '@/components/jobs/create/save-template-modal'
 import { ChooseTemplateModal } from '@/components/jobs/create/start-modals'
 import { JobToast } from '@/components/jobs/job-toast'
 import { Button, Divider, ListItemToggle, TextButton } from '@/components/ui'
@@ -18,14 +19,14 @@ import {
   draftToJob,
   validateDraft,
 } from '@/lib/jobs/draft'
-import { markTemplateUsed } from '@/lib/jobs/templates'
+import { markTemplateUsed, templateFromDetails } from '@/lib/jobs/templates'
 import { useJobTemplates, useJobs, useMe } from '@/lib/queries'
 import { queryKeys } from '@/lib/query-keys'
 
 import type { JobToastState } from '@/components/jobs/job-toast'
 import type { AiAccess } from '@/lib/jobs/ai-description'
 import type { DraftErrors, JobDraft } from '@/lib/jobs/draft'
-import type { JobTemplate } from '@/lib/jobs/templates'
+import type { JobTemplate, TemplateDetails } from '@/lib/jobs/templates'
 import type { Job, JobManager } from '@/lib/jobs/types'
 
 /**
@@ -77,6 +78,7 @@ function NewJobPage() {
   const draft = edited ?? startingDraft
   const [errors, setErrors] = useState<DraftErrors>({})
   const [choosingTemplate, setChoosingTemplate] = useState(false)
+  const [savingTemplate, setSavingTemplate] = useState(false)
   const [toast, setToast] = useState<JobToastState | null>(null)
   // There is no AI service yet, so access starts as "may connect one". `?ai=`
   // reaches the other states: unavailable, restricted, connected, and the
@@ -162,24 +164,30 @@ function NewJobPage() {
         // Starting from a template counts as a use of it.
         item.id === template?.id ? markTemplateUsed(item, today) : item,
       )
-      if (!draft.saveAsTemplate) return list
-      return [
-        ...list,
+      return list
+    })
+    router.push('/dashboard/jobs?saved=draft')
+  }
+
+  // The template is saved from its own dialog, straight away: it does not
+  // wait for the job itself to be saved.
+  function saveTemplate(details: TemplateDetails) {
+    const today = new Date()
+    queryClient.setQueryData<JobTemplate[]>(queryKeys.jobTemplates, (current) => [
+      ...(current ?? templates ?? []),
+      templateFromDetails(
+        details,
         {
-          id: `tpl-${today.getTime()}`,
-          title: draft.title.trim(),
           department: draft.team || 'Unassigned',
           employmentType: draft.employmentType || 'Full-time',
-          createdBy: owner,
-          visibility: 'Just me',
-          timesUsed: 0,
-          lastUsedAt: toIsoDate(today),
-          pinned: false,
-          ownedByMe: true,
         },
-      ]
-    })
-    router.push(`/dashboard/jobs?saved=${draft.saveAsTemplate ? 'draft-template' : 'draft'}`)
+        owner,
+        `tpl-${today.getTime()}`,
+        toIsoDate(today),
+      ),
+    ])
+    setSavingTemplate(false)
+    setToast({ id: Date.now(), kind: 'done', message: 'Template saved' })
   }
 
   const backHref = mode === 'edit-template' ? '/dashboard/jobs?tab=templates' : '/dashboard/jobs'
@@ -274,7 +282,12 @@ function NewJobPage() {
                 // The design sets this row flush with the form edge, at its own width.
                 className="w-[138px]! px-0!"
                 checked={draft.saveAsTemplate}
-                onChange={(saveAsTemplate) => change({ saveAsTemplate })}
+                // Switching it on asks for the template's details; they are
+                // saved from that dialog, and cancelling switches it back off.
+                onChange={(saveAsTemplate) => {
+                  change({ saveAsTemplate })
+                  if (saveAsTemplate) setSavingTemplate(true)
+                }}
               />
             ) : null}
             <div className="flex gap-[12px]">
@@ -318,6 +331,17 @@ function NewJobPage() {
         />
       ) : null}
 
+      {savingTemplate ? (
+        <SaveTemplateModal
+          defaultName={draft.title.trim() ? `${draft.title.trim()} Template` : ''}
+          existingNames={(templates ?? []).map((item) => item.title)}
+          onSave={saveTemplate}
+          onClose={() => {
+            setSavingTemplate(false)
+            change({ saveAsTemplate: false })
+          }}
+        />
+      ) : null}
       {toast ? <JobToast toast={toast} onDismiss={() => setToast(null)} /> : null}
     </div>
   )

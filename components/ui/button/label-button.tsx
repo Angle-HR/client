@@ -27,7 +27,7 @@ const LabelButton = forwardRef<HTMLButtonElement, LabelButtonProps>(function Lab
   ref,
 ) {
   const classes = [
-    'inline-flex h-[24px] items-center gap-[4px] rounded-sm-7 border px-[8px] font-medium text-body-s text-text-btn-default-primary transition-colors',
+    'inline-flex h-[24px] items-center gap-[4px] rounded-sm-7 border px-[7px] font-medium text-body-s text-text-btn-default-primary transition-colors',
     'focus-visible:border-border-btn-blue-pri-focus focus-visible:bg-bg-btn-default-pri-focus focus-visible:outline-none',
     'disabled:cursor-not-allowed disabled:border-border-btn-default-pri-disabled disabled:bg-bg-btn-default-pri-disabled',
     selected
