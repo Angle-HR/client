@@ -1,6 +1,8 @@
 'use client'
 
-import { forwardRef, useRef, useState, type ReactNode } from 'react'
+import { forwardRef, useEffect, useRef, useState, type ReactNode } from 'react'
+
+import { MaskIcon } from '../icons/mask-icon'
 
 type RichTextFieldState =
   | 'placeholder'
@@ -30,34 +32,15 @@ interface RichTextFieldProps {
   className?: string
 }
 
-type Command = 'bold' | 'italic' | 'underline' | 'insertUnorderedList' | 'createLink'
+type Command = 'bold' | 'italic' | 'underline' | 'insertUnorderedList' | 'insertOrderedList'
 
-const buttons: { command: Command; label: string; icon: ReactNode }[] = [
-  {
-    command: 'bold',
-    label: 'Bold',
-    icon: <span className="text-[11px] font-bold">B</span>,
-  },
-  {
-    command: 'italic',
-    label: 'Italic',
-    icon: <span className="text-[11px] italic font-serif">I</span>,
-  },
-  {
-    command: 'underline',
-    label: 'Underline',
-    icon: <span className="text-[11px] underline">U</span>,
-  },
-  {
-    command: 'insertUnorderedList',
-    label: 'Bulleted list',
-    icon: <span className="text-[11px]">•</span>,
-  },
-  {
-    command: 'createLink',
-    label: 'Insert link',
-    icon: <span className="text-[11px]">🔗</span>,
-  },
+// Figma's Text-Editor-Toolbar: five 20px buttons with 12px glyphs, edge to edge.
+const buttons: { command: Command; label: string; icon: string }[] = [
+  { command: 'bold', label: 'Bold', icon: 'bold-solid' },
+  { command: 'italic', label: 'Italic', icon: 'italic-solid' },
+  { command: 'underline', label: 'Underline', icon: 'underline-solid' },
+  { command: 'insertUnorderedList', label: 'Bulleted list', icon: 'list-bullet-solid' },
+  { command: 'insertOrderedList', label: 'Numbered list', icon: 'numbered-list-solid' },
 ]
 
 const RichTextField = forwardRef<HTMLDivElement, RichTextFieldProps>(function RichTextField(
@@ -79,29 +62,39 @@ const RichTextField = forwardRef<HTMLDivElement, RichTextFieldProps>(function Ri
   ref,
 ) {
   const editorRef = useRef<HTMLDivElement | null>(null)
-  const [isEmpty, setIsEmpty] = useState(!(value || defaultValue))
+  // The markup the editor mounts with, as one object that never changes. React
+  // rewrites the editor's HTML whenever this prop is a new object — even with
+  // the same markup — which would lose the caret on every keystroke.
+  const [initialHtml] = useState(() => ({ __html: value ?? defaultValue }))
+  const [typedEmpty, setTypedEmpty] = useState(!(value || defaultValue))
+  // A controlled editor is empty when its value has no text, whoever set it.
+  const isEmpty = value === undefined ? typedEmpty : !value.replace(/<[^>]*>|&nbsp;/g, '').trim()
+
+  // A value set from outside (a template, an AI draft, a reset) is written
+  // into the editor; one that merely echoes what was typed is already there.
+  useEffect(() => {
+    const editor = editorRef.current
+    if (!editor || value === undefined || value === editor.innerHTML) return
+    editor.innerHTML = value
+  }, [value])
   const isError =
     state === 'error' || props['aria-invalid'] === true || props['aria-invalid'] === 'true'
 
   function exec(command: Command) {
-    if (command === 'createLink') {
-      const url = window.prompt('Enter URL')
-      if (url) document.execCommand(command, false, url)
-    } else {
-      document.execCommand(command, false)
-    }
+    document.execCommand(command, false)
     editorRef.current?.focus()
     handleInput()
   }
 
   function handleInput() {
     const html = editorRef.current?.innerHTML ?? ''
-    setIsEmpty(!editorRef.current?.textContent?.trim())
+    setTypedEmpty(!editorRef.current?.textContent?.trim())
     onChange?.(html)
   }
 
   const containerClasses = [
-    'flex flex-col gap-[12px] w-full border p-[12px] rounded-sm-7 transition-colors',
+    // Figma's 12px inset is measured from the edge, so 11px inside the 1px border.
+    'flex flex-col gap-[12px] w-full border p-[11px] rounded-sm-7 transition-colors',
     isError
       ? 'bg-bg-input-error border-border-input-error'
       : disabled
@@ -121,7 +114,7 @@ const RichTextField = forwardRef<HTMLDivElement, RichTextFieldProps>(function Ri
       {(showToolbar || showActionButton) && (
         <div className="flex items-center justify-between h-[20px]">
           {showToolbar ? (
-            <div className="inline-flex items-center gap-[2px]">
+            <div className="inline-flex items-center">
               {buttons.map((b) => (
                 <button
                   key={b.command}
@@ -129,9 +122,9 @@ const RichTextField = forwardRef<HTMLDivElement, RichTextFieldProps>(function Ri
                   aria-label={b.label}
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => exec(b.command)}
-                  className="inline-flex h-[20px] w-[20px] items-center justify-center p-[4px] rounded-xs-4 text-text-secondary hover:bg-bg-transparent-light transition-colors"
+                  className="inline-flex h-[20px] w-[20px] cursor-pointer items-center justify-center rounded-xs-4 p-[4px] text-text-primary transition-colors hover:bg-bg-transparent-light"
                 >
-                  {b.icon}
+                  <MaskIcon src={`/dashboard/icons/${b.icon}.svg`} size={12} />
                 </button>
               ))}
             </div>
@@ -158,8 +151,9 @@ const RichTextField = forwardRef<HTMLDivElement, RichTextFieldProps>(function Ri
           suppressContentEditableWarning
           onInput={handleInput}
           onBlur={onBlur}
-          dangerouslySetInnerHTML={{ __html: value ?? defaultValue }}
-          className="w-full min-h-[25px] focus:min-h-[269px] bg-transparent text-body-s text-text-input-filled outline-none transition-[min-height]"
+          dangerouslySetInnerHTML={initialHtml}
+          // Preflight strips list markers, so the editor puts them back.
+          className="w-full min-h-[25px] focus:min-h-[269px] bg-transparent text-body-s leading-19_5 text-text-input-filled outline-none transition-[min-height] [&_ol]:list-decimal [&_ol]:pl-[20px] [&_ul]:list-disc [&_ul]:pl-[20px]"
           {...props}
         />
       </div>

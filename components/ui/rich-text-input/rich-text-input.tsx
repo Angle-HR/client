@@ -1,6 +1,6 @@
 'use client'
 
-import { useId } from 'react'
+import { useId, type ReactNode } from 'react'
 
 import { Button } from '../button/button'
 import { HelperText, type HelperTextState } from '../input/helper-text'
@@ -24,6 +24,8 @@ interface RichTextInputProps {
   actionButtonLabel?: string
   onAction?: () => void
   showSecondaryActions?: boolean
+  /** A control of the caller's own at the right of the toolbar, e.g. "Generate". */
+  toolbarAction?: ReactNode
   disabled?: boolean
   required?: boolean
   id?: string
@@ -50,6 +52,7 @@ function RichTextInput({
   actionButtonLabel,
   onAction,
   showSecondaryActions = false,
+  toolbarAction,
   disabled,
   required,
   id: externalId,
@@ -89,9 +92,11 @@ function RichTextInput({
         onChange={onChange}
         onBlur={onBlur ? () => onBlur() : undefined}
         showToolbar={showToolbar}
-        showActionButton={showActionButton}
+        showActionButton={showActionButton || Boolean(toolbarAction)}
         actionButton={
-          showActionButton ? (
+          toolbarAction ? (
+            toolbarAction
+          ) : showActionButton ? (
             <>
               {showSecondaryActions && (
                 <Button variant="secondary" size="sm" onClick={onAction}>

@@ -835,5 +835,6 @@ function FilterPopovers({
   )
 }
 
-export { FilterBar, FilterPopovers }
+// The panel pieces are shared with the other floating menus of the jobs screens.
+export { FilterBar, FilterPopovers, PanelHeader, panel, rowBase, rowText }
 export type { FilterPopover }

@@ -23,6 +23,7 @@ import { useJobTemplates, useJobs, useMe } from '@/lib/queries'
 import { queryKeys } from '@/lib/query-keys'
 
 import type { JobToastState } from '@/components/jobs/job-toast'
+import type { AiAccess } from '@/lib/jobs/ai-description'
 import type { DraftErrors, JobDraft } from '@/lib/jobs/draft'
 import type { JobTemplate } from '@/lib/jobs/templates'
 import type { Job, JobManager } from '@/lib/jobs/types'
@@ -77,6 +78,15 @@ function NewJobPage() {
   const [errors, setErrors] = useState<DraftErrors>({})
   const [choosingTemplate, setChoosingTemplate] = useState(false)
   const [toast, setToast] = useState<JobToastState | null>(null)
+  // There is no AI service yet, so access starts as "may connect one". `?ai=`
+  // reaches the other states: unavailable, restricted, connected, or fails
+  // (connecting reports an error).
+  const aiParam = params.get('ai')
+  const [aiAccess, setAiAccess] = useState<AiAccess>(
+    aiParam === 'unavailable' || aiParam === 'restricted' || aiParam === 'connected'
+      ? aiParam
+      : 'disconnected',
+  )
 
   // Say which template the form was started from, once per template.
   const announcedTemplate = useRef<string | null>(null)
@@ -236,7 +246,18 @@ function NewJobPage() {
             <Divider />
           </div>
 
-          <JobDetailsForm draft={draft} errors={errors} onChange={change} />
+          <JobDetailsForm
+            draft={draft}
+            errors={errors}
+            onChange={change}
+            ai={{
+              access: aiAccess,
+              onAccessChange: setAiAccess,
+              workspace: me.data?.legal_full_name || me.data?.first_name || 'workspace',
+              connectFails: aiParam === 'fails',
+            }}
+            onToast={(next) => setToast({ ...next, id: Date.now() })}
+          />
 
           {/* One block in the design: the toggle, then the actions 10px below. */}
           <div className="flex flex-col items-start gap-[10px] pt-[10px] pb-[32px]">

@@ -4,6 +4,7 @@ import { useState, type ReactNode } from 'react'
 
 import { DashboardIcon } from '@/components/dashboard/nav-config'
 import { CreateTeamModal } from '@/components/jobs/create/create-team-modal'
+import { DescriptionField } from '@/components/jobs/create/description-field'
 import {
   BannerInfo,
   Checkbox,
@@ -16,7 +17,6 @@ import {
   LabelWrapper,
   ListItemPicker,
   RadioButton,
-  RichTextInput,
   TextInput,
 } from '@/components/ui'
 import { toIsoDate } from '@/lib/jobs/actions'
@@ -34,6 +34,8 @@ import {
   formatAmount,
 } from '@/lib/jobs/draft'
 
+import type { JobToastState } from '@/components/jobs/job-toast'
+import type { AiAccess } from '@/lib/jobs/ai-description'
 import type {
   DraftErrors,
   HiringArea,
@@ -54,6 +56,14 @@ interface JobDetailsFormProps {
   draft: JobDraft
   errors: DraftErrors
   onChange: (patch: Partial<JobDraft>) => void
+  /** What this person may do with AI, and the workspace an AI app connects to. */
+  ai: {
+    access: AiAccess
+    onAccessChange: (access: AiAccess) => void
+    workspace: string
+    connectFails?: boolean
+  }
+  onToast: (toast: Omit<JobToastState, 'id'>) => void
 }
 
 function SectionTitle({ children }: { children: ReactNode }) {
@@ -159,7 +169,7 @@ const AREA_SELECT_OPTIONS = AREA_OPTIONS.map((option) => ({
   icon: <AreaFlag area={option.value} />,
 }))
 
-function JobDetailsForm({ draft, errors, onChange }: JobDetailsFormProps) {
+function JobDetailsForm({ draft, errors, onChange, ai, onToast }: JobDetailsFormProps) {
   // Teams created from this form, on top of the workspace's own.
   const [createdTeams, setCreatedTeams] = useState<string[]>([])
   const [creatingTeam, setCreatingTeam] = useState(false)
@@ -403,16 +413,16 @@ function JobDetailsForm({ draft, errors, onChange }: JobDetailsFormProps) {
 
       <section className="relative flex flex-col gap-[24px]">
         <SectionTitle>Description</SectionTitle>
-        {/* Height limits are the designer's: 237px minimum, 500px maximum. */}
-        <RichTextInput
-          label="Full Job Description"
-          placeholder="Describe the role, the team and the skills you are looking for"
+        <DescriptionField
           value={draft.description}
           onChange={(description) => onChange({ description })}
-          showToolbar
-          showHelper
-          helperText="Clear and specific wins"
-          className="[&_[contenteditable]]:max-h-[440px] [&_[contenteditable]]:min-h-[177px] [&_[contenteditable]]:overflow-y-auto"
+          title={draft.title}
+          team={draft.team}
+          workspace={ai.workspace}
+          access={ai.access}
+          onAccessChange={ai.onAccessChange}
+          connectFails={ai.connectFails}
+          onToast={onToast}
         />
         <Tips top={250}>
           Describe the role, team, and skills. Use sections and lists. Don’t add an apply link,
