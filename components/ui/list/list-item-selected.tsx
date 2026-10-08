@@ -58,7 +58,7 @@ const ListItemSelected = forwardRef<HTMLLIElement, ListItemSelectedProps>(functi
   ref,
 ) {
   const classes = [
-    'flex items-center justify-between w-[200px] h-[32px] rounded-sm-8 pl-[6px] pr-[8px] transition-colors cursor-pointer',
+    'group/list-item flex items-center justify-between w-[200px] h-[32px] rounded-sm-8 pl-[6px] pr-[8px] transition-colors cursor-pointer',
     state === 'hover' ? 'bg-bg-transparent-light' : 'hover:bg-bg-transparent-light',
     className,
   ].join(' ')

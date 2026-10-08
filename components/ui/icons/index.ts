@@ -24,3 +24,4 @@ export {
   PlusCircle,
   Sidebar as SidebarIcon,
 } from './icons'
+export { MaskIcon } from './mask-icon'

@@ -2,9 +2,9 @@
 
 import { usePathname } from 'next/navigation'
 
-import { MaskIcon } from '@/components/dashboard/mask-icon'
 import { DashboardIcon, NAV_GROUPS, NavIcon, TOP_LINKS } from '@/components/dashboard/nav-config'
 import { Button, CompanySelector, Sidebar, SidebarGroupItem, SidebarItem } from '@/components/ui'
+import { MaskIcon } from '@/components/ui/icons/mask-icon'
 
 import type { VerificationState } from '@/components/dashboard/dashboard-states'
 
@@ -95,7 +95,7 @@ function DashboardSidebar({
             accent="default"
             size="sm"
             className="w-fit"
-            iconPrefix={<MaskIcon src="/dashboard/icons/spinner-loader.svg" size={14} />}
+            iconPrefix={<MaskIcon src="/dashboard/icons/spinner-solid.svg" size={14} />}
           >
             Verification in progress
           </Button>

@@ -81,3 +81,39 @@ export const HiddenLabel: Story = {
 export const Disabled: Story = {
   args: { disabled: true, defaultValue: 'eng' },
 }
+
+/** Typing in the field filters the list; keywords let "CET" find a timezone. */
+export const Searchable: Story = {
+  args: {
+    label: 'Timezone',
+    placeholder: 'Search for a timezone',
+    searchable: true,
+    options: [
+      { value: 'berlin', label: 'Berlin (Central European Time)', keywords: 'CET' },
+      { value: 'dublin', label: 'Dublin (Greenwich Mean Time)', keywords: 'GMT' },
+      { value: 'lagos', label: 'Lagos (West Africa Time)', keywords: 'WAT' },
+    ],
+  },
+}
+
+/** Text that matches no option can be added as one. */
+export const SearchableWithCustomValues: Story = {
+  args: {
+    label: 'Skills',
+    placeholder: 'Add skills',
+    options: skills,
+    multiple: true,
+    searchable: true,
+    allowCustom: true,
+    defaultValue: ['js'],
+  },
+}
+
+export const WithFooterAction: Story = {
+  args: {
+    label: 'Team/Department',
+    placeholder: 'Select a team',
+    options: departments,
+    footerAction: { label: 'Create new team', onClick: () => {} },
+  },
+}

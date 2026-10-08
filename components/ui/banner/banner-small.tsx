@@ -41,10 +41,10 @@ const outlineBgClasses: Record<BannerSmallState, string> = {
 }
 
 const borderClasses: Record<BannerSmallState, string> = {
-  rest: 'border-border-banner-neutral',
-  success: 'border-border-banner-success',
-  error: 'border-border-banner-error',
-  info: 'border-border-banner-info',
+  rest: 'outline-border-banner-neutral',
+  success: 'outline-border-banner-success',
+  error: 'outline-border-banner-error',
+  info: 'outline-border-banner-info',
 }
 
 // Info uses one text colour regardless of outline; success/error/neutral each
@@ -87,7 +87,9 @@ function BannerSmall({
     'inline-flex items-center overflow-clip rounded-lg-10 pr-[3px]',
     withButton ? 'gap-[8px]' : '',
     outline ? outlineBgClasses[state] : bgClasses[state],
-    outline ? `border ${borderClasses[state]}` : '',
+    // An inset outline, like a Figma stroke: it draws the edge without adding
+    // 2px to the banner's 30px height.
+    outline ? `outline -outline-offset-1 ${borderClasses[state]}` : '',
     className,
   ].join(' ')
 
@@ -96,10 +98,13 @@ function BannerSmall({
       <div
         className={`flex min-w-0 flex-1 items-center gap-[4px] p-[8px] ${outline ? outlineTextClasses[state] : textClasses[state]}`}
       >
-        <span className="shrink-0" aria-hidden="true">
+        <span className="flex shrink-0" aria-hidden="true">
           {stateIcon[state]}
         </span>
-        <span className="min-w-0 flex-1 truncate text-body-s font-medium">{children}</span>
+        {/* 14px line box: with the 8px padding it gives the design's 30px bar. */}
+        <span className="min-w-0 flex-1 truncate text-body-s leading-[14px] font-medium">
+          {children}
+        </span>
       </div>
       {withButton && (
         <Button variant="secondary" size="sm" accent={undoAccent[state]} onClick={onUndo}>

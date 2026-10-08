@@ -1,6 +1,14 @@
 'use client'
 
-import { Fragment, useEffect, useId, useRef, useState, type ReactNode } from 'react'
+import {
+  Fragment,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type MouseEvent as ReactMouseEvent,
+  type ReactNode,
+} from 'react'
 
 import { Avatar } from '../avatar/avatar'
 import { IconButton } from '../button/icon-button'
@@ -80,6 +88,7 @@ function CompanySelector({
   const [internalOpen, setInternalOpen] = useState(false)
   const open = controlledOpen ?? internalOpen
   const [submenuKey, setSubmenuKey] = useState<string | null>(null)
+  const [submenuTop, setSubmenuTop] = useState(32)
   const listId = useId()
 
   function setOpen(next: boolean) {
@@ -121,7 +130,7 @@ function CompanySelector({
         aria-expanded={open}
         aria-controls={listId}
         aria-label={collapsed ? currentCompany.name : undefined}
-        className={`cursor-pointer rounded-sm-8 p-[7px] text-left transition-colors hover:bg-bg-transparent-light ${
+        className={`flex h-[28px] cursor-pointer items-center rounded-sm-8 px-[8px] text-left transition-colors hover:bg-bg-transparent-light ${
           collapsed ? 'shrink-0' : 'min-w-0 flex-1'
         }`}
       >
@@ -132,13 +141,20 @@ function CompanySelector({
         />
       </button>
 
-      <IconButton
-        variant="tertiary"
-        size="sm"
-        icon={onIconButtonIcon ?? <SidebarIcon />}
-        aria-label={iconButtonLabel}
-        onClick={onIconButtonClick}
-      />
+      {/* The toggle sits in its own 28px-tall box, inset 3px from the edge:
+          right-aligned beside the name when open, under the avatar when
+          collapsed. */}
+      <span
+        className={`flex h-[28px] shrink-0 items-center px-[3px] ${collapsed ? '' : 'justify-end'}`}
+      >
+        <IconButton
+          variant="tertiary"
+          size="sm"
+          icon={onIconButtonIcon ?? <SidebarIcon />}
+          aria-label={iconButtonLabel}
+          onClick={onIconButtonClick}
+        />
+      </span>
 
       {open && (
         <Slots
@@ -146,9 +162,9 @@ function CompanySelector({
           padding="tight"
           shadow="medium"
           scrollable
-          className="absolute top-[32px] left-0 z-10 max-h-[240px] w-[246px]"
+          className="absolute top-[32px] left-0 z-10 max-h-[240px] w-[246px] rounded-lg-12!"
         >
-          <ul id={listId} role="listbox" className="flex w-full flex-col gap-[2px]">
+          <ul id={listId} role="listbox" className="flex w-full flex-col">
             {companies && companies.length > 0 && (
               <>
                 {companies.map((company) => (
@@ -168,15 +184,19 @@ function CompanySelector({
                     onClick={() => onSwitchCompany?.(company.id)}
                   />
                 ))}
-                <li>
+                <li role="presentation" className="flex h-[4px] items-center">
                   <Divider padded />
                 </li>
               </>
             )}
             {menuItems.map((item) => {
               const isActive = submenuKey === item.key
-              const handleClick = () => {
+              const handleClick = (event: ReactMouseEvent<HTMLLIElement>) => {
                 if (item.submenu) {
+                  // The flyout hangs off the row that opened it, 3px above the
+                  // row's top so its first item lines up with the row.
+                  const wrapperTop = wrapperRef.current?.getBoundingClientRect().top ?? 0
+                  setSubmenuTop(event.currentTarget.getBoundingClientRect().top - wrapperTop - 3)
                   setSubmenuKey((k) => (k === item.key ? null : item.key))
                   return
                 }
@@ -186,7 +206,7 @@ function CompanySelector({
               return (
                 <Fragment key={item.key}>
                   {item.dividerBefore && (
-                    <li role="presentation">
+                    <li role="presentation" className="flex h-[4px] items-center">
                       <Divider padded />
                     </li>
                   )}
@@ -220,17 +240,16 @@ function CompanySelector({
       {/* A sibling of the main panel, not nested inside it — Slots clips its
           own content to its rounded corners (needed for the scroll-fade
           mechanism), which would invisibly clip a flyout rendered as its
-          child. Anchored to the whole panel's top rather than the specific
-          triggering row — Figma anchors it per-row, but that needs per-item
-          DOM measurement for a small, bounded win. */}
+          child. It overlaps the panel's right edge by 5px, as in the design. */}
       {open && activeSubmenu && (
         <Slots
           background="light"
           padding="tight"
           shadow="medium"
-          className="absolute top-[32px] left-[250px] z-20 w-[202px]"
+          className="absolute left-[241px] z-20 w-[202px] rounded-lg-12!"
+          style={{ top: submenuTop }}
         >
-          <ul role="listbox" className="flex w-full flex-col gap-[2px]">
+          <ul role="listbox" className="flex w-full flex-col">
             {activeSubmenu.map((sub) => (
               <ListItemSelected
                 key={sub.key}

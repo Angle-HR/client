@@ -56,7 +56,7 @@ const ListItemDefault = forwardRef<HTMLLIElement, ListItemDefaultProps>(function
       : 'hover:bg-bg-transparent-light'
 
   const classes = [
-    'flex items-center w-[200px] h-[32px] rounded-sm-8 px-[6px] transition-colors cursor-pointer',
+    'group/list-item flex items-center w-[200px] h-[32px] rounded-sm-8 px-[6px] transition-colors cursor-pointer',
     leadingVisual ? 'gap-[8px]' : '',
     resolvedState === 'disabled' ? 'opacity-40 pointer-events-none' : '',
     bgClass,

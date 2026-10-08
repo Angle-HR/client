@@ -83,7 +83,8 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>(function TextInpu
       {showLabel && label && (
         <label
           htmlFor={inputId}
-          className="text-body-xs font-medium-550 text-text-tertiary h-[9px] leading-none pl-[3px]"
+          // Centred in its cap-height box, like LabelWrapper; a bare 12px line would hang low.
+          className="flex h-[9px] items-center pl-[3px] text-body-xs leading-none font-medium-550 text-text-tertiary"
         >
           {label}
           {required && (

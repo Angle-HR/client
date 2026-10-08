@@ -51,6 +51,30 @@ function useMe(enabled = true) {
   return useQuery({ queryKey: queryKeys.me, queryFn: requests.getMe, enabled })
 }
 
+function useJobPermissions() {
+  return useQuery({ queryKey: queryKeys.jobPermissions, queryFn: requests.getJobPermissions })
+}
+
+function useJobs() {
+  return useQuery({
+    queryKey: queryKeys.jobs,
+    queryFn: requests.getJobs,
+    // While jobs come from fixtures, edits live only in this cache. A refetch
+    // would hand back the untouched fixtures and silently undo them, so the
+    // list is never considered stale. Remove once the jobs API exists.
+    staleTime: Infinity,
+  })
+}
+
+function useJobTemplates() {
+  return useQuery({
+    queryKey: queryKeys.jobTemplates,
+    queryFn: requests.getJobTemplates,
+    // Fixture-backed like jobs: edits live in the cache, so never refetch.
+    staleTime: Infinity,
+  })
+}
+
 /** Invite lookup is keyed by token so a different link refetches. */
 function useInvite(token: string) {
   return useQuery({
@@ -105,6 +129,9 @@ export {
   useIdentificationRequirements,
   useInvite,
   useMe,
+  useJobPermissions,
+  useJobs,
+  useJobTemplates,
   useBusinessTypes,
   useCompanyRoles,
   useCountries,

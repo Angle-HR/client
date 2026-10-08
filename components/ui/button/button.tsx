@@ -77,10 +77,11 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
 ) {
   const sizeClasses =
     size === 'sm'
-      ? 'h-[24px] px-[8px] gap-[4px] text-body-s'
-      : 'h-[32px] px-[8px] gap-[4px] text-body-s'
+      ? 'h-[24px] px-[7px] gap-[4px] text-body-s'
+      : 'h-[32px] px-[7px] gap-[4px] text-body-s'
 
   const classes = [
+    // Figma's 8px inset is measured from the edge, so 7px inside the 1px border.
     'inline-flex items-center justify-center font-medium rounded-sm-7 border transition-colors',
     'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bg-selection-controls-selected',
     'disabled:cursor-not-allowed',

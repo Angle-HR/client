@@ -1,69 +1,42 @@
-import { MaskIcon } from '@/components/dashboard/mask-icon'
-import {
-  ArrowRightStartOnRectangle,
-  Briefcase,
-  ChatBubbleOvalLeftEllipsis,
-  Cog6Tooth,
-  ComputerDesktop,
-  ExclamationTriangle,
-  Funnel,
-  Inbox,
-  Moon,
-  Plus,
-  PlusCircle,
-  SidebarIcon,
-  SquaresPlus,
-  Sun,
-  User,
-} from '@/components/ui'
-
-import type { ComponentType } from 'react'
+import { MaskIcon } from '@/components/ui/icons/mask-icon'
 
 /**
- * The dashboard's navigation, exactly as the Figma sidebar states define it.
- * Icons come from the design-system icon set (the same Figma library), so the
- * glyphs are the designer's own.
- */
-
-/** Glyphs the design-system icon set already covers. */
-const ICONS: Record<string, ComponentType<{ className?: string }>> = {
-  inbox: Inbox,
-  briefcase: Briefcase,
-  funnel: Funnel,
-  'squares-plus': SquaresPlus,
-  'chat-bubble': ChatBubbleOvalLeftEllipsis,
-  'plus-circle': PlusCircle,
-  user: User,
-  'menu-user': User,
-  'menu-plus': Plus,
-  'menu-cog': Cog6Tooth,
-  'menu-sun': Sun,
-  'menu-moon': Moon,
-  'menu-desktop': ComputerDesktop,
-  'menu-sign-out': ArrowRightStartOnRectangle,
-  'sidebar-toggle': SidebarIcon,
-  'exclamation-triangle': ExclamationTriangle,
-}
-
-/**
- * Exported Figma vectors for glyphs the icon set doesn't have yet. Anything not
- * listed here falls back to /dashboard/icons, which still needs re-exporting.
+ * Short names for library icons. Anything not listed resolves to
+ * /dashboard/icons/<name>.svg directly.
+ *
+ * The files are the icon library's own vectors, exported from Figma as
+ * `<icon>-<outline|solid>.svg` inside the library's 16px frame. Keeping that
+ * frame matters: Figma sizes an icon by its frame, so a "13px" icon is a 16px
+ * frame scaled to 13 and the glyph inside is smaller still. A tightly cropped
+ * glyph at 13px would be visibly too big.
  */
 const ICON_ASSETS: Record<string, string> = {
-  'question-mark': '/auth/preview/question-mark.svg',
+  inbox: 'inbox-outline',
+  calendar: 'calendar-outline',
+  briefcase: 'briefcase-outline',
+  funnel: 'funnel-outline',
+  'squares-plus': 'squares-plus-outline',
+  'chat-bubble': 'chat-bubble-oval-left-ellipsis-outline',
+  'plus-circle': 'plus-circle-outline',
+  user: 'user-outline',
+  document: 'document-outline',
+  'shield-check': 'shield-check-outline',
+  'presentation-chart': 'presentation-chart-bar-outline',
+  'question-mark': 'question-mark-circle-solid',
+  'menu-user': 'user-outline',
+  'menu-plus': 'plus-solid',
+  'menu-cog': 'cog-6-tooth-outline',
+  'menu-sun': 'sun-solid',
+  'menu-moon': 'moon-outline',
+  'menu-desktop': 'computer-desktop-solid',
+  'menu-sign-out': 'arrow-right-start-on-rectangle-outline',
+  'sidebar-toggle': 'sidebar-outline',
+  'exclamation-triangle': 'exclamation-triangle-solid',
 }
 
 /** One dashboard glyph at `size` px, tinted by the surrounding text colour. */
 function DashboardIcon({ name, size }: { name: string; size: number }) {
-  const Icon = ICONS[name]
-  if (!Icon) {
-    return <MaskIcon src={ICON_ASSETS[name] ?? `/dashboard/icons/${name}.svg`} size={size} />
-  }
-  return (
-    <span aria-hidden="true" className="inline-flex shrink-0" style={{ width: size, height: size }}>
-      <Icon className="size-full" />
-    </span>
-  )
+  return <MaskIcon src={`/dashboard/icons/${ICON_ASSETS[name] ?? name}.svg`} size={size} />
 }
 
 /** Figma renders every nav glyph at 13px, tinted by the item's text colour. */

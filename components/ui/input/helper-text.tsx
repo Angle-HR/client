@@ -38,7 +38,8 @@ function HelperText({ state = 'neutral', helper, children, className = '', id }:
   return (
     <span
       id={id}
-      className={`inline-flex items-center gap-[2px] pl-[3px] text-body-xs leading-19_2 ${stateClasses[state]} ${className}`}
+      // -my trims the line box to the cap height Figma measures spacing from.
+      className={`-my-[5px] inline-flex items-center gap-[2px] pl-[3px] text-body-xs leading-19_2 ${stateClasses[state]} ${className}`}
     >
       {state === 'success' && <SuccessIcon />}
       <span>{helper ?? children}</span>

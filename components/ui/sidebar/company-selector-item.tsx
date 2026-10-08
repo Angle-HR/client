@@ -1,5 +1,5 @@
 import { Avatar } from '../avatar/avatar'
-import { ChevronDown } from '../icons'
+import { MaskIcon } from '../icons/mask-icon'
 
 interface CompanySelectorItemProps {
   name: string
@@ -29,7 +29,11 @@ function CompanySelectorItem({
           <span className="max-w-[108px] truncate text-[13px] leading-[19.5px] font-semibold text-text-primary">
             {name}
           </span>
-          <ChevronDown className="size-[10px] shrink-0 text-text-primary" />
+          <MaskIcon
+            src="/dashboard/icons/chevron-down-outline.svg"
+            size={10}
+            className="text-text-primary"
+          />
         </span>
       )}
     </span>

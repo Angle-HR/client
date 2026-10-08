@@ -55,9 +55,11 @@ function DashboardLayout({ children }: { children: ReactNode }) {
         onSignOut={() => void handleSignOut()}
       />
       {/* The frame insets the content card 5px from the shell on three sides
-          and gives it its own surface, border and 10px radius. */}
+          and gives it its own surface, hairline and 10px radius. The hairline
+          is an inset outline so it takes no layout space, like a Figma stroke;
+          a real border would push every child half a pixel off the design. */}
       <main className="flex min-w-0 flex-1 flex-col py-[5px] pr-[5px]">
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto rounded-lg-10 border-[0.5px] border-border-transparent-medium bg-bg-secondary">
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto rounded-lg-10 bg-bg-secondary outline-[0.5px] -outline-offset-[0.5px] outline-border-transparent-medium">
           {children}
         </div>
       </main>
