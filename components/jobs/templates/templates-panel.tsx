@@ -467,71 +467,75 @@ function TemplatesPanel({ view, search }: TemplatesPanelProps) {
           </div>
         </div>
       ) : (
-        <div className="flex min-h-0 flex-1 items-stretch gap-[8px] overflow-auto px-[8px] pb-[8px]">
-          {groups.map((group) => (
-            <section
-              key={group.key}
-              aria-label={TEMPLATE_GROUP_META[group.key].label}
-              className="flex w-[334px] shrink-0 flex-col gap-[10px] rounded-xs-4 bg-bg-transparent-lighter p-[8px]"
-            >
-              <header
-                className={`flex h-[32px] shrink-0 items-center gap-[3px] pr-[2px] pl-[10px] transition-colors ${TEMPLATE_GROUP_META[group.key].hoverTintClass}`}
+        // Scroller and row of columns are separate, as on the jobs board, so a
+        // long column's background reaches its last card.
+        <div className="min-h-0 flex-1 overflow-auto px-[8px] pb-[8px]">
+          <div className="flex min-h-full w-max items-stretch gap-[8px]">
+            {groups.map((group) => (
+              <section
+                key={group.key}
+                aria-label={TEMPLATE_GROUP_META[group.key].label}
+                className="flex w-[334px] shrink-0 flex-col gap-[10px] rounded-xs-4 bg-bg-transparent-lighter p-[8px]"
               >
-                <GroupLabel meta={TEMPLATE_GROUP_META[group.key]} gapClass="gap-[6px]" />
-                <span className="relative top-px inline-flex items-center gap-[3px] text-caption-s leading-16 text-text-tertiary">
-                  <span aria-hidden="true">·</span>
-                  {group.templates.length}
-                </span>
-              </header>
-              <div className="flex flex-col gap-[10px]">
-                {group.templates.map((template) => {
-                  const isSelected = selectedIds.has(template.id)
-                  return (
-                    <article
-                      key={template.id}
-                      role="button"
-                      tabIndex={0}
-                      aria-pressed={isSelected}
-                      onClick={(event) => select(template.id, event.shiftKey)}
-                      onKeyDown={(event) => {
-                        if (event.key === ' ' || event.key === 'Enter') {
-                          event.preventDefault()
-                          select(template.id, event.shiftKey)
-                        }
-                      }}
-                      className={`flex w-full shrink-0 cursor-pointer rounded-lg-10 bg-bg-secondary p-[4px] shadow-slots-xsmall outline-[0.5px] -outline-offset-[0.5px] transition-colors ${isSelected ? CARD_SURFACE.selected : CARD_SURFACE.rest}`}
-                    >
-                      <div className="flex min-w-0 flex-1 flex-col items-start gap-[4px] p-[6px]">
-                        <div className="flex h-[19px] w-full items-center justify-between px-[2px] pb-[2px]">
-                          <h3 className="truncate text-body-s leading-19_5 font-medium text-text-primary">
-                            {template.title}
-                          </h3>
-                          {moreButton(template)}
+                <header
+                  className={`flex h-[32px] shrink-0 items-center gap-[3px] pr-[2px] pl-[10px] transition-colors ${TEMPLATE_GROUP_META[group.key].hoverTintClass}`}
+                >
+                  <GroupLabel meta={TEMPLATE_GROUP_META[group.key]} gapClass="gap-[6px]" />
+                  <span className="relative top-px inline-flex items-center gap-[3px] text-caption-s leading-16 text-text-tertiary">
+                    <span aria-hidden="true">·</span>
+                    {group.templates.length}
+                  </span>
+                </header>
+                <div className="flex flex-col gap-[10px]">
+                  {group.templates.map((template) => {
+                    const isSelected = selectedIds.has(template.id)
+                    return (
+                      <article
+                        key={template.id}
+                        role="button"
+                        tabIndex={0}
+                        aria-pressed={isSelected}
+                        onClick={(event) => select(template.id, event.shiftKey)}
+                        onKeyDown={(event) => {
+                          if (event.key === ' ' || event.key === 'Enter') {
+                            event.preventDefault()
+                            select(template.id, event.shiftKey)
+                          }
+                        }}
+                        className={`flex w-full shrink-0 cursor-pointer rounded-lg-10 bg-bg-secondary p-[4px] shadow-slots-xsmall outline-[0.5px] -outline-offset-[0.5px] transition-colors ${isSelected ? CARD_SURFACE.selected : CARD_SURFACE.rest}`}
+                      >
+                        <div className="flex min-w-0 flex-1 flex-col items-start gap-[4px] p-[6px]">
+                          <div className="flex h-[19px] w-full items-center justify-between px-[2px] pb-[2px]">
+                            <h3 className="truncate text-body-s leading-19_5 font-medium text-text-primary">
+                              {template.title}
+                            </h3>
+                            {moreButton(template)}
+                          </div>
+                          <CreatorChip template={template} />
+                          <Chip
+                            tone="secondary"
+                            label={template.visibility}
+                            icon={<ChipGlyph name="user-group-solid" />}
+                          />
+                          <Chip
+                            fill="transparent"
+                            label={String(template.timesUsed)}
+                            aria-label={`Used ${template.timesUsed} times`}
+                            icon={<ChipGlyph name="clock-solid" />}
+                          />
+                          <Chip
+                            fill="transparent"
+                            label={formatPostedDate(template.lastUsedAt)}
+                            icon={<ChipGlyph name="clock-solid" />}
+                          />
                         </div>
-                        <CreatorChip template={template} />
-                        <Chip
-                          tone="secondary"
-                          label={template.visibility}
-                          icon={<ChipGlyph name="user-group-solid" />}
-                        />
-                        <Chip
-                          fill="transparent"
-                          label={String(template.timesUsed)}
-                          aria-label={`Used ${template.timesUsed} times`}
-                          icon={<ChipGlyph name="clock-solid" />}
-                        />
-                        <Chip
-                          fill="transparent"
-                          label={formatPostedDate(template.lastUsedAt)}
-                          icon={<ChipGlyph name="clock-solid" />}
-                        />
-                      </div>
-                    </article>
-                  )
-                })}
-              </div>
-            </section>
-          ))}
+                      </article>
+                    )
+                  })}
+                </div>
+              </section>
+            ))}
+          </div>
         </div>
       )}
 

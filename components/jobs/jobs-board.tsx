@@ -264,33 +264,40 @@ function JobsBoard({
   }
 
   return (
-    <div className="flex min-h-0 flex-1 items-stretch gap-[8px] overflow-auto px-[8px] pb-[8px]">
-      {groups.map((group) => (
-        <BoardColumn
-          key={group.status}
-          group={group}
-          selectedIds={selectedIds}
-          draggingId={draggingId}
-          dropTarget={
-            draggingId !== null &&
-            overStatus === group.status &&
-            draggingFrom?.status !== group.status
-          }
-          menuOpen={menuStatus === group.status}
-          onOpenMenu={onOpenColumnMenu}
-          onSelect={onSelect}
-          onDragStart={setDraggingId}
-          onDragEnd={endDrag}
-          onDragOver={setOverStatus}
-          onDragLeave={(status) =>
-            setOverStatus((current) => (current === status ? null : current))
-          }
-          onDrop={(status, jobId) => {
-            if (jobId && draggingFrom?.status !== status) onMoveJob(jobId, status)
-            endDrag()
-          }}
-        />
-      ))}
+    // The scroller and the row of columns are separate boxes. Columns stretched
+    // straight inside the scroller would only be as tall as its visible
+    // height, and a long column's cards would run on past its background. The
+    // row is at least that tall and otherwise as tall as its longest column,
+    // so every column's background reaches the last card.
+    <div className="min-h-0 flex-1 overflow-auto px-[8px] pb-[8px]">
+      <div className="flex min-h-full w-max items-stretch gap-[8px]">
+        {groups.map((group) => (
+          <BoardColumn
+            key={group.status}
+            group={group}
+            selectedIds={selectedIds}
+            draggingId={draggingId}
+            dropTarget={
+              draggingId !== null &&
+              overStatus === group.status &&
+              draggingFrom?.status !== group.status
+            }
+            menuOpen={menuStatus === group.status}
+            onOpenMenu={onOpenColumnMenu}
+            onSelect={onSelect}
+            onDragStart={setDraggingId}
+            onDragEnd={endDrag}
+            onDragOver={setOverStatus}
+            onDragLeave={(status) =>
+              setOverStatus((current) => (current === status ? null : current))
+            }
+            onDrop={(status, jobId) => {
+              if (jobId && draggingFrom?.status !== status) onMoveJob(jobId, status)
+              endDrag()
+            }}
+          />
+        ))}
+      </div>
     </div>
   )
 }
