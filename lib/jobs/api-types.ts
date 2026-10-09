@@ -110,6 +110,65 @@ interface ApiCatalog {
   max_title_length?: number
 }
 
+/** A place a job hires in. `market_code` is always required. */
+interface ApiJobMarket {
+  market_code?: string
+  city?: string
+  timezone?: string
+}
+
+/** A skill from the catalogue, or one the user typed. */
+interface ApiJobSkill {
+  skill_id?: string
+  name?: string
+  custom_label?: string
+}
+
+interface ApiJobPay {
+  type?: string
+  currency?: string
+  period?: string
+  min?: number | null
+  max?: number | null
+  visible?: boolean
+}
+
+/** The job-details fields, as `POST /jobs`, `PATCH /jobs/{id}` and `PUT /jobs/{id}/details` take them. */
+interface ApiJobBody {
+  title?: string
+  department_id?: string
+  closing_date?: string
+  location_mode?: string
+  location_text?: string
+  use_company_address?: boolean
+  show_on_career_page?: boolean
+  workplace_type?: string
+  travel_frequency?: string
+  visa_sponsorship?: string
+  /** Sent as HTML per section; read back as `{ html }`. */
+  description_sections?: Record<string, string | { html?: string }>
+  industry_id?: string
+  custom_industry?: string
+  employment_type?: string
+  seniority_level_id?: string
+  experience_range_id?: string
+  pay?: ApiJobPay
+  skills?: ApiJobSkill[]
+  markets?: ApiJobMarket[]
+  /** `POST /jobs` only: the template the job starts from. */
+  template_id?: string
+}
+
+/** `GET /jobs/{id}`: one job in full. */
+interface ApiJobView extends ApiJobBody {
+  id?: string
+  job_code?: string
+  status?: string
+  revision?: number
+  department_name?: string
+  created_by?: string
+}
+
 /** The filters and ordering `GET /jobs` accepts. */
 interface JobListQuery {
   status?: string[]
@@ -134,7 +193,12 @@ export type {
   ApiCatalog,
   ApiCatalogItem,
   ApiDepartment,
+  ApiJobBody,
   ApiJobListItem,
+  ApiJobMarket,
+  ApiJobPay,
+  ApiJobSkill,
+  ApiJobView,
   ApiListPerson,
   ApiOption,
   ApiPerson,

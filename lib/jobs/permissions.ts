@@ -6,8 +6,9 @@
  * closing date" — and that this will grow once role-based access is flexible.
  * That is the only difference the design draws, so it is the only flag here.
  *
- * There is no permissions endpoint yet: `requests.getJobPermissions` resolves
- * with FULL_PERMISSIONS, and swapping in the API means changing that function.
+ * The API lists what a person may do (`GET /hiring/me`). It has no permission
+ * for the closing date alone; changing it edits a live job, so that is the
+ * permission read here.
  */
 interface JobPermissions {
   /** Whether the selection toolbar offers "Change closing date". */
@@ -18,8 +19,16 @@ const FULL_PERMISSIONS: JobPermissions = { canChangeClosingDate: true }
 
 const LIMITED_PERMISSIONS: JobPermissions = { canChangeClosingDate: false }
 
+/** The API's permission for changing a job that is already published. */
+const EDIT_PUBLISHED = 'job.edit.published'
+
+/** The page's flags from the permissions the API lists for this person. */
+function toJobPermissions(granted: string[] | undefined): JobPermissions {
+  return { canChangeClosingDate: granted?.includes(EDIT_PUBLISHED) ?? false }
+}
+
 /**
- * Lets the limited state be reached before the API exists: `?permissions=limited`
+ * Lets either state be reached whatever the API says: `?permissions=limited`
  * on the jobs page. Anything else leaves what the server (or fixture) said.
  */
 function withPermissionsOverride(
@@ -40,5 +49,11 @@ function canChangeClosingDate(
   return permissions.canChangeClosingDate && selection.some((job) => job.status === 'open')
 }
 
-export { FULL_PERMISSIONS, LIMITED_PERMISSIONS, canChangeClosingDate, withPermissionsOverride }
+export {
+  FULL_PERMISSIONS,
+  LIMITED_PERMISSIONS,
+  canChangeClosingDate,
+  toJobPermissions,
+  withPermissionsOverride,
+}
 export type { JobPermissions }

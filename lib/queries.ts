@@ -75,6 +75,48 @@ function usePeople() {
   return useQuery({ queryKey: queryKeys.people, queryFn: () => requests.listPeople() })
 }
 
+/** One job in full, for editing. Skipped until there is an id. */
+function useJob(id: string | null) {
+  return useQuery({
+    queryKey: queryKeys.job(id ?? ''),
+    queryFn: () => requests.getJob(id ?? ''),
+    enabled: Boolean(id),
+    // The form is filled from this once; a refetch must not overwrite typing.
+    staleTime: Infinity,
+    gcTime: 0,
+  })
+}
+
+/** The job form's fixed pick lists. They change with releases, not sessions. */
+function useHiringCatalog() {
+  return useQuery({
+    queryKey: queryKeys.hiringCatalog,
+    queryFn: requests.getHiringCatalog,
+    staleTime: Infinity,
+  })
+}
+
+function useDepartments() {
+  return useQuery({ queryKey: queryKeys.departments, queryFn: requests.listDepartments })
+}
+
+function useTimezones() {
+  return useQuery({
+    queryKey: queryKeys.timezones,
+    queryFn: requests.listTimezones,
+    staleTime: Infinity,
+  })
+}
+
+/** The skills catalogue, for the form's suggestions. */
+function useSkills() {
+  return useQuery({
+    queryKey: queryKeys.skills,
+    queryFn: () => requests.searchSkills('', 100),
+    staleTime: Infinity,
+  })
+}
+
 function useJobTemplates() {
   return useQuery({ queryKey: queryKeys.jobTemplates, queryFn: requests.getJobTemplates })
 }
@@ -133,8 +175,13 @@ export {
   useIdentificationRequirements,
   useInvite,
   useMe,
+  useDepartments,
+  useHiringCatalog,
+  useJob,
   useJobPermissions,
   useJobs,
+  useSkills,
+  useTimezones,
   usePeople,
   useJobTemplates,
   useBusinessTypes,

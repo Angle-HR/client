@@ -2,13 +2,15 @@ import { axiosInstance } from '@/config/axios'
 
 import { ENDPOINTS } from './endpoints'
 import { jobListParams, toJob, toManager, toTemplate } from './jobs/api'
-import { FULL_PERMISSIONS } from './jobs/permissions'
+import { toJobPermissions } from './jobs/permissions'
 
 import type {
   ApiBulkResult,
   ApiCatalog,
   ApiCatalogItem,
   ApiDepartment,
+  ApiJobBody,
+  ApiJobView,
   ApiJobListItem,
   ApiPerson,
   ApiTemplate,
@@ -285,8 +287,13 @@ const requests = {
         .map((row) => toTemplate(row, lookups))
     )
   },
-  // Stand-in until the API says what this person may do with jobs.
-  getJobPermissions: async (): Promise<JobPermissions> => FULL_PERMISSIONS,
+  /** What this person may do with jobs, from the permissions the API lists for them. */
+  getJobPermissions: async (): Promise<JobPermissions> => {
+    const { data } = await axiosInstance.get<ApiResponse<{ permissions?: string[] }>>(
+      ENDPOINTS.hiring.me(),
+    )
+    return toJobPermissions(data.data?.permissions)
+  },
 
   /** A single-job status change: pause, resume, close, reopen, archive, to-draft or publish. */
   transitionJob: async (id: string, action: string, revision?: number): Promise<void> => {
@@ -331,6 +338,41 @@ const requests = {
   /** Only drafts can be deleted; the API answers 409 for anything else. */
   deleteJob: async (id: string, revision?: number): Promise<void> => {
     await axiosInstance.delete(ENDPOINTS.jobs.one(id), { headers: ifMatch(revision) })
+  },
+
+  getJob: async (id: string): Promise<ApiJobView> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiJobView>>(ENDPOINTS.jobs.one(id))
+    return data.data
+  },
+
+  /** A new draft. Every field is optional; `template_id` counts as a use of that template. */
+  createJob: async (body: ApiJobBody): Promise<ApiJobView> => {
+    const { data } = await axiosInstance.post<ApiResponse<ApiJobView>>(ENDPOINTS.jobs.list(), body)
+    return data.data
+  },
+
+  /** Saves whichever fields are sent; nothing is required of a draft. */
+  updateJob: async (id: string, body: ApiJobBody, revision?: number): Promise<ApiJobView> => {
+    const { data } = await axiosInstance.patch<ApiResponse<ApiJobView>>(
+      ENDPOINTS.jobs.one(id),
+      body,
+      { headers: ifMatch(revision) },
+    )
+    return data.data
+  },
+
+  /** Saves the details step as finished, which is when the API checks it is complete. */
+  completeJobDetails: async (
+    id: string,
+    body: ApiJobBody,
+    revision?: number,
+  ): Promise<ApiJobView> => {
+    const { data } = await axiosInstance.put<ApiResponse<ApiJobView>>(
+      ENDPOINTS.jobs.details(id),
+      body,
+      { headers: ifMatch(revision) },
+    )
+    return data.data
   },
 
   /** An empty date clears it; a past date is refused. */

@@ -23,11 +23,7 @@ import {
   TextInput,
 } from '@/components/ui'
 import { apiMessage } from '@/lib/jobs/api'
-import {
-  exportTemplates,
-  groupTemplates,
-  searchTemplates,
-} from '@/lib/jobs/templates'
+import { exportTemplates, groupTemplates, searchTemplates } from '@/lib/jobs/templates'
 import { useJobTemplates } from '@/lib/queries'
 import { queryKeys } from '@/lib/query-keys'
 import { requests } from '@/lib/requests'

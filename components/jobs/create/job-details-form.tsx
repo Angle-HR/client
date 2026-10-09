@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, type ReactNode } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { useMemo, useState, type ReactNode } from 'react'
 
 import { DashboardIcon } from '@/components/dashboard/nav-config'
 import { AreaSearchField } from '@/components/jobs/create/area-search-field'
@@ -21,20 +22,19 @@ import {
   TextInput,
 } from '@/components/ui'
 import { toIsoDate } from '@/lib/jobs/actions'
+import { apiMessage } from '@/lib/jobs/api'
 import { flagCodeFor } from '@/lib/jobs/areas'
 import {
   AREA_OPTIONS,
   COMPANY_ADDRESS,
   CURRENCY_OPTIONS,
-  EXPERIENCE_OPTIONS,
-  INDUSTRY_OPTIONS,
-  SENIORITY_OPTIONS,
-  SKILL_OPTIONS,
-  TEAM_OPTIONS,
   TIMEZONE_OFFSET_OPTIONS,
-  TIMEZONE_OPTIONS,
   formatAmount,
 } from '@/lib/jobs/draft'
+import { timezoneLabel } from '@/lib/jobs/draft-api'
+import { useDepartments, useHiringCatalog, useSkills, useTimezones } from '@/lib/queries'
+import { queryKeys } from '@/lib/query-keys'
+import { requests } from '@/lib/requests'
 
 import type { JobToastState } from '@/components/jobs/job-toast'
 import type { AiAccess, ConnectError } from '@/lib/jobs/ai-description'
@@ -149,6 +149,9 @@ const PAY_PERIODS: { value: PayPeriod; label: string }[] = [
   { value: 'annually', label: 'Annually' },
 ]
 
+const named = (items: { name?: string }[] | undefined) =>
+  (items ?? []).flatMap((item) => (item.name ? [{ value: item.name, label: item.name }] : []))
+
 const single = (value: string | string[]) => (Array.isArray(value) ? (value[0] ?? '') : value)
 const many = (value: string | string[]) => (Array.isArray(value) ? value : [value])
 
@@ -167,12 +170,41 @@ function AreaFlag({ area }: { area: string }) {
 }
 
 function JobDetailsForm({ draft, errors, onChange, ai, onToast }: JobDetailsFormProps) {
-  // Teams created from this form, on top of the workspace's own.
-  const [createdTeams, setCreatedTeams] = useState<string[]>([])
+  const queryClient = useQueryClient()
+  const departments = useDepartments().data
+  const catalog = useHiringCatalog().data
+  const timezones = useTimezones().data
+  const skills = useSkills().data
   const [creatingTeam, setCreatingTeam] = useState(false)
-  const teamNames = [...TEAM_OPTIONS.map((team) => team.value), ...createdTeams]
+  const teamNames = named(departments).map((team) => team.value)
   // A job being edited may belong to a team this list does not know yet.
   if (draft.team && !teamNames.includes(draft.team)) teamNames.push(draft.team)
+
+  const timezoneOptions = useMemo(() => {
+    const today = new Date()
+    return (timezones ?? []).flatMap((zone) =>
+      zone.name
+        ? [{ value: zone.name, label: timezoneLabel(zone, today), keywords: zone.name }]
+        : [],
+    )
+  }, [timezones])
+  // The API's currencies, with the design's label where it has one.
+  const currencyOptions = (catalog?.currencies ?? []).map(
+    (code) =>
+      CURRENCY_OPTIONS.find((option) => option.value === code) ?? { value: code, label: code },
+  )
+
+  async function createTeam(name: string) {
+    try {
+      const created = await requests.createDepartment(name)
+      await queryClient.invalidateQueries({ queryKey: queryKeys.departments })
+      onChange({ team: created.name ?? name })
+      setCreatingTeam(false)
+    } catch (error) {
+      setCreatingTeam(false)
+      onToast({ kind: 'error', message: apiMessage(error) })
+    }
+  }
 
   function setAreas(areas: string[]) {
     onChange({ areas, sameAsCompanyAddress: areas.includes(COMPANY_ADDRESS) })
@@ -183,11 +215,7 @@ function JobDetailsForm({ draft, errors, onChange, ai, onToast }: JobDetailsForm
       {creatingTeam ? (
         <CreateTeamModal
           existing={teamNames}
-          onCreate={(name) => {
-            setCreatedTeams((teams) => [...teams, name])
-            onChange({ team: name })
-            setCreatingTeam(false)
-          }}
+          onCreate={(name) => void createTeam(name)}
           onClose={() => setCreatingTeam(false)}
         />
       ) : null}
@@ -301,7 +329,7 @@ function JobDetailsForm({ draft, errors, onChange, ai, onToast }: JobDetailsForm
                   <InputSelection
                     label="Select a timezone"
                     placeholder="Search for a timezone"
-                    options={TIMEZONE_OPTIONS}
+                    options={timezoneOptions}
                     searchable
                     value={draft.timezone}
                     onChange={(value) => onChange({ timezone: single(value) })}
@@ -429,7 +457,7 @@ function JobDetailsForm({ draft, errors, onChange, ai, onToast }: JobDetailsForm
               <InputSelection
                 label="Industry"
                 placeholder="Select an industry"
-                options={INDUSTRY_OPTIONS}
+                options={named(catalog?.industries)}
                 searchable
                 allowCustom
                 value={draft.industry}
@@ -457,7 +485,7 @@ function JobDetailsForm({ draft, errors, onChange, ai, onToast }: JobDetailsForm
               <InputSelection
                 label="Seniority Level"
                 placeholder="Select a level"
-                options={SENIORITY_OPTIONS}
+                options={named(catalog?.seniority_levels)}
                 value={draft.seniority}
                 onChange={(value) => onChange({ seniority: single(value) })}
               />
@@ -466,7 +494,7 @@ function JobDetailsForm({ draft, errors, onChange, ai, onToast }: JobDetailsForm
               <InputSelection
                 label="Years of Experience"
                 placeholder="Select a range"
-                options={EXPERIENCE_OPTIONS}
+                options={named(catalog?.experience_ranges)}
                 value={draft.experience}
                 onChange={(value) => onChange({ experience: single(value) })}
               />
@@ -475,7 +503,7 @@ function JobDetailsForm({ draft, errors, onChange, ai, onToast }: JobDetailsForm
           <InputSelection
             label="Skills"
             placeholder="Add skills"
-            options={SKILL_OPTIONS}
+            options={named(skills)}
             multiple
             searchable
             allowCustom
@@ -513,7 +541,7 @@ function JobDetailsForm({ draft, errors, onChange, ai, onToast }: JobDetailsForm
                 <InputSelection
                   label="Currency"
                   placeholder="Select Currency"
-                  options={CURRENCY_OPTIONS}
+                  options={currencyOptions}
                   searchable
                   value={draft.currency}
                   onChange={(value) => onChange({ currency: single(value) })}

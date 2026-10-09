@@ -1,4 +1,5 @@
 import type {
+  ApiJobBody,
   ApiJobListItem,
   ApiListPerson,
   ApiPerson,
@@ -135,16 +136,11 @@ function toJob(row: ApiJobListItem, lookups: Lookups = {}): Job {
   }
 }
 
-/** What a job-details template holds, of which the list shows two fields. */
-interface TemplatePayload {
-  department_id?: string
-  employment_type?: string
-}
-
 function toTemplate(row: ApiTemplate, lookups: Lookups = {}): JobTemplate {
   const creatorId = row.created_by ?? ''
   const creator = lookups.people?.get(creatorId) ?? 'Unknown'
-  const payload = (row.payload ?? {}) as TemplatePayload
+  // A job-details template holds the job-details fields.
+  const payload = (row.payload ?? {}) as ApiJobBody
   return {
     id: row.id ?? '',
     title: row.name?.trim() || 'Untitled template',
@@ -161,6 +157,7 @@ function toTemplate(row: ApiTemplate, lookups: Lookups = {}): JobTemplate {
     lastUsedAt: day(row.last_used_at) || day(row.updated_at),
     pinned: row.pinned ?? false,
     ownedByMe: lookups.me !== undefined && creatorId === lookups.me,
+    details: payload,
   }
 }
 
@@ -327,7 +324,9 @@ export {
   BULK_ACTIONS,
   apiMessage,
   serverJobQuery,
+  EMPLOYMENT_FROM_API,
   EMPLOYMENT_TO_API,
+  WORKPLACE_FROM_API,
   STATUS_TO_API,
   WORKPLACE_TO_API,
   colourFor,

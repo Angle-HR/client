@@ -1,5 +1,6 @@
 import { toIsoDate } from './actions'
 
+import type { ApiJobBody } from './api-types'
 import type { JobEmploymentType, JobManager } from './types'
 
 /**
@@ -25,6 +26,8 @@ interface JobTemplate {
   pinned: boolean
   /** Only the creator may rename or delete a template. */
   ownedByMe: boolean
+  /** The job details the template fills in, as the API holds them. */
+  details?: ApiJobBody
 }
 
 type TemplateGroupKey = 'pinned' | 'others'

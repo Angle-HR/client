@@ -103,8 +103,7 @@ function JobsPage() {
   const templates = useJobTemplates().data ?? []
   const peopleQuery = usePeople()
   const people = useMemo(() => peopleQuery.data ?? [], [peopleQuery.data])
-  // `?permissions=limited` reaches the limited-permission toolbar until the API
-  // reports roles.
+  // `?permissions=limited` (or `full`) shows either toolbar whatever the API says.
   const permissions = withPermissionsOverride(
     useJobPermissions().data ?? FULL_PERMISSIONS,
     searchParams.get('permissions'),
