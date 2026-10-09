@@ -4,6 +4,7 @@ import { axiosInstance } from '@/config/axios'
 
 import {
   BULK_ACTIONS,
+  apiMessage,
   colourFor,
   jobListParams,
   toJob,
@@ -25,7 +26,7 @@ describe('toJob', () => {
     location_mode: 'specific_area',
     markets: ['UK', 'IE'],
     managers: [{ user_id: 'u_1', name: 'Alice' }],
-    created_by: 'Owen',
+    created_by: 'u_9',
     applicant_count: 0,
     created_at: '2026-10-01T09:30:00Z',
     updated_at: '2026-10-05T10:00:00Z',
@@ -35,7 +36,7 @@ describe('toJob', () => {
   }
 
   it('turns an API row into the job the screens show', () => {
-    expect(toJob(row)).toMatchObject({
+    expect(toJob(row, { people: new Map([['u_9', 'Owen']]) })).toMatchObject({
       id: 'job_1',
       title: 'Data Analyst',
       status: 'open',
@@ -44,7 +45,7 @@ describe('toJob', () => {
       workplace: 'On-site',
       location: 'UK, IE',
       managers: [{ id: 'u_1', name: 'Alice' }],
-      createdBy: { name: 'Owen' },
+      createdBy: { id: 'u_9', name: 'Owen' },
       totalApplicants: 0,
       newApplicants: 0,
       postedAt: '2026-10-02',
@@ -97,7 +98,12 @@ describe('statuses', () => {
   })
 
   it('knows which changes the bulk endpoint can make', () => {
-    expect(Object.keys(BULK_ACTIONS).sort()).toEqual(['archived', 'closed', 'draft', 'paused'])
+    expect(BULK_ACTIONS).toEqual({
+      paused: 'pause',
+      closed: 'close',
+      archived: 'archive',
+      draft: 'to_draft',
+    })
   })
 })
 
@@ -121,12 +127,20 @@ describe('people and templates', () => {
           pinned: true,
           use_count: 4,
           last_used_at: '2026-10-03T00:00:00Z',
+          payload: { department_id: 'd_1', employment_type: 'part_time' },
         },
-        'u_1',
+        {
+          me: 'u_1',
+          people: new Map([['u_1', 'Alice']]),
+          departments: new Map([['d_1', 'Design']]),
+        },
       ),
     ).toMatchObject({
       id: 't_1',
       title: 'Designer',
+      department: 'Design',
+      employmentType: 'Part-time',
+      createdBy: { name: 'Alice' },
       pinned: true,
       timesUsed: 4,
       lastUsedAt: '2026-10-03',
@@ -134,6 +148,32 @@ describe('people and templates', () => {
       ownedByMe: true,
     })
     expect(toTemplate({ id: 't_2', is_default: true }).visibility).toBe('Just me')
+  })
+})
+
+describe('apiMessage', () => {
+  it('prefers the field message of a validation error', () => {
+    const error = {
+      response: {
+        data: {
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'some fields need attention',
+            details: {
+              fields: [{ path: 'closing_date', message: 'closing date cannot be in the past' }],
+            },
+          },
+        },
+      },
+    }
+    expect(apiMessage(error)).toBe('Closing date cannot be in the past')
+  })
+
+  it('falls back to the error message, then to a general one', () => {
+    expect(apiMessage({ response: { data: { error: { message: 'not found' } } } })).toBe(
+      'Not found',
+    )
+    expect(apiMessage(new Error('network'))).toBe('Something went wrong. Please try again.')
   })
 })
 
@@ -165,19 +205,28 @@ describe('jobListParams', () => {
 describe('hiring requests', () => {
   afterEach(() => vi.restoreAllMocks())
 
-  it('lists a page of jobs and hands back the cursor for the next', async () => {
-    const get = vi.spyOn(axiosInstance, 'get').mockResolvedValue({
-      data: {
-        data: [{ id: 'job_1', title: 'Analyst', status: 'published' }],
-        meta: { has_more: true, next_cursor: 'abc' },
-      },
+  it('follows the cursor to the last page and names each creator', async () => {
+    const get = vi.spyOn(axiosInstance, 'get').mockImplementation(async (url, config) => {
+      if (url === '/hiring/people') {
+        return { data: { data: [{ user_id: 'u_9', name: 'Owen' }] } }
+      }
+      const cursor = (config?.params as Record<string, string>).cursor
+      return cursor
+        ? { data: { data: [{ id: 'job_2', created_by: 'u_9' }], meta: { has_more: false } } }
+        : {
+            data: {
+              data: [{ id: 'job_1', status: 'published', created_by: 'u_9' }],
+              meta: { has_more: true, next_cursor: 'abc' },
+            },
+          }
     })
-    const page = await requests.listJobs({ status: ['published'], limit: 25 })
+    const jobs = await requests.getJobs({ status: ['published'] })
 
-    expect(get).toHaveBeenCalledWith('/jobs', { params: { status: 'published', limit: '25' } })
-    expect(page.jobs).toHaveLength(1)
-    expect(page.jobs[0]).toMatchObject({ id: 'job_1', status: 'open' })
-    expect(page.nextCursor).toBe('abc')
+    expect(jobs.map((job) => job.id)).toEqual(['job_1', 'job_2'])
+    expect(jobs[0]).toMatchObject({ status: 'open', createdBy: { name: 'Owen' } })
+    expect(get).toHaveBeenCalledWith('/jobs', {
+      params: { status: 'published', limit: '100', cursor: 'abc' },
+    })
   })
 
   it('sends the revision it loaded when it changes a job', async () => {

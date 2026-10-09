@@ -89,22 +89,37 @@ const WORKPLACE_TO_API = invert(WORKPLACE_FROM_API)
 /** "2026-10-08T12:00:00Z" → "2026-10-08"; anything else, empty. */
 const day = (timestamp: string | undefined): string => timestamp?.slice(0, 10) ?? ''
 
-function toJob(row: ApiJobListItem): Job {
+/** Names for the ids a row only carries as ids: people and departments. */
+interface Lookups {
+  /** user id → name */
+  people?: ReadonlyMap<string, string>
+  /** department id → name */
+  departments?: ReadonlyMap<string, string>
+  /** The signed-in person's user id. */
+  me?: string
+}
+
+function toJob(row: ApiJobListItem, lookups: Lookups = {}): Job {
   const created = day(row.created_at)
   const updated = day(row.updated_at) || created
-  const creator = row.created_by?.trim() || 'Unknown'
+  // `created_by` is a user id; the name comes from the workspace's people.
+  const creatorId = row.created_by ?? ''
+  const creator = lookups.people?.get(creatorId) ?? 'Unknown'
   return {
     id: row.id ?? '',
     title: row.title?.trim() || 'Untitled job',
     department: row.department_name ?? '',
-    employmentType: EMPLOYMENT_FROM_API[row.employment_type ?? ''] ?? 'Full-time',
+    employmentType: EMPLOYMENT_FROM_API[row.employment_type ?? ''] ?? '',
     // A row carries market codes rather than place names.
-    location:
-      row.location_mode === 'anywhere' ? 'Anywhere' : (row.markets ?? []).join(', ') || 'Anywhere',
-    workplace: WORKPLACE_FROM_API[row.workplace_type ?? ''] ?? 'Remote',
+    location: row.location_mode === 'anywhere' ? 'Anywhere' : (row.markets ?? []).join(', '),
+    workplace: WORKPLACE_FROM_API[row.workplace_type ?? ''] ?? '',
     status: toStatus(row.status),
     managers: (row.managers ?? []).map(toManager),
-    createdBy: { name: creator, colour: colourFor(creator) },
+    createdBy: {
+      id: creatorId || undefined,
+      name: creator,
+      colour: colourFor(creatorId || creator),
+    },
     totalApplicants: row.applicant_count ?? 0,
     // The API has no count of new applicants.
     newApplicants: 0,
@@ -119,21 +134,32 @@ function toJob(row: ApiJobListItem): Job {
   }
 }
 
-/** Company templates only: the caller's personal default is not a template row. */
-function toTemplate(row: ApiTemplate, currentUser?: string): JobTemplate {
-  const creator = row.created_by?.trim() || 'Unknown'
+/** What a job-details template holds, of which the list shows two fields. */
+interface TemplatePayload {
+  department_id?: string
+  employment_type?: string
+}
+
+function toTemplate(row: ApiTemplate, lookups: Lookups = {}): JobTemplate {
+  const creatorId = row.created_by ?? ''
+  const creator = lookups.people?.get(creatorId) ?? 'Unknown'
+  const payload = (row.payload ?? {}) as TemplatePayload
   return {
     id: row.id ?? '',
     title: row.name?.trim() || 'Untitled template',
-    // A template row does not say which department or employment type it holds.
-    department: '',
-    employmentType: 'Full-time',
-    createdBy: { name: creator, colour: colourFor(creator) },
+    department: lookups.departments?.get(payload.department_id ?? '') ?? '',
+    employmentType: EMPLOYMENT_FROM_API[payload.employment_type ?? ''] ?? '',
+    createdBy: {
+      id: creatorId || undefined,
+      name: creator,
+      colour: colourFor(creatorId || creator),
+    },
+    // A personal default is the caller's own; everything else is the company's.
     visibility: row.is_default ? 'Just me' : 'Everyone',
     timesUsed: row.use_count ?? 0,
     lastUsedAt: day(row.last_used_at) || day(row.updated_at),
     pinned: row.pinned ?? false,
-    ownedByMe: currentUser !== undefined && row.created_by === currentUser,
+    ownedByMe: lookups.me !== undefined && creatorId === lookups.me,
   }
 }
 
@@ -165,7 +191,8 @@ const BULK_ACTIONS: Partial<Record<JobStatus, string>> = {
   paused: 'pause',
   closed: 'close',
   archived: 'archive',
-  draft: 'to-draft',
+  // The bulk endpoint spells it with an underscore; the single-job path with a hyphen.
+  draft: 'to_draft',
 }
 
 /** Query parameters for `GET /jobs`, leaving out everything unset. */
@@ -192,8 +219,29 @@ function jobListParams(query: JobListQuery): Record<string, string> {
   )
 }
 
+/**
+ * What to tell the user when a call fails: the API's own message, with the
+ * first field it names when it is a validation error.
+ */
+function apiMessage(error: unknown, fallback = 'Something went wrong. Please try again.'): string {
+  const body = (error as { response?: { data?: { error?: ApiError } } })?.response?.data?.error
+  if (!body?.message) return fallback
+  const field = body.details?.fields?.[0]?.message
+  return field ? capitalise(field) : capitalise(body.message)
+}
+
+interface ApiError {
+  code?: string
+  message?: string
+  details?: { fields?: { path?: string; message?: string }[] }
+}
+
+const capitalise = (text: string) => text.charAt(0).toUpperCase() + text.slice(1)
+
+export type { Lookups }
 export {
   BULK_ACTIONS,
+  apiMessage,
   EMPLOYMENT_TO_API,
   STATUS_TO_API,
   WORKPLACE_TO_API,

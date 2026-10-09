@@ -12,7 +12,8 @@ interface JobTemplate {
   id: string
   title: string
   department: string
-  employmentType: JobEmploymentType
+  /** Empty when the template does not set one. */
+  employmentType: JobEmploymentType | ''
   createdBy: JobManager
   /** What the template is for, as its creator described it. */
   description?: string

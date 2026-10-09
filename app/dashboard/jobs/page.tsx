@@ -32,7 +32,7 @@ import {
   canChangeClosingDate,
   withPermissionsOverride,
 } from '@/lib/jobs/permissions'
-import { useJobPermissions, useJobTemplates, useMe } from '@/lib/queries'
+import { useJobPermissions, useJobTemplates, useMe, usePeople } from '@/lib/queries'
 
 import type { AnchorRect } from '@/components/jobs/floating'
 import type { FilterPopover } from '@/components/jobs/job-filters'
@@ -100,6 +100,7 @@ function JobsPage() {
   const controller = useJobsController()
   const { jobs, jobsQuery, dialog } = controller
   const templates = useJobTemplates().data ?? []
+  const people = usePeople().data ?? []
   // `?permissions=limited` reaches the limited-permission toolbar until the API
   // reports roles.
   const permissions = withPermissionsOverride(
@@ -190,7 +191,12 @@ function JobsPage() {
   const selectedJobs = jobs.filter((job) => selectedIds.has(job.id))
   const selectedJobIds = selectedJobs.map((job) => job.id)
   const meName = me.data?.first_name || me.data?.legal_full_name || me.data?.email || 'You'
-  const currentUser: JobManager = { name: meName, colour: 'blue' }
+  // The same person as in the workspace's people, when they are listed there.
+  const currentUser: JobManager = people.find((person) => person.id === me.data?.id) ?? {
+    id: me.data?.id,
+    name: meName,
+    colour: 'blue',
+  }
   const menuJob = rowMenu ? jobs.find((job) => job.id === rowMenu.jobId) : undefined
   const dialogJobs = dialog ? jobs.filter((job) => dialog.jobIds.includes(job.id)) : []
 
@@ -557,6 +563,7 @@ function JobsPage() {
       {dialog?.type === 'assign' ? (
         <AssignJobsModal
           me={currentUser}
+          people={people}
           // Pre-select the current managers only when every job agrees on them.
           current={
             dialogJobs.every(

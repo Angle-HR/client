@@ -4,10 +4,10 @@ import { useState, type DragEvent, type MouseEvent } from 'react'
 
 import { DashboardIcon } from '@/components/dashboard/nav-config'
 import {
-  DOT,
   JOB_STATUS_META,
   JobStatusLabel,
   formatPostedDate,
+  dotted,
 } from '@/components/jobs/job-status'
 import { ManagersChip } from '@/components/jobs/managers-chip'
 import { Chip } from '@/components/ui'
@@ -116,12 +116,12 @@ function JobCard({ job, selected, dragging, onSelect, onDragStart, onDragEnd }: 
         </h3>
         <Chip
           tone="secondary"
-          label={`${job.department} ${DOT} ${job.employmentType}`}
+          label={dotted(job.department, job.employmentType)}
           icon={<ChipGlyph name="user-group-solid" />}
         />
         <Chip
           fill="transparent"
-          label={`${job.location} ${DOT} ${job.workplace}`}
+          label={dotted(job.location, job.workplace)}
           icon={<ChipGlyph name="location-pin-solid" />}
         />
         <Chip

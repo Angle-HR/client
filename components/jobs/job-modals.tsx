@@ -15,7 +15,6 @@ import {
   RadioButton,
 } from '@/components/ui'
 import { parseFutureDate } from '@/lib/jobs/actions'
-import { TEAM_MEMBERS } from '@/lib/jobs/people'
 
 import type { DateParts } from '@/components/ui'
 import type { JobManager, JobStatus } from '@/lib/jobs/types'
@@ -182,23 +181,25 @@ function ClosingDateModal({ onSave, onClose }: ClosingDateModalProps) {
 interface AssignJobsModalProps {
   /** The signed-in user, offered as "Assign to me". */
   me: JobManager
+  /** The workspace's members, who can be assigned. */
+  people: JobManager[]
   /** Who the jobs are assigned to now, pre-selected when they all agree. */
   current: JobManager[]
   onSave: (people: JobManager[]) => void
   onClose: () => void
 }
 
-function AssignJobsModal({ me, current, onSave, onClose }: AssignJobsModalProps) {
+function AssignJobsModal({ me, people: members, current, onSave, onClose }: AssignJobsModalProps) {
   const onlyMe = current.length === 1 && current[0]?.name === me.name
   const [mode, setMode] = useState<'me' | 'others'>(
     onlyMe || current.length === 0 ? 'me' : 'others',
   )
   const [names, setNames] = useState<string[]>(onlyMe ? [] : current.map((person) => person.name))
 
-  // Everyone who can be picked: the team, plus anyone already assigned.
+  // Everyone who can be picked: the workspace, plus anyone already assigned.
   const people = [
-    ...TEAM_MEMBERS,
-    ...current.filter((person) => !TEAM_MEMBERS.some((member) => member.name === person.name)),
+    ...members,
+    ...current.filter((person) => !members.some((member) => member.name === person.name)),
   ]
   const chosen = mode === 'me' ? [me] : people.filter((person) => names.includes(person.name))
 

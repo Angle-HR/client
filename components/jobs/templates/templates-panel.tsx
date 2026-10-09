@@ -7,7 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { DashboardIcon } from '@/components/dashboard/nav-config'
 import { Floating, clampLeft, toAnchor } from '@/components/jobs/floating'
 import { MenuRow } from '@/components/jobs/job-menus'
-import { DOT, GroupLabel, formatPostedDate } from '@/components/jobs/job-status'
+import { GroupLabel, formatPostedDate, dotted } from '@/components/jobs/job-status'
 import { JobToast } from '@/components/jobs/job-toast'
 import { CARD_SURFACE, ChipGlyph } from '@/components/jobs/jobs-board'
 import { GroupHeader, cellText, rowRest, rowSelected } from '@/components/jobs/jobs-table'
@@ -426,7 +426,7 @@ function TemplatesPanel({ view, search }: TemplatesPanelProps) {
                             >
                               <Chip
                                 tone="secondary"
-                                label={`${template.department} ${DOT} ${template.employmentType}`}
+                                label={dotted(template.department, template.employmentType)}
                                 icon={<ChipGlyph name="user-group-solid" />}
                               />
                             </div>

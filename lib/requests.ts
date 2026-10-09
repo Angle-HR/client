@@ -2,9 +2,7 @@ import { axiosInstance } from '@/config/axios'
 
 import { ENDPOINTS } from './endpoints'
 import { jobListParams, toJob, toManager, toTemplate } from './jobs/api'
-import { JOB_FIXTURES } from './jobs/fixtures'
 import { FULL_PERMISSIONS } from './jobs/permissions'
-import { TEMPLATE_FIXTURES } from './jobs/templates'
 
 import type {
   ApiBulkResult,
@@ -78,6 +76,35 @@ import type {
   WaitlistPayload,
   WaitlistResponse,
 } from './types'
+
+/** The roles a person can hold on one job's hiring team. */
+type JobMemberRole = 'hiring_manager' | 'recruiter' | 'interviewer' | 'viewer'
+
+// The most the list endpoint returns at once, and a stop so a bad cursor
+// cannot loop for ever.
+const JOBS_PAGE_SIZE = 100
+const MAX_JOB_PAGES = 50
+
+async function allJobRows(query: JobListQuery): Promise<ApiJobListItem[]> {
+  const rows: ApiJobListItem[] = []
+  let cursor: string | undefined
+  for (let page = 0; page < MAX_JOB_PAGES; page += 1) {
+    const { data } = await axiosInstance.get<ApiResponse<ApiJobListItem[]> & CursorMeta>(
+      ENDPOINTS.jobs.list(),
+      { params: jobListParams({ ...query, limit: JOBS_PAGE_SIZE, cursor }) },
+    )
+    rows.push(...(data.data ?? []))
+    if (!data.meta?.has_more || !data.meta.next_cursor) break
+    cursor = data.meta.next_cursor
+  }
+  return rows
+}
+
+/** user id → name, for the ids a job or template carries. */
+async function peopleById(): Promise<Map<string, string>> {
+  const { data } = await axiosInstance.get<ApiResponse<ApiPerson[]>>(ENDPOINTS.hiring.people())
+  return new Map((data.data ?? []).map((person) => [person.user_id ?? '', person.name ?? '']))
+}
 
 /** The list endpoints page with a cursor carried in the envelope's meta. */
 interface CursorMeta {
@@ -225,27 +252,41 @@ const requests = {
 
   // No jobs endpoints yet — resolves with local fixtures so the query layer and
   // screens are already shaped for the real call.
-  getJobs: async (): Promise<Job[]> => JOB_FIXTURES,
-  getJobTemplates: async (): Promise<JobTemplate[]> => TEMPLATE_FIXTURES,
+  /**
+   * Every job the caller may see that matches the query, as the screens show
+   * them. The list endpoint pages by cursor; the pages are followed to the end
+   * because the tab counts and the local filters need the whole set.
+   */
+  getJobs: async (query: JobListQuery = {}): Promise<Job[]> => {
+    const [rows, people] = await Promise.all([allJobRows(query), peopleById()])
+    return rows.map((row) => toJob(row, { people }))
+  },
+
+  /** Company job-details templates, pinned first. */
+  getJobTemplates: async (): Promise<JobTemplate[]> => {
+    const [templates, people, departments, me] = await Promise.all([
+      axiosInstance.get<ApiResponse<ApiTemplate[]>>(ENDPOINTS.hiring.templates(), {
+        params: { kind: 'job_details' },
+      }),
+      peopleById(),
+      requests.listDepartments(),
+      axiosInstance.get<ApiResponse<{ user_id?: string }>>(ENDPOINTS.hiring.me()),
+    ])
+    const lookups = {
+      people,
+      departments: new Map(departments.map((item) => [item.id ?? '', item.name ?? ''])),
+      me: me.data.data?.user_id,
+    }
+    return (
+      (templates.data.data ?? [])
+        // The caller's personal default is not a company template: it cannot
+        // be renamed, pinned, duplicated or exported.
+        .filter((row) => !row.is_default)
+        .map((row) => toTemplate(row, lookups))
+    )
+  },
   // Stand-in until the API says what this person may do with jobs.
   getJobPermissions: async (): Promise<JobPermissions> => FULL_PERMISSIONS,
-
-  // The hiring API. The screens still read the fixtures above; these are the
-  // calls they move to, one screen at a time.
-
-  /** One page of jobs, newest updated first unless the query says otherwise. */
-  listJobs: async (
-    query: JobListQuery = {},
-  ): Promise<{ jobs: Job[]; nextCursor: string | null }> => {
-    const { data } = await axiosInstance.get<ApiResponse<ApiJobListItem[]> & CursorMeta>(
-      ENDPOINTS.jobs.list(),
-      { params: jobListParams(query) },
-    )
-    return {
-      jobs: (data.data ?? []).map(toJob),
-      nextCursor: data.meta?.has_more ? (data.meta.next_cursor ?? null) : null,
-    }
-  },
 
   /** A single-job status change: pause, resume, close, reopen, archive, to-draft or publish. */
   transitionJob: async (id: string, action: string, revision?: number): Promise<void> => {
@@ -263,8 +304,28 @@ const requests = {
     return data.data
   },
 
-  duplicateJob: async (id: string): Promise<void> => {
-    await axiosInstance.post(ENDPOINTS.jobs.duplicate(id))
+  /** Copies a job into a new draft owned by the caller, and returns the copy's id. */
+  duplicateJob: async (id: string): Promise<string> => {
+    const { data } = await axiosInstance.post<ApiResponse<{ id?: string }>>(
+      ENDPOINTS.jobs.duplicate(id),
+    )
+    return data.data?.id ?? ''
+  },
+
+  /**
+   * Replaces a job's hiring team. The creator already has access and must not
+   * be listed; the API refuses them.
+   */
+  setJobMembers: async (
+    id: string,
+    members: { userId: string; role: JobMemberRole }[],
+    revision?: number,
+  ): Promise<void> => {
+    await axiosInstance.put(
+      ENDPOINTS.jobs.members(id),
+      { members: members.map((member) => ({ user_id: member.userId, role: member.role })) },
+      { headers: ifMatch(revision) },
+    )
   },
 
   /** Only drafts can be deleted; the API answers 409 for anything else. */
@@ -272,6 +333,7 @@ const requests = {
     await axiosInstance.delete(ENDPOINTS.jobs.one(id), { headers: ifMatch(revision) })
   },
 
+  /** An empty date clears it; a past date is refused. */
   setJobClosingDate: async (id: string, closingDate: string, revision?: number): Promise<void> => {
     await axiosInstance.patch(
       ENDPOINTS.jobs.one(id),
@@ -297,15 +359,6 @@ const requests = {
       transformResponse: (body: string) => body,
     })
     return data
-  },
-
-  /** Company job-details templates, pinned first. */
-  listTemplates: async (currentUser?: string): Promise<JobTemplate[]> => {
-    const { data } = await axiosInstance.get<ApiResponse<ApiTemplate[]>>(
-      ENDPOINTS.hiring.templates(),
-      { params: { kind: 'job_details' } },
-    )
-    return (data.data ?? []).map((row) => toTemplate(row, currentUser))
   },
 
   /** Rename or pin a company template. A name already taken answers 400. */

@@ -20,10 +20,12 @@ interface Job {
   id: string
   title: string
   department: string
-  employmentType: JobEmploymentType
+  /** Empty on a draft that has not chosen one yet. */
+  employmentType: JobEmploymentType | ''
   /** Short form shown in the table and on cards, e.g. "UK" or "Germany". */
   location: string
-  workplace: JobWorkplace
+  /** Empty on a draft that has not chosen one yet. */
+  workplace: JobWorkplace | ''
   status: JobStatus
   /** Who the job is assigned to. Never empty: the first is the lead. */
   managers: JobManager[]
