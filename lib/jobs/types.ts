@@ -4,9 +4,11 @@ type JobStatus = 'open' | 'paused' | 'draft' | 'closed' | 'archived' | 'expired'
 
 type JobWorkplace = 'Remote' | 'Hybrid' | 'On-site'
 
-type JobEmploymentType = 'Full-time' | 'Part-time' | 'Contract' | 'Freelance'
+type JobEmploymentType = 'Full-time' | 'Part-time' | 'Contract' | 'Freelance' | 'Internship'
 
 interface JobManager {
+  /** The person's user id, once people come from the API. */
+  id?: string
   name: string
   /** Initials-avatar tint; stands in until managers carry a photo. */
   colour: AvatarColour
@@ -36,6 +38,8 @@ interface Job {
   lastViewedAt: string
   /** ISO date (yyyy-mm-dd). Only set once a closing date has been chosen. */
   closingDate?: string
+  /** The API's version of the job, sent back as `If-Match` when it is changed. */
+  revision?: number
 }
 
 export type { Job, JobEmploymentType, JobManager, JobStatus, JobWorkplace }
