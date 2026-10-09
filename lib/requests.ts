@@ -1,14 +1,15 @@
 import { axiosInstance } from '@/config/axios'
 
 import { ENDPOINTS } from './endpoints'
-import { jobListParams, toJob, toManager, toTemplate } from './jobs/api'
-import { toJobPermissions } from './jobs/permissions'
+import { countsByStatus, jobListParams, toJob, toManager, toTemplate } from './jobs/api'
 
 import type {
   ApiBulkResult,
   ApiCatalog,
   ApiCatalogItem,
   ApiDepartment,
+  ApiHiringMe,
+  ApiJobCounts,
   ApiJobBody,
   ApiJobView,
   ApiJobListItem,
@@ -18,9 +19,8 @@ import type {
   ApiTimezone,
   JobListQuery,
 } from './jobs/api-types'
-import type { JobPermissions } from './jobs/permissions'
 import type { JobTemplate } from './jobs/templates'
-import type { Job, JobManager } from './jobs/types'
+import type { Job, JobManager, JobStatus } from './jobs/types'
 import type {
   ApiResponse,
   AuthAcceptInvitePayload,
@@ -272,12 +272,12 @@ const requests = {
       }),
       peopleById(),
       requests.listDepartments(),
-      axiosInstance.get<ApiResponse<{ user_id?: string }>>(ENDPOINTS.hiring.me()),
+      requests.getHiringMe(),
     ])
     const lookups = {
       people,
       departments: new Map(departments.map((item) => [item.id ?? '', item.name ?? ''])),
-      me: me.data.data?.user_id,
+      me: me.user_id,
     }
     return (
       (templates.data.data ?? [])
@@ -287,12 +287,16 @@ const requests = {
         .map((row) => toTemplate(row, lookups))
     )
   },
-  /** What this person may do with jobs, from the permissions the API lists for them. */
-  getJobPermissions: async (): Promise<JobPermissions> => {
-    const { data } = await axiosInstance.get<ApiResponse<{ permissions?: string[] }>>(
-      ENDPOINTS.hiring.me(),
-    )
-    return toJobPermissions(data.data?.permissions)
+  /** The signed-in person in the hiring workspace: their permissions and their company. */
+  getHiringMe: async (): Promise<ApiHiringMe> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiHiringMe>>(ENDPOINTS.hiring.me())
+    return data.data ?? {}
+  },
+
+  /** How many jobs there are in each status, for the tabs. */
+  getJobCounts: async (): Promise<Record<JobStatus, number>> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiJobCounts>>(ENDPOINTS.jobs.counts())
+    return countsByStatus(data.data ?? {})
   },
 
   /** A single-job status change: pause, resume, close, reopen, archive, to-draft or publish. */
@@ -302,7 +306,7 @@ const requests = {
     })
   },
 
-  /** Pause, close, archive or move to draft for up to 100 jobs; not all-or-nothing. */
+  /** Pause, resume, close, reopen, archive or move to draft for up to 100 jobs; not all-or-nothing. */
   bulkJobs: async (action: string, ids: string[]): Promise<ApiBulkResult> => {
     const { data } = await axiosInstance.post<{ data: ApiBulkResult }>(ENDPOINTS.jobs.bulk(), {
       action,

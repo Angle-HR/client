@@ -17,6 +17,7 @@ import { draftErrorsFrom, draftFromView, draftToBody } from '@/lib/jobs/draft-ap
 import {
   useDepartments,
   useHiringCatalog,
+  useHiringMe,
   useJob,
   useJobTemplates,
   useMe,
@@ -65,7 +66,11 @@ function NewJobPage() {
   const catalog = useHiringCatalog().data
   const skills = useSkills().data
   // The lists that turn the form's names into the API's ids, and back.
-  const lookups = useMemo(() => ({ departments, catalog, skills }), [departments, catalog, skills])
+  const companyAddress = useHiringMe().data?.company_address
+  const lookups = useMemo(
+    () => ({ departments, catalog, skills, companyAddress }),
+    [departments, catalog, skills, companyAddress],
+  )
 
   const startingDraft = useMemo<JobDraft>(() => {
     if (job) return draftFromView(job, lookups)

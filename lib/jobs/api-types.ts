@@ -34,6 +34,22 @@ interface ApiListPerson {
   name?: string
 }
 
+/** `GET /jobs/counts`: how many jobs there are, in all and in each status. */
+interface ApiJobCounts {
+  all?: number
+  by_status?: Record<string, number>
+}
+
+/** `GET /hiring/me`: the signed-in person in the hiring workspace. */
+interface ApiHiringMe {
+  user_id?: string
+  company_name?: string
+  /** The registered address from onboarding; empty when there is none. */
+  company_address?: string
+  roles?: string[]
+  permissions?: string[]
+}
+
 /** A row of `GET /hiring/people`. */
 interface ApiPerson {
   user_id?: string
@@ -193,7 +209,9 @@ export type {
   ApiCatalog,
   ApiCatalogItem,
   ApiDepartment,
+  ApiHiringMe,
   ApiJobBody,
+  ApiJobCounts,
   ApiJobListItem,
   ApiJobMarket,
   ApiJobPay,

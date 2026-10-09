@@ -26,13 +26,18 @@ import { apiMessage } from '@/lib/jobs/api'
 import { flagCodeFor } from '@/lib/jobs/areas'
 import {
   AREA_OPTIONS,
-  COMPANY_ADDRESS,
   CURRENCY_OPTIONS,
   TIMEZONE_OFFSET_OPTIONS,
   formatAmount,
 } from '@/lib/jobs/draft'
 import { timezoneLabel } from '@/lib/jobs/draft-api'
-import { useDepartments, useHiringCatalog, useSkills, useTimezones } from '@/lib/queries'
+import {
+  useDepartments,
+  useHiringCatalog,
+  useHiringMe,
+  useSkills,
+  useTimezones,
+} from '@/lib/queries'
 import { queryKeys } from '@/lib/query-keys'
 import { requests } from '@/lib/requests'
 
@@ -175,6 +180,8 @@ function JobDetailsForm({ draft, errors, onChange, ai, onToast }: JobDetailsForm
   const catalog = useHiringCatalog().data
   const timezones = useTimezones().data
   const skills = useSkills().data
+  // Empty when the company has no registered address yet.
+  const companyAddress = useHiringMe().data?.company_address ?? ''
   const [creatingTeam, setCreatingTeam] = useState(false)
   const teamNames = named(departments).map((team) => team.value)
   // A job being edited may belong to a team this list does not know yet.
@@ -207,7 +214,18 @@ function JobDetailsForm({ draft, errors, onChange, ai, onToast }: JobDetailsForm
   }
 
   function setAreas(areas: string[]) {
-    onChange({ areas, sameAsCompanyAddress: areas.includes(COMPANY_ADDRESS) })
+    // Removing the company address's chip also unticks "Same as company address".
+    const dropped = Boolean(companyAddress) && !areas.includes(companyAddress)
+    onChange(dropped ? { areas, sameAsCompanyAddress: false } : { areas })
+  }
+
+  /** Ticking adds the company's address as a chosen place; unticking takes it away. */
+  function setSameAsCompanyAddress(same: boolean) {
+    const others = draft.areas.filter((area) => area !== companyAddress)
+    onChange({
+      sameAsCompanyAddress: same,
+      areas: same && companyAddress ? [companyAddress, ...others] : others,
+    })
   }
 
   return (
@@ -353,13 +371,7 @@ function JobDetailsForm({ draft, errors, onChange, ai, onToast }: JobDetailsForm
                   size="sm"
                   label="Same as company address"
                   checked={draft.sameAsCompanyAddress}
-                  onChange={(event) =>
-                    setAreas(
-                      event.target.checked
-                        ? [...new Set([COMPANY_ADDRESS, ...draft.areas])]
-                        : draft.areas.filter((area) => area !== COMPANY_ADDRESS),
-                    )
-                  }
+                  onChange={(event) => setSameAsCompanyAddress(event.target.checked)}
                 />
               ) : null}
               <Checkbox

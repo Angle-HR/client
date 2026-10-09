@@ -2,6 +2,7 @@
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 
+import { toJobPermissions } from './jobs/permissions'
 import { queryKeys } from './query-keys'
 import { requests } from './requests'
 
@@ -54,7 +55,21 @@ function useMe(enabled = true) {
 }
 
 function useJobPermissions() {
-  return useQuery({ queryKey: queryKeys.jobPermissions, queryFn: requests.getJobPermissions })
+  return useQuery({
+    queryKey: queryKeys.hiringMe,
+    queryFn: requests.getHiringMe,
+    select: (me) => toJobPermissions(me.permissions),
+  })
+}
+
+/** The signed-in person in the hiring workspace, with their company's address. */
+function useHiringMe() {
+  return useQuery({ queryKey: queryKeys.hiringMe, queryFn: requests.getHiringMe })
+}
+
+/** Jobs per status, for the tabs. */
+function useJobCounts() {
+  return useQuery({ queryKey: queryKeys.jobCounts, queryFn: requests.getJobCounts })
 }
 
 /**
@@ -108,11 +123,14 @@ function useTimezones() {
   })
 }
 
+// More than the catalogue holds, so one request brings all of it.
+const SKILLS_LIMIT = 200
+
 /** The skills catalogue, for the form's suggestions. */
 function useSkills() {
   return useQuery({
     queryKey: queryKeys.skills,
-    queryFn: () => requests.searchSkills('', 100),
+    queryFn: () => requests.searchSkills('', SKILLS_LIMIT),
     staleTime: Infinity,
   })
 }
@@ -177,6 +195,8 @@ export {
   useMe,
   useDepartments,
   useHiringCatalog,
+  useHiringMe,
+  useJobCounts,
   useJob,
   useJobPermissions,
   useJobs,

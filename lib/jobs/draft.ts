@@ -130,9 +130,6 @@ const AREA_OPTIONS = [
   { value: 'Nigeria', flag: 'ng' },
 ].map(({ value, flag }) => ({ value, label: value, flag }))
 
-/** Where the company is registered; stands in until the workspace profile is served. */
-const COMPANY_ADDRESS = 'London, United Kingdom'
-
 type DraftErrors = Partial<Record<'title' | 'team' | 'closingDate' | 'pay', string>>
 
 /** Problems that stop a draft moving on to the next step. Saving as a draft only needs a title. */
@@ -227,7 +224,6 @@ function applyDraftToJob(job: Job, draft: JobDraft, today: Date): Job {
 
 export {
   AREA_OPTIONS,
-  COMPANY_ADDRESS,
   CURRENCY_OPTIONS,
   EMPTY_DRAFT,
   TIMEZONE_OFFSET_OPTIONS,

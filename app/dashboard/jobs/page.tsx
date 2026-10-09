@@ -33,7 +33,14 @@ import {
   canChangeClosingDate,
   withPermissionsOverride,
 } from '@/lib/jobs/permissions'
-import { useJobPermissions, useJobTemplates, useJobs, useMe, usePeople } from '@/lib/queries'
+import {
+  useJobCounts,
+  useJobPermissions,
+  useJobTemplates,
+  useJobs,
+  useMe,
+  usePeople,
+} from '@/lib/queries'
 
 import type { AnchorRect } from '@/components/jobs/floating'
 import type { FilterPopover } from '@/components/jobs/job-filters'
@@ -109,6 +116,7 @@ function JobsPage() {
     searchParams.get('permissions'),
   )
   const templateCount = templates.length
+  const counts = useJobCounts().data
   const me = useMe()
 
   // Deep links such as ?tab=templates open on that tab.
@@ -131,15 +139,18 @@ function JobsPage() {
   )
 
   const tabs = useMemo<TabOption<JobsTab>[]>(() => {
+    // The API's counts; until they arrive, what the loaded list holds.
     const count = (key: JobsTab) =>
-      jobs.filter((job) => TAB_STATUSES[key].includes(job.status)).length
+      counts
+        ? TAB_STATUSES[key].reduce((total, status) => total + counts[status], 0)
+        : jobs.filter((job) => TAB_STATUSES[key].includes(job.status)).length
     return [
       { key: 'all', label: 'All Job Listing', count: count('all') },
       { key: 'drafts', label: 'Drafts', count: count('drafts') },
       { key: 'archived', label: 'Archived', count: count('archived') },
       { key: 'templates', label: 'Templates', count: templateCount },
     ]
-  }, [jobs, templateCount])
+  }, [counts, jobs, templateCount])
 
   // Search, then filters, then sort; grouping keeps the sorted order within
   // each status. The board has its own fixed order unless a sort is chosen.

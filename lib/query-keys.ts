@@ -13,6 +13,8 @@ const queryKeys = {
   /** Every cached list of jobs, whatever its query: the key to invalidate after a change. */
   jobs: ['jobs', 'list'] as const,
   jobList: (query: object) => ['jobs', 'list', query] as const,
+  /** Under the list's key, so whatever reloads the lists reloads the counts. */
+  jobCounts: ['jobs', 'list', 'counts'] as const,
   job: (id: string) => ['jobs', 'one', id] as const,
   people: ['hiring', 'people'] as const,
   hiringCatalog: ['hiring', 'catalog'] as const,
@@ -20,7 +22,7 @@ const queryKeys = {
   timezones: ['hiring', 'timezones'] as const,
   skills: ['hiring', 'skills'] as const,
   jobTemplates: ['jobs', 'templates'] as const,
-  jobPermissions: ['jobs', 'permissions'] as const,
+  hiringMe: ['hiring', 'me'] as const,
   invite: (token: string) => ['auth', 'invite', token] as const,
   identificationRequirements: (countryId: string) =>
     ['onboarding', 'identification-requirements', countryId] as const,

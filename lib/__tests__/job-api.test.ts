@@ -7,6 +7,7 @@ import {
   apiMessage,
   serverJobQuery,
   colourFor,
+  countsByStatus,
   jobListParams,
   toJob,
   toManager,
@@ -100,10 +101,39 @@ describe('statuses', () => {
 
   it('knows which changes the bulk endpoint can make', () => {
     expect(BULK_ACTIONS).toEqual({
-      paused: 'pause',
-      closed: 'close',
-      archived: 'archive',
-      draft: 'to_draft',
+      pause: 'pause',
+      resume: 'resume',
+      close: 'close',
+      reopen: 'reopen',
+      archive: 'archive',
+      'to-draft': 'to_draft',
+    })
+    // Publishing is done one job at a time.
+    expect(BULK_ACTIONS.publish).toBeUndefined()
+  })
+
+  it('adds the counts of the API statuses up into the statuses the screens show', () => {
+    expect(
+      countsByStatus({
+        all: 12,
+        by_status: {
+          published: 4,
+          paused: 1,
+          draft: 3,
+          scheduled: 2,
+          closed: 0,
+          archived: 1,
+          expired: 1,
+        },
+      }),
+    ).toEqual({ open: 4, paused: 1, draft: 5, closed: 0, archived: 1, expired: 1 })
+    expect(countsByStatus({})).toEqual({
+      open: 0,
+      paused: 0,
+      draft: 0,
+      closed: 0,
+      archived: 0,
+      expired: 0,
     })
   })
 })
