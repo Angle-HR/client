@@ -5,6 +5,7 @@ import type {
   ApiTemplate,
   JobListQuery,
 } from './api-types'
+import type { JobFilter, JobSort } from './filters'
 import type { JobTemplate } from './templates'
 import type { Job, JobEmploymentType, JobManager, JobStatus, JobWorkplace } from './types'
 import type { AvatarColour } from '@/components/ui'
@@ -219,6 +220,89 @@ function jobListParams(query: JobListQuery): Record<string, string> {
   )
 }
 
+interface ServerQueryInput {
+  search: string
+  filters: JobFilter[]
+  sort: JobSort | null
+  /** The workspace's people, to turn a chosen name into the user id the API filters by. */
+  people: JobManager[]
+  today?: Date
+}
+
+const CREATED_WITHIN_DAYS: Record<string, number> = { '7d': 7, '30d': 30, '12m': 365 }
+
+/**
+ * The part of the page's search, filters and sort that `GET /jobs` can apply
+ * itself. It only ever narrows: the page still applies everything to what
+ * comes back, so a filter the API cannot express — several values, "is not",
+ * "and", applicant counts, the other sorts — simply stays local.
+ */
+function serverJobQuery({
+  search,
+  filters,
+  sort,
+  people,
+  today = new Date(),
+}: ServerQueryInput): JobListQuery {
+  const query: JobListQuery = {}
+  if (search.trim()) query.q = search.trim()
+
+  const userId = (name: string) => people.find((person) => person.name === name)?.id
+
+  for (const filter of filters) {
+    if (filter.operator !== 'is' || filter.values.length === 0) continue
+    const [only] = filter.values
+    const single = filter.values.length === 1 ? only : undefined
+
+    switch (filter.field) {
+      case 'status':
+        // The one filter the API takes several values for.
+        query.status = filter.values.map((value) => STATUS_TO_API[value as JobStatus])
+        break
+      case 'employmentType':
+        if (single && EMPLOYMENT_TO_API[single as JobEmploymentType]) {
+          query.employmentType = EMPLOYMENT_TO_API[single as JobEmploymentType]
+        }
+        break
+      case 'createdBy':
+        if (single) query.createdBy = userId(single)
+        break
+      case 'assignee':
+      case 'managedBy':
+        if (single) query.assignee = userId(single)
+        break
+      case 'location':
+        if (single === 'Anywhere') query.locationMode = 'anywhere'
+        else if (single && /^[A-Z]{2}$/.test(single)) query.market = single
+        break
+      case 'createdOn': {
+        const days = single ? CREATED_WITHIN_DAYS[single] : undefined
+        if (days) {
+          const from = new Date(today)
+          from.setDate(from.getDate() - days)
+          query.createdFrom = localIso(from)
+        }
+        break
+      }
+      default:
+        break
+    }
+  }
+
+  if (sort?.field === 'dateCreated') {
+    query.sort = 'created_at'
+    query.order = sort.direction
+  } else if (sort?.field === 'lastModified') {
+    query.sort = 'updated_at'
+    query.order = sort.direction
+  }
+  return query
+}
+
+const two = (value: number) => String(value).padStart(2, '0')
+const localIso = (date: Date) =>
+  `${date.getFullYear()}-${two(date.getMonth() + 1)}-${two(date.getDate())}`
+
 /**
  * What to tell the user when a call fails: the API's own message, with the
  * first field it names when it is a validation error.
@@ -242,6 +326,7 @@ export type { Lookups }
 export {
   BULK_ACTIONS,
   apiMessage,
+  serverJobQuery,
   EMPLOYMENT_TO_API,
   STATUS_TO_API,
   WORKPLACE_TO_API,

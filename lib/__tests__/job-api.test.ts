@@ -5,6 +5,7 @@ import { axiosInstance } from '@/config/axios'
 import {
   BULK_ACTIONS,
   apiMessage,
+  serverJobQuery,
   colourFor,
   jobListParams,
   toJob,
@@ -174,6 +175,56 @@ describe('apiMessage', () => {
       'Not found',
     )
     expect(apiMessage(new Error('network'))).toBe('Something went wrong. Please try again.')
+  })
+})
+
+describe('serverJobQuery', () => {
+  const people = [{ id: 'u_1', name: 'Alice', colour: 'green' as const }]
+  const today = new Date(2026, 9, 9)
+
+  it('hands the API what it can apply itself', () => {
+    expect(
+      serverJobQuery({
+        search: ' analyst ',
+        filters: [
+          { field: 'status', operator: 'is', values: ['open', 'paused'] },
+          { field: 'employmentType', operator: 'is', values: ['Part-time'] },
+          { field: 'createdBy', operator: 'is', values: ['Alice'] },
+          { field: 'location', operator: 'is', values: ['UK'] },
+          { field: 'createdOn', operator: 'is', values: ['30d'] },
+        ],
+        sort: { field: 'dateCreated', direction: 'asc' },
+        people,
+        today,
+      }),
+    ).toEqual({
+      q: 'analyst',
+      status: ['published', 'paused'],
+      employmentType: 'part_time',
+      createdBy: 'u_1',
+      market: 'UK',
+      createdFrom: '2026-09-09',
+      sort: 'created_at',
+      order: 'asc',
+    })
+  })
+
+  it('leaves to the page what the API cannot express', () => {
+    expect(
+      serverJobQuery({
+        search: '',
+        filters: [
+          { field: 'status', operator: 'isNot', values: ['draft'] },
+          { field: 'employmentType', operator: 'is', values: ['Part-time', 'Contract'] },
+          { field: 'managedBy', operator: 'and', values: ['Alice'] },
+          { field: 'applicants', operator: 'is', values: ['1-10'] },
+          { field: 'team', operator: 'is', values: ['Design'] },
+        ],
+        sort: { field: 'totalApplicants', direction: 'desc' },
+        people,
+        today,
+      }),
+    ).toEqual({})
   })
 })
 
