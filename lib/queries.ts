@@ -1,9 +1,11 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 
 import { queryKeys } from './query-keys'
 import { requests } from './requests'
+
+import type { JobListQuery } from './jobs/api-types'
 
 function useCountries() {
   return useQuery({ queryKey: queryKeys.countries, queryFn: requests.getCountries })
@@ -55,24 +57,68 @@ function useJobPermissions() {
   return useQuery({ queryKey: queryKeys.jobPermissions, queryFn: requests.getJobPermissions })
 }
 
-function useJobs() {
+/**
+ * The jobs matching a query — every job when there is none. Filters the API
+ * can apply go in the query; the rest are applied to the result on the page.
+ */
+function useJobs(query: JobListQuery = {}) {
   return useQuery({
-    queryKey: queryKeys.jobs,
-    queryFn: requests.getJobs,
-    // While jobs come from fixtures, edits live only in this cache. A refetch
-    // would hand back the untouched fixtures and silently undo them, so the
-    // list is never considered stale. Remove once the jobs API exists.
+    queryKey: queryKeys.jobList(query),
+    queryFn: () => requests.getJobs(query),
+    // Typing in the search or adding a filter keeps the last list on screen
+    // until the new one arrives, instead of blanking the page.
+    placeholderData: keepPreviousData,
+  })
+}
+
+function usePeople() {
+  return useQuery({ queryKey: queryKeys.people, queryFn: () => requests.listPeople() })
+}
+
+/** One job in full, for editing. Skipped until there is an id. */
+function useJob(id: string | null) {
+  return useQuery({
+    queryKey: queryKeys.job(id ?? ''),
+    queryFn: () => requests.getJob(id ?? ''),
+    enabled: Boolean(id),
+    // The form is filled from this once; a refetch must not overwrite typing.
+    staleTime: Infinity,
+    gcTime: 0,
+  })
+}
+
+/** The job form's fixed pick lists. They change with releases, not sessions. */
+function useHiringCatalog() {
+  return useQuery({
+    queryKey: queryKeys.hiringCatalog,
+    queryFn: requests.getHiringCatalog,
+    staleTime: Infinity,
+  })
+}
+
+function useDepartments() {
+  return useQuery({ queryKey: queryKeys.departments, queryFn: requests.listDepartments })
+}
+
+function useTimezones() {
+  return useQuery({
+    queryKey: queryKeys.timezones,
+    queryFn: requests.listTimezones,
+    staleTime: Infinity,
+  })
+}
+
+/** The skills catalogue, for the form's suggestions. */
+function useSkills() {
+  return useQuery({
+    queryKey: queryKeys.skills,
+    queryFn: () => requests.searchSkills('', 100),
     staleTime: Infinity,
   })
 }
 
 function useJobTemplates() {
-  return useQuery({
-    queryKey: queryKeys.jobTemplates,
-    queryFn: requests.getJobTemplates,
-    // Fixture-backed like jobs: edits live in the cache, so never refetch.
-    staleTime: Infinity,
-  })
+  return useQuery({ queryKey: queryKeys.jobTemplates, queryFn: requests.getJobTemplates })
 }
 
 /** Invite lookup is keyed by token so a different link refetches. */
@@ -129,8 +175,14 @@ export {
   useIdentificationRequirements,
   useInvite,
   useMe,
+  useDepartments,
+  useHiringCatalog,
+  useJob,
   useJobPermissions,
   useJobs,
+  useSkills,
+  useTimezones,
+  usePeople,
   useJobTemplates,
   useBusinessTypes,
   useCompanyRoles,

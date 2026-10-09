@@ -11,23 +11,24 @@ import { SaveTemplateModal } from '@/components/jobs/create/save-template-modal'
 import { ChooseTemplateModal } from '@/components/jobs/create/start-modals'
 import { JobToast } from '@/components/jobs/job-toast'
 import { Button, Divider, ListItemToggle, TextButton } from '@/components/ui'
-import { toIsoDate } from '@/lib/jobs/actions'
+import { apiMessage } from '@/lib/jobs/api'
+import { EMPTY_DRAFT, validateDraft } from '@/lib/jobs/draft'
+import { draftErrorsFrom, draftFromView, draftToBody } from '@/lib/jobs/draft-api'
 import {
-  EMPTY_DRAFT,
-  applyDraftToJob,
-  draftFromJob,
-  draftToJob,
-  validateDraft,
-} from '@/lib/jobs/draft'
-import { markTemplateUsed, templateFromDetails } from '@/lib/jobs/templates'
-import { useJobTemplates, useJobs, useMe } from '@/lib/queries'
+  useDepartments,
+  useHiringCatalog,
+  useJob,
+  useJobTemplates,
+  useMe,
+  useSkills,
+} from '@/lib/queries'
 import { queryKeys } from '@/lib/query-keys'
+import { requests } from '@/lib/requests'
 
 import type { JobToastState } from '@/components/jobs/job-toast'
 import type { AiAccess } from '@/lib/jobs/ai-description'
 import type { DraftErrors, JobDraft } from '@/lib/jobs/draft'
-import type { JobTemplate, TemplateDetails } from '@/lib/jobs/templates'
-import type { Job, JobManager } from '@/lib/jobs/types'
+import type { TemplateDetails } from '@/lib/jobs/templates'
 
 /**
  * The "Job details" form, in its three uses. Figma: 8973:613907 for the form,
@@ -39,8 +40,9 @@ import type { Job, JobManager } from '@/lib/jobs/types'
  * - `?job=<id>` edits an existing job.
  * - `?template=<id>&mode=edit` edits the template itself.
  *
- * The later steps (Application form, Permissions, Publish) are not designed
- * yet, so a new job is stored as a draft and the list is shown again.
+ * Everything is saved through the hiring API. The later steps (Application
+ * form, Permissions, Publish) are not designed yet, so once the details are
+ * saved the list is shown again.
  */
 function NewJobPage() {
   const router = useRouter()
@@ -56,23 +58,21 @@ function NewJobPage() {
       ? 'edit-template'
       : 'create'
 
-  const jobs = useJobs().data
+  const job = useJob(jobId).data
   const templates = useJobTemplates().data
-  const job = jobId ? jobs?.find((item) => item.id === jobId) : undefined
   const template = templateId ? templates?.find((item) => item.id === templateId) : undefined
+  const departments = useDepartments().data
+  const catalog = useHiringCatalog().data
+  const skills = useSkills().data
+  // The lists that turn the form's names into the API's ids, and back.
+  const lookups = useMemo(() => ({ departments, catalog, skills }), [departments, catalog, skills])
 
   const startingDraft = useMemo<JobDraft>(() => {
-    if (job) return draftFromJob(job)
-    if (template) {
-      return {
-        ...EMPTY_DRAFT,
-        title: template.title,
-        team: template.department,
-        employmentType: template.employmentType,
-      }
-    }
+    if (job) return draftFromView(job, lookups)
+    if (template)
+      return { ...draftFromView(template.details ?? {}, lookups), title: template.title }
     return EMPTY_DRAFT
-  }, [job, template])
+  }, [job, template, lookups])
   // Null until the user edits, so data that loads late still fills the form.
   const [edited, setEdited] = useState<JobDraft | null>(null)
   const draft = edited ?? startingDraft
@@ -80,6 +80,11 @@ function NewJobPage() {
   const [choosingTemplate, setChoosingTemplate] = useState(false)
   const [savingTemplate, setSavingTemplate] = useState(false)
   const [toast, setToast] = useState<JobToastState | null>(null)
+  const [saving, setSaving] = useState(false)
+  // A new job, once its first save has created it: later saves update it.
+  const [created, setCreated] = useState<{ id: string; revision?: number } | null>(null)
+  // "Save as template" details, kept until there is a job to make the template from.
+  const [pendingTemplate, setPendingTemplate] = useState<TemplateDetails | null>(null)
   // There is no AI service yet, so access starts as "may connect one". `?ai=`
   // reaches the other states: unavailable, restricted, connected, and the
   // three ways connecting can fail (fails, bad-key, down).
@@ -98,11 +103,6 @@ function NewJobPage() {
     setToast({ id: Date.now(), kind: 'done', message: `${template.title} template in use` })
   }, [mode, template])
 
-  const owner: JobManager = {
-    name: me.data?.first_name || me.data?.legal_full_name || me.data?.email || 'You',
-    colour: 'blue',
-  }
-
   function change(patch: Partial<JobDraft>) {
     setEdited((current) => ({ ...(current ?? startingDraft), ...patch }))
     // Clear a field's error as soon as the user edits that field.
@@ -116,7 +116,21 @@ function NewJobPage() {
     })
   }
 
-  function save(requireComplete: boolean) {
+  function showProblem(error: unknown) {
+    const { errors: fieldErrors, other } = draftErrorsFrom(error)
+    setErrors(fieldErrors)
+    // Once the errors are on the page, bring the first one into view.
+    requestAnimationFrame(() =>
+      document.querySelector('[aria-invalid="true"]')?.scrollIntoView({ block: 'center' }),
+    )
+    // Problems with a field that shows no error of its own are said in a toast.
+    if (other.length > 0 || Object.keys(fieldErrors).length === 0) {
+      setToast({ id: Date.now(), kind: 'error', message: other[0] ?? apiMessage(error) })
+    }
+  }
+
+  async function save(requireComplete: boolean) {
+    if (saving) return
     const found = validateDraft(draft, new Date())
     // A draft only needs a usable title; moving on needs everything valid.
     const blocking: DraftErrors = requireComplete ? found : { title: found.title }
@@ -128,80 +142,86 @@ function NewJobPage() {
       return
     }
 
-    const today = new Date()
-    // No jobs API yet: edits are applied to the cached lists.
-    if (mode === 'edit-template' && template) {
-      queryClient.setQueryData<JobTemplate[]>(queryKeys.jobTemplates, (current) =>
-        current?.map((item) =>
-          item.id === template.id
-            ? {
-                ...item,
-                title: draft.title.trim(),
-                department: draft.team || item.department,
-                employmentType: draft.employmentType || item.employmentType,
-              }
-            : item,
-        ),
-      )
-      router.push('/dashboard/jobs?tab=templates&saved=changes')
-      return
-    }
+    setSaving(true)
+    try {
+      // The API keeps a template's name and pin, not its job details.
+      if (mode === 'edit-template' && template) {
+        await requests.updateTemplate(template.id, { name: draft.title.trim() })
+        await queryClient.invalidateQueries({ queryKey: queryKeys.jobTemplates })
+        router.push('/dashboard/jobs?tab=templates&saved=changes')
+        return
+      }
 
-    if (mode === 'edit-job' && job) {
-      queryClient.setQueryData<Job[]>(queryKeys.jobs, (current) =>
-        current?.map((item) => (item.id === job.id ? applyDraftToJob(item, draft, today) : item)),
-      )
-      router.push('/dashboard/jobs?saved=changes')
-      return
-    }
+      const body = draftToBody(draft, lookups, new Date())
 
-    queryClient.setQueryData<Job[]>(queryKeys.jobs, (current) => [
-      ...(current ?? jobs ?? []),
-      draftToJob(draft, `job-${today.getTime()}`, owner, today),
-    ])
-    queryClient.setQueryData<JobTemplate[]>(queryKeys.jobTemplates, (current) => {
-      const list = (current ?? templates ?? []).map((item) =>
+      if (mode === 'edit-job' && jobId) {
+        await requests.updateJob(jobId, body, job?.revision)
+        await queryClient.invalidateQueries({ queryKey: queryKeys.jobs })
+        router.push('/dashboard/jobs?saved=changes')
+        return
+      }
+
+      let current = created
+      if (current) {
+        const saved = await requests.updateJob(current.id, body, current.revision)
+        current = { id: current.id, revision: saved.revision }
+      } else {
         // Starting from a template counts as a use of it.
-        item.id === template?.id ? markTemplateUsed(item, today) : item,
-      )
-      return list
-    })
-    router.push('/dashboard/jobs?saved=draft')
+        const saved = await requests.createJob(
+          mode === 'create' && template ? { ...body, template_id: template.id } : body,
+        )
+        current = { id: saved.id ?? '', revision: saved.revision }
+      }
+      setCreated(current)
+      await queryClient.invalidateQueries({ queryKey: queryKeys.jobs })
+
+      if (requireComplete) {
+        const saved = await requests.completeJobDetails(current.id, body, current.revision)
+        setCreated({ id: current.id, revision: saved.revision })
+      }
+      if (pendingTemplate) {
+        await requests.saveJobAsTemplate(current.id, pendingTemplate.name.trim())
+        setPendingTemplate(null)
+        await queryClient.invalidateQueries({ queryKey: queryKeys.jobTemplates })
+      }
+      router.push('/dashboard/jobs?saved=draft')
+    } catch (error) {
+      showProblem(error)
+    } finally {
+      setSaving(false)
+    }
   }
 
-  // The template is saved from its own dialog, straight away: it does not
-  // wait for the job itself to be saved.
-  function saveTemplate(details: TemplateDetails) {
-    const today = new Date()
-    queryClient.setQueryData<JobTemplate[]>(queryKeys.jobTemplates, (current) => [
-      ...(current ?? templates ?? []),
-      templateFromDetails(
-        details,
-        {
-          department: draft.team || 'Unassigned',
-          employmentType: draft.employmentType || 'Full-time',
-        },
-        owner,
-        `tpl-${today.getTime()}`,
-        toIsoDate(today),
-      ),
-    ])
+  // A template is made from a saved job, so its details wait for the job's
+  // first save unless the job is already there.
+  async function saveTemplate(details: TemplateDetails) {
     setSavingTemplate(false)
-    setToast({ id: Date.now(), kind: 'done', message: 'Template saved' })
+    if (!created) {
+      setPendingTemplate(details)
+      return
+    }
+    try {
+      await requests.saveJobAsTemplate(created.id, details.name.trim())
+      await queryClient.invalidateQueries({ queryKey: queryKeys.jobTemplates })
+      setToast({ id: Date.now(), kind: 'done', message: 'Template saved' })
+    } catch (error) {
+      change({ saveAsTemplate: false })
+      setToast({ id: Date.now(), kind: 'error', message: apiMessage(error) })
+    }
   }
 
   const backHref = mode === 'edit-template' ? '/dashboard/jobs?tab=templates' : '/dashboard/jobs'
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
-      <JobFlowHeader current="Job details" mode={mode} onSave={() => save(false)} />
+      <JobFlowHeader current="Job details" mode={mode} onSave={() => void save(false)} />
 
       <div className="min-h-0 flex-1 overflow-y-auto">
         <form
           noValidate
           onSubmit={(event) => {
             event.preventDefault()
-            save(true)
+            void save(true)
           }}
           className="flex w-[693px] max-w-full flex-col gap-[40px] p-[40px]"
         >
@@ -287,6 +307,7 @@ function NewJobPage() {
                 onChange={(saveAsTemplate) => {
                   change({ saveAsTemplate })
                   if (saveAsTemplate) setSavingTemplate(true)
+                  else setPendingTemplate(null)
                 }}
               />
             ) : null}
@@ -335,9 +356,10 @@ function NewJobPage() {
         <SaveTemplateModal
           defaultName={draft.title.trim() ? `${draft.title.trim()} Template` : ''}
           existingNames={(templates ?? []).map((item) => item.title)}
-          onSave={saveTemplate}
+          onSave={(details) => void saveTemplate(details)}
           onClose={() => {
             setSavingTemplate(false)
+            setPendingTemplate(null)
             change({ saveAsTemplate: false })
           }}
         />

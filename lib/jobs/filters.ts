@@ -190,7 +190,7 @@ function fieldValues(job: Job, field: FilterField, today: Date): string[] {
     case 'employmentType':
       return [job.employmentType]
     case 'createdOn':
-      return [dateRange(job.postedAt, today)]
+      return [dateRange(job.createdAt, today)]
     case 'applicants':
       return [applicantRange(job.totalApplicants)]
   }

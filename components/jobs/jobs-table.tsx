@@ -3,7 +3,7 @@
 import { useRef, useState, type ReactNode } from 'react'
 
 import { DashboardIcon } from '@/components/dashboard/nav-config'
-import { DOT, GroupLabel, JOB_STATUS_META, formatPostedDate } from '@/components/jobs/job-status'
+import { GroupLabel, JOB_STATUS_META, formatPostedDate, dotted } from '@/components/jobs/job-status'
 import { ManagersChip } from '@/components/jobs/managers-chip'
 import { Checkbox, Chip } from '@/components/ui'
 
@@ -166,7 +166,7 @@ function JobRow({ job, selected, menuOpen, onSelect, onOpenMenu }: JobRowProps) 
       <div role="cell" className="flex h-full shrink-0 items-center px-[12px]">
         <Chip
           tone="secondary"
-          label={`${job.department} ${DOT} ${job.employmentType}`}
+          label={dotted(job.department, job.employmentType)}
           icon={
             <span className="inline-flex text-text-tertiary">
               <DashboardIcon name="user-group-solid" size={12} />
@@ -178,7 +178,7 @@ function JobRow({ job, selected, menuOpen, onSelect, onOpenMenu }: JobRowProps) 
         <ManagersChip managers={job.managers} />
       </div>
       <div role="cell" className={`w-[130px] shrink-0 truncate px-[12px] ${cellText}`}>
-        {`${job.location} ${DOT} ${job.workplace}`}
+        {dotted(job.location, job.workplace)}
       </div>
       <div role="cell" className={`w-[111px] shrink-0 px-[12px] ${cellText}`}>
         {job.totalApplicants}

@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react'
 import { DashboardIcon } from '@/components/dashboard/nav-config'
 import { Floating, clampLeft, toAnchor } from '@/components/jobs/floating'
 import { StartThumbnail } from '@/components/jobs/job-art'
-import { DOT } from '@/components/jobs/job-status'
+import { dotted } from '@/components/jobs/job-status'
 import { PersonAvatar } from '@/components/jobs/person-avatar'
 import { Button, Chip, Modal, ModalActions, Tag, TextInput } from '@/components/ui'
 import { TEMPLATE_SORTS, searchTemplates, sortTemplates } from '@/lib/jobs/templates'
@@ -225,7 +225,7 @@ function ChooseTemplateModal({
                       fill="transparent"
                       tone="secondary"
                       withIcon={false}
-                      label={`${template.department} ${DOT} ${template.employmentType}`}
+                      label={dotted(template.department, template.employmentType)}
                     />
                   </span>
                   <span className="flex w-[130px] shrink-0 items-center px-[12px]">

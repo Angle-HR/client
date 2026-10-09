@@ -1,13 +1,26 @@
 import { axiosInstance } from '@/config/axios'
 
 import { ENDPOINTS } from './endpoints'
-import { JOB_FIXTURES } from './jobs/fixtures'
-import { FULL_PERMISSIONS } from './jobs/permissions'
-import { TEMPLATE_FIXTURES } from './jobs/templates'
+import { jobListParams, toJob, toManager, toTemplate } from './jobs/api'
+import { toJobPermissions } from './jobs/permissions'
 
+import type {
+  ApiBulkResult,
+  ApiCatalog,
+  ApiCatalogItem,
+  ApiDepartment,
+  ApiJobBody,
+  ApiJobView,
+  ApiJobListItem,
+  ApiPerson,
+  ApiTemplate,
+  ApiTemplateExport,
+  ApiTimezone,
+  JobListQuery,
+} from './jobs/api-types'
 import type { JobPermissions } from './jobs/permissions'
 import type { JobTemplate } from './jobs/templates'
-import type { Job } from './jobs/types'
+import type { Job, JobManager } from './jobs/types'
 import type {
   ApiResponse,
   AuthAcceptInvitePayload,
@@ -65,6 +78,44 @@ import type {
   WaitlistPayload,
   WaitlistResponse,
 } from './types'
+
+/** The roles a person can hold on one job's hiring team. */
+type JobMemberRole = 'hiring_manager' | 'recruiter' | 'interviewer' | 'viewer'
+
+// The most the list endpoint returns at once, and a stop so a bad cursor
+// cannot loop for ever.
+const JOBS_PAGE_SIZE = 100
+const MAX_JOB_PAGES = 50
+
+async function allJobRows(query: JobListQuery): Promise<ApiJobListItem[]> {
+  const rows: ApiJobListItem[] = []
+  let cursor: string | undefined
+  for (let page = 0; page < MAX_JOB_PAGES; page += 1) {
+    const { data } = await axiosInstance.get<ApiResponse<ApiJobListItem[]> & CursorMeta>(
+      ENDPOINTS.jobs.list(),
+      { params: jobListParams({ ...query, limit: JOBS_PAGE_SIZE, cursor }) },
+    )
+    rows.push(...(data.data ?? []))
+    if (!data.meta?.has_more || !data.meta.next_cursor) break
+    cursor = data.meta.next_cursor
+  }
+  return rows
+}
+
+/** user id → name, for the ids a job or template carries. */
+async function peopleById(): Promise<Map<string, string>> {
+  const { data } = await axiosInstance.get<ApiResponse<ApiPerson[]>>(ENDPOINTS.hiring.people())
+  return new Map((data.data ?? []).map((person) => [person.user_id ?? '', person.name ?? '']))
+}
+
+/** The list endpoints page with a cursor carried in the envelope's meta. */
+interface CursorMeta {
+  meta?: { has_more?: boolean; next_cursor?: string }
+}
+
+/** The revision the client loaded, so the API can refuse to overwrite a newer one. */
+const ifMatch = (revision: number | undefined): Record<string, string> =>
+  revision === undefined ? {} : { 'If-Match': String(revision) }
 
 const requests = {
   joinWaitlist: async (payload: WaitlistPayload): Promise<WaitlistResponse> => {
@@ -203,10 +254,231 @@ const requests = {
 
   // No jobs endpoints yet — resolves with local fixtures so the query layer and
   // screens are already shaped for the real call.
-  getJobs: async (): Promise<Job[]> => JOB_FIXTURES,
-  getJobTemplates: async (): Promise<JobTemplate[]> => TEMPLATE_FIXTURES,
-  // Stand-in until the API says what this person may do with jobs.
-  getJobPermissions: async (): Promise<JobPermissions> => FULL_PERMISSIONS,
+  /**
+   * Every job the caller may see that matches the query, as the screens show
+   * them. The list endpoint pages by cursor; the pages are followed to the end
+   * because the tab counts and the local filters need the whole set.
+   */
+  getJobs: async (query: JobListQuery = {}): Promise<Job[]> => {
+    const [rows, people] = await Promise.all([allJobRows(query), peopleById()])
+    return rows.map((row) => toJob(row, { people }))
+  },
+
+  /** Company job-details templates, pinned first. */
+  getJobTemplates: async (): Promise<JobTemplate[]> => {
+    const [templates, people, departments, me] = await Promise.all([
+      axiosInstance.get<ApiResponse<ApiTemplate[]>>(ENDPOINTS.hiring.templates(), {
+        params: { kind: 'job_details' },
+      }),
+      peopleById(),
+      requests.listDepartments(),
+      axiosInstance.get<ApiResponse<{ user_id?: string }>>(ENDPOINTS.hiring.me()),
+    ])
+    const lookups = {
+      people,
+      departments: new Map(departments.map((item) => [item.id ?? '', item.name ?? ''])),
+      me: me.data.data?.user_id,
+    }
+    return (
+      (templates.data.data ?? [])
+        // The caller's personal default is not a company template: it cannot
+        // be renamed, pinned, duplicated or exported.
+        .filter((row) => !row.is_default)
+        .map((row) => toTemplate(row, lookups))
+    )
+  },
+  /** What this person may do with jobs, from the permissions the API lists for them. */
+  getJobPermissions: async (): Promise<JobPermissions> => {
+    const { data } = await axiosInstance.get<ApiResponse<{ permissions?: string[] }>>(
+      ENDPOINTS.hiring.me(),
+    )
+    return toJobPermissions(data.data?.permissions)
+  },
+
+  /** A single-job status change: pause, resume, close, reopen, archive, to-draft or publish. */
+  transitionJob: async (id: string, action: string, revision?: number): Promise<void> => {
+    await axiosInstance.post(ENDPOINTS.jobs.transition(id, action), undefined, {
+      headers: ifMatch(revision),
+    })
+  },
+
+  /** Pause, close, archive or move to draft for up to 100 jobs; not all-or-nothing. */
+  bulkJobs: async (action: string, ids: string[]): Promise<ApiBulkResult> => {
+    const { data } = await axiosInstance.post<{ data: ApiBulkResult }>(ENDPOINTS.jobs.bulk(), {
+      action,
+      ids,
+    })
+    return data.data
+  },
+
+  /** Copies a job into a new draft owned by the caller, and returns the copy's id. */
+  duplicateJob: async (id: string): Promise<string> => {
+    const { data } = await axiosInstance.post<ApiResponse<{ id?: string }>>(
+      ENDPOINTS.jobs.duplicate(id),
+    )
+    return data.data?.id ?? ''
+  },
+
+  /**
+   * Replaces a job's hiring team. The creator already has access and must not
+   * be listed; the API refuses them.
+   */
+  setJobMembers: async (
+    id: string,
+    members: { userId: string; role: JobMemberRole }[],
+    revision?: number,
+  ): Promise<void> => {
+    await axiosInstance.put(
+      ENDPOINTS.jobs.members(id),
+      { members: members.map((member) => ({ user_id: member.userId, role: member.role })) },
+      { headers: ifMatch(revision) },
+    )
+  },
+
+  /** Only drafts can be deleted; the API answers 409 for anything else. */
+  deleteJob: async (id: string, revision?: number): Promise<void> => {
+    await axiosInstance.delete(ENDPOINTS.jobs.one(id), { headers: ifMatch(revision) })
+  },
+
+  getJob: async (id: string): Promise<ApiJobView> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiJobView>>(ENDPOINTS.jobs.one(id))
+    return data.data
+  },
+
+  /** A new draft. Every field is optional; `template_id` counts as a use of that template. */
+  createJob: async (body: ApiJobBody): Promise<ApiJobView> => {
+    const { data } = await axiosInstance.post<ApiResponse<ApiJobView>>(ENDPOINTS.jobs.list(), body)
+    return data.data
+  },
+
+  /** Saves whichever fields are sent; nothing is required of a draft. */
+  updateJob: async (id: string, body: ApiJobBody, revision?: number): Promise<ApiJobView> => {
+    const { data } = await axiosInstance.patch<ApiResponse<ApiJobView>>(
+      ENDPOINTS.jobs.one(id),
+      body,
+      { headers: ifMatch(revision) },
+    )
+    return data.data
+  },
+
+  /** Saves the details step as finished, which is when the API checks it is complete. */
+  completeJobDetails: async (
+    id: string,
+    body: ApiJobBody,
+    revision?: number,
+  ): Promise<ApiJobView> => {
+    const { data } = await axiosInstance.put<ApiResponse<ApiJobView>>(
+      ENDPOINTS.jobs.details(id),
+      body,
+      { headers: ifMatch(revision) },
+    )
+    return data.data
+  },
+
+  /** An empty date clears it; a past date is refused. */
+  setJobClosingDate: async (id: string, closingDate: string, revision?: number): Promise<void> => {
+    await axiosInstance.patch(
+      ENDPOINTS.jobs.one(id),
+      { closing_date: closingDate },
+      { headers: ifMatch(revision) },
+    )
+  },
+
+  /** CSV by default; `json` returns the same rows as the jobs list. */
+  exportJobs: async (options: {
+    ids?: string[]
+    status?: string[]
+    format?: 'csv' | 'json'
+  }): Promise<string> => {
+    const { data } = await axiosInstance.get<string>(ENDPOINTS.jobs.export(), {
+      params: {
+        ...(options.ids?.length ? { ids: options.ids.join(',') } : {}),
+        ...(options.status?.length ? { status: options.status.join(',') } : {}),
+        ...(options.format === 'json' ? { format: 'json' } : {}),
+      },
+      // The body is a file, not an envelope: keep it as the text it is.
+      responseType: 'text',
+      transformResponse: (body: string) => body,
+    })
+    return data
+  },
+
+  /** Rename or pin a company template. A name already taken answers 400. */
+  updateTemplate: async (
+    id: string,
+    change: { name?: string; pinned?: boolean },
+  ): Promise<void> => {
+    await axiosInstance.patch(ENDPOINTS.hiring.template(id), change)
+  },
+
+  /** Without a name the copy is called "<name> (copy)". */
+  duplicateTemplate: async (id: string, name?: string): Promise<void> => {
+    await axiosInstance.post(ENDPOINTS.hiring.templateDuplicate(id), name ? { name } : {})
+  },
+
+  exportTemplate: async (id: string): Promise<ApiTemplateExport> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiTemplateExport>>(
+      ENDPOINTS.hiring.templateExport(id),
+    )
+    return data.data
+  },
+
+  deleteTemplate: async (id: string): Promise<void> => {
+    await axiosInstance.delete(ENDPOINTS.hiring.template(id))
+  },
+
+  /** A company template made from an existing job. */
+  saveJobAsTemplate: async (jobId: string, name: string): Promise<void> => {
+    await axiosInstance.post(ENDPOINTS.hiring.templates(), {
+      kind: 'job_details',
+      from_job_id: jobId,
+      name,
+    })
+  },
+
+  /** The workspace's members, for assigning and for the people filters. */
+  listPeople: async (search?: string): Promise<JobManager[]> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiPerson[]>>(ENDPOINTS.hiring.people(), {
+      params: search?.trim() ? { q: search.trim() } : undefined,
+    })
+    return (data.data ?? []).map(toManager)
+  },
+
+  getHiringCatalog: async (): Promise<ApiCatalog> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiCatalog>>(ENDPOINTS.hiring.catalog())
+    return data.data
+  },
+
+  listDepartments: async (): Promise<ApiDepartment[]> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiDepartment[]>>(
+      ENDPOINTS.hiring.departments(),
+    )
+    return data.data ?? []
+  },
+
+  /** Names are unique ignoring case; an existing name returns the existing department. */
+  createDepartment: async (name: string): Promise<ApiDepartment> => {
+    const { data } = await axiosInstance.post<ApiResponse<ApiDepartment>>(
+      ENDPOINTS.hiring.departments(),
+      { name },
+    )
+    return data.data
+  },
+
+  listTimezones: async (): Promise<ApiTimezone[]> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiTimezone[]>>(
+      ENDPOINTS.hiring.timezones(),
+    )
+    return data.data ?? []
+  },
+
+  searchSkills: async (search: string, limit = 20): Promise<ApiCatalogItem[]> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiCatalogItem[]>>(
+      ENDPOINTS.hiring.skills(),
+      { params: { q: search, limit } },
+    )
+    return data.data ?? []
+  },
 
   getMe: async (): Promise<AuthMeData> => {
     const { data } = await axiosInstance.get<ApiResponse<AuthMeData>>(ENDPOINTS.auth.me())

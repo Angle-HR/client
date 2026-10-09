@@ -4,6 +4,7 @@ import {
   FULL_PERMISSIONS,
   LIMITED_PERMISSIONS,
   canChangeClosingDate,
+  toJobPermissions,
   withPermissionsOverride,
 } from '../jobs/permissions'
 
@@ -24,5 +25,11 @@ describe('job permissions', () => {
     expect(withPermissionsOverride(LIMITED_PERMISSIONS, 'full')).toEqual(FULL_PERMISSIONS)
     expect(withPermissionsOverride(LIMITED_PERMISSIONS, null)).toEqual(LIMITED_PERMISSIONS)
     expect(withPermissionsOverride(FULL_PERMISSIONS, 'nonsense')).toEqual(FULL_PERMISSIONS)
+  })
+
+  it('reads the closing date flag from the permission to edit a published job', () => {
+    expect(toJobPermissions(['job.archive', 'job.edit.published'])).toEqual(FULL_PERMISSIONS)
+    expect(toJobPermissions(['job.archive'])).toEqual(LIMITED_PERMISSIONS)
+    expect(toJobPermissions(undefined)).toEqual(LIMITED_PERMISSIONS)
   })
 })

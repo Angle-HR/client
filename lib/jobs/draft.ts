@@ -6,9 +6,9 @@ import type { Job, JobEmploymentType, JobManager, JobWorkplace } from './types'
  * The "Job details" step of job creation. Figma: "First time user Job
  * Creation/Job details/" (8974:29644), full form at 8973:613907.
  *
- * Option lists are stand-ins until the API serves them. Per the designer's
- * notes, seniority and years of experience are fixed lists the user can only
- * pick from.
+ * The pick lists come from the hiring API; what is left here is how the
+ * design labels them. Per the designer's notes, seniority and years of
+ * experience are fixed lists the user can only pick from.
  */
 
 type HiringArea = 'anywhere' | 'area' | 'timezone'
@@ -78,10 +78,6 @@ const EMPTY_DRAFT: JobDraft = {
 
 const option = (value: string) => ({ value, label: value })
 
-const TEAM_OPTIONS = ['Engineering', 'Design', 'Sales', 'Marketing', 'Operations', 'People/HR'].map(
-  option,
-)
-
 /** A team name as the "Create new team" dialog accepts it, or the reason it does not. */
 function validateTeamName(name: string, existing: string[]): string | null {
   const trimmed = name.trim()
@@ -93,54 +89,7 @@ function validateTeamName(name: string, existing: string[]): string | null {
   return null
 }
 
-const INDUSTRY_OPTIONS = [
-  '💻 Tech / Software',
-  '💰 Finance / Fintech',
-  '🛍️ Retail / E-commerce',
-  '🍽️ Hospitality / Food & Drink',
-  '💼 Professional Services',
-  '💇 Beauty & Personal Care',
-  '🚚 Logistics / Transport',
-].map(option)
-
-const SENIORITY_OPTIONS = [
-  'Internship',
-  'Entry Level',
-  'Mid Level',
-  'Senior',
-  'Lead',
-  'Manager',
-  'Executive',
-].map(option)
-
-const EXPERIENCE_OPTIONS = [
-  'No experience required',
-  '0–1 year',
-  '2–3 years',
-  '4–6 years',
-  '7–10 years',
-  '10+ years',
-].map(option)
-
-const SKILL_OPTIONS = [
-  'Design',
-  'Product design',
-  'UX architecture',
-  'User research',
-  'Prototyping',
-  'Figma',
-  'React',
-  'TypeScript',
-  'Node.js',
-  'SQL',
-  'Data analysis',
-  'Copywriting',
-  'SEO',
-  'Project management',
-  'Stakeholder management',
-].map(option)
-
-/** `keywords` lets a currency be found by its code, name or symbol. */
+/** How the design labels a currency. `keywords` lets it be found by its code, name or symbol. */
 const CURRENCY_OPTIONS = [
   { value: 'USD', label: '$ USD', keywords: 'us dollar dollars' },
   { value: 'GBP', label: '£ GBP', keywords: 'pound sterling' },
@@ -149,23 +98,6 @@ const CURRENCY_OPTIONS = [
   { value: 'INR', label: '₹ Rupees', keywords: 'inr india rupee' },
   { value: 'PLN', label: 'zł Polish złoty', keywords: 'pln zloty poland' },
 ]
-
-/** `keywords` carries the abbreviation, so typing "CET" finds Central European Time. */
-const TIMEZONE_OPTIONS = [
-  { name: 'Algiers (Central European Time) [+01:00]', keywords: 'CET' },
-  { name: 'Andorra (Central European Time) [+01:00]', keywords: 'CET' },
-  { name: 'Budapest (Central European Time) [+01:00]', keywords: 'CET' },
-  { name: 'Belgrade (Central European Time) [+01:00]', keywords: 'CET' },
-  { name: 'Berlin (Central European Time) [+01:00]', keywords: 'CET' },
-  { name: 'Casablanca (Western European Time) [+01:00]', keywords: 'WET' },
-  { name: 'Dublin (Greenwich Mean Time) [+01:00]', keywords: 'GMT IST' },
-  { name: 'London (British standard Time) [+01:00]', keywords: 'BST GMT' },
-  { name: 'Lagos (West Africa Time) [+01:00]', keywords: 'WAT' },
-  { name: 'New York (Eastern Time) [-04:00]', keywords: 'ET EST EDT' },
-  { name: 'Toronto (Eastern Time) [-04:00]', keywords: 'ET EST EDT' },
-  { name: 'San Francisco (Pacific Time) [-07:00]', keywords: 'PT PST PDT' },
-  { name: 'Sydney (Australian Eastern Time) [+10:00]', keywords: 'AET AEST' },
-].map(({ name, keywords }) => ({ value: name, label: name, keywords }))
 
 const TIMEZONE_OFFSET_OPTIONS = [
   '+/-0 hours',
@@ -298,13 +230,7 @@ export {
   COMPANY_ADDRESS,
   CURRENCY_OPTIONS,
   EMPTY_DRAFT,
-  EXPERIENCE_OPTIONS,
-  INDUSTRY_OPTIONS,
-  SENIORITY_OPTIONS,
-  SKILL_OPTIONS,
-  TEAM_OPTIONS,
   TIMEZONE_OFFSET_OPTIONS,
-  TIMEZONE_OPTIONS,
   applyDraftToJob,
   draftFromJob,
   draftToJob,

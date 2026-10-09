@@ -31,6 +31,30 @@ const ENDPOINTS = {
   organizations: {
     invites: () => '/organizations/invites',
   },
+  jobs: {
+    list: () => '/jobs',
+    one: (id: string) => `/jobs/${id}`,
+    /** pause, resume, close, reopen, archive, to-draft, withdraw or publish. */
+    transition: (id: string, action: string) => `/jobs/${id}/${action}`,
+    bulk: () => '/jobs/bulk',
+    export: () => '/jobs/export',
+    duplicate: (id: string) => `/jobs/${id}/duplicate`,
+    details: (id: string) => `/jobs/${id}/details`,
+    members: (id: string) => `/jobs/${id}/members`,
+    preview: (id: string) => `/jobs/${id}/preview`,
+  },
+  hiring: {
+    me: () => '/hiring/me',
+    people: () => '/hiring/people',
+    catalog: () => '/hiring/catalog',
+    departments: () => '/hiring/departments',
+    timezones: () => '/hiring/timezones',
+    skills: () => '/hiring/skills',
+    templates: () => '/hiring/templates',
+    template: (id: string) => `/hiring/templates/${id}`,
+    templateDuplicate: (id: string) => `/hiring/templates/${id}/duplicate`,
+    templateExport: (id: string) => `/hiring/templates/${id}/export`,
+  },
   onboarding: {
     profile: () => '/onboarding/profile',
     address: () => '/onboarding/address',

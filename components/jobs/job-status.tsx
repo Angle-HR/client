@@ -104,6 +104,11 @@ function JobStatusLabel({ status, gapClass }: { status: JobStatus; gapClass: str
  */
 const DOT = '·'
 
+/** "Design · Full-time", or just the one a draft has so far. */
+function dotted(...parts: string[]): string {
+  return parts.filter(Boolean).join(` ${DOT} `)
+}
+
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 /**
@@ -115,5 +120,13 @@ function formatPostedDate(isoDate: string): string {
   return `${day} ${MONTHS[Number(month) - 1]} ${year}`
 }
 
-export { DOT, GroupLabel, JOB_STATUS_META, JOB_STATUS_ORDER, JobStatusLabel, formatPostedDate }
+export {
+  DOT,
+  dotted,
+  GroupLabel,
+  JOB_STATUS_META,
+  JOB_STATUS_ORDER,
+  JobStatusLabel,
+  formatPostedDate,
+}
 export type { GroupMeta, JobStatusMeta }

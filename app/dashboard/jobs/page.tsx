@@ -26,13 +26,14 @@ import { TemplatesPanel } from '@/components/jobs/templates/templates-panel'
 import { useJobsController } from '@/components/jobs/use-jobs-controller'
 import { Button, Tabs, TextButton, TextInput } from '@/components/ui'
 import { needsRetentionNotice, searchJobs, statusTargets } from '@/lib/jobs/actions'
+import { serverJobQuery } from '@/lib/jobs/api'
 import { applyFilters, applySort } from '@/lib/jobs/filters'
 import {
   FULL_PERMISSIONS,
   canChangeClosingDate,
   withPermissionsOverride,
 } from '@/lib/jobs/permissions'
-import { useJobPermissions, useJobTemplates, useMe } from '@/lib/queries'
+import { useJobPermissions, useJobTemplates, useJobs, useMe, usePeople } from '@/lib/queries'
 
 import type { AnchorRect } from '@/components/jobs/floating'
 import type { FilterPopover } from '@/components/jobs/job-filters'
@@ -100,8 +101,9 @@ function JobsPage() {
   const controller = useJobsController()
   const { jobs, jobsQuery, dialog } = controller
   const templates = useJobTemplates().data ?? []
-  // `?permissions=limited` reaches the limited-permission toolbar until the API
-  // reports roles.
+  const peopleQuery = usePeople()
+  const people = useMemo(() => peopleQuery.data ?? [], [peopleQuery.data])
+  // `?permissions=limited` (or `full`) shows either toolbar whatever the API says.
   const permissions = withPermissionsOverride(
     useJobPermissions().data ?? FULL_PERMISSIONS,
     searchParams.get('permissions'),
@@ -145,11 +147,31 @@ function JobsPage() {
     () => jobs.filter((job) => TAB_STATUSES[tab].includes(job.status)),
     [jobs, tab],
   )
+
+  // What the API can narrow by itself goes to it; the page then applies the
+  // whole search, filter and sort to what comes back, so anything the API
+  // cannot express still works. Typing waits a moment before it asks.
+  const [settledSearch, setSettledSearch] = useState('')
+  useEffect(() => {
+    const timer = window.setTimeout(() => setSettledSearch(search), 300)
+    return () => window.clearTimeout(timer)
+  }, [search])
+  const serverQuery = useMemo(
+    () => serverJobQuery({ search: settledSearch, filters, sort, people }),
+    [settledSearch, filters, sort, people],
+  )
+  const narrowedByServer = Object.keys(serverQuery).length > 0
+  const narrowedJobs = useJobs(serverQuery).data
+  const listJobs = useMemo(() => {
+    const source = narrowedByServer ? (narrowedJobs ?? jobs) : jobs
+    return source.filter((job) => TAB_STATUSES[tab].includes(job.status))
+  }, [narrowedByServer, narrowedJobs, jobs, tab])
+
   const groups = useMemo(() => {
-    const matching = applySort(applyFilters(searchJobs(tabJobs, search), filters), sort)
+    const matching = applySort(applyFilters(searchJobs(listJobs, search), filters), sort)
     const grouped = groupJobs(matching, TAB_STATUSES[tab])
     return view === 'board' && !sort ? byNewest(grouped) : grouped
-  }, [tabJobs, search, filters, sort, tab, view])
+  }, [listJobs, search, filters, sort, tab, view])
   const shownCount = groups.reduce((total, group) => total + group.jobs.length, 0)
   const narrowed = search.trim() !== '' || filters.length > 0
 
@@ -190,7 +212,12 @@ function JobsPage() {
   const selectedJobs = jobs.filter((job) => selectedIds.has(job.id))
   const selectedJobIds = selectedJobs.map((job) => job.id)
   const meName = me.data?.first_name || me.data?.legal_full_name || me.data?.email || 'You'
-  const currentUser: JobManager = { name: meName, colour: 'blue' }
+  // The same person as in the workspace's people, when they are listed there.
+  const currentUser: JobManager = people.find((person) => person.id === me.data?.id) ?? {
+    id: me.data?.id,
+    name: meName,
+    colour: 'blue',
+  }
   const menuJob = rowMenu ? jobs.find((job) => job.id === rowMenu.jobId) : undefined
   const dialogJobs = dialog ? jobs.filter((job) => dialog.jobIds.includes(job.id)) : []
 
@@ -557,6 +584,7 @@ function JobsPage() {
       {dialog?.type === 'assign' ? (
         <AssignJobsModal
           me={currentUser}
+          people={people}
           // Pre-select the current managers only when every job agrees on them.
           current={
             dialogJobs.every(
