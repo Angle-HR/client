@@ -22,15 +22,15 @@ import {
   RadioButton,
   TextInput,
 } from '@/components/ui'
+import { apiMessage } from '@/lib/jobs/api'
 import {
-  duplicateTemplates,
   exportTemplates,
   groupTemplates,
-  partitionDeletable,
   searchTemplates,
 } from '@/lib/jobs/templates'
-import { useJobTemplates, useMe } from '@/lib/queries'
+import { useJobTemplates } from '@/lib/queries'
 import { queryKeys } from '@/lib/query-keys'
+import { requests } from '@/lib/requests'
 
 import type { AnchorRect } from '@/components/jobs/floating'
 import type { GroupMeta } from '@/components/jobs/job-status'
@@ -226,7 +226,6 @@ function TemplatesPanel({ view, search }: TemplatesPanelProps) {
   const router = useRouter()
   const queryClient = useQueryClient()
   const templatesQuery = useJobTemplates()
-  const me = useMe()
   const templates = useMemo(() => templatesQuery.data ?? [], [templatesQuery.data])
 
   const [selectedIds, setSelectedIds] = useState<ReadonlySet<string>>(new Set())
@@ -250,13 +249,42 @@ function TemplatesPanel({ view, search }: TemplatesPanelProps) {
     setToast({ id: toastId.current, message, kind })
   }, [])
 
-  const edit = useCallback(
-    (update: (current: JobTemplate[]) => JobTemplate[]) => {
-      const before = queryClient.getQueryData<JobTemplate[]>(queryKeys.jobTemplates) ?? []
-      queryClient.setQueryData<JobTemplate[]>(queryKeys.jobTemplates, update(before))
-    },
+  const reload = useCallback(
+    () => queryClient.invalidateQueries({ queryKey: queryKeys.jobTemplates }),
     [queryClient],
   )
+
+  /**
+   * Runs one API call per template, reloads the list, and says how it went:
+   * `done` when at least one worked, and the API's own reason for any that
+   * did not.
+   */
+  async function run(
+    ids: string[],
+    call: (id: string) => Promise<unknown>,
+    done: (count: number) => string,
+    failed: (count: number) => string,
+  ) {
+    const results = await Promise.allSettled(ids.map(call))
+    await reload()
+    const failures = results.filter((result) => result.status === 'rejected')
+    const worked = results.length - failures.length
+    toastId.current += 1
+    if (failures.length > 0) {
+      setToast({
+        id: toastId.current,
+        kind: 'error',
+        message: failed(failures.length),
+        detail: apiMessage(failures[0]?.reason),
+      })
+    } else if (worked > 0) {
+      setToast({ id: toastId.current, kind: 'done', message: done(worked) })
+    }
+    return results.map((result, index) => (result.status === 'fulfilled' ? ids[index] : null))
+  }
+
+  const couldNot = (count: number) =>
+    `${count} ${count === 1 ? 'template' : 'templates'} could not be changed`
 
   const clearSelection = useCallback(() => {
     setSelectedIds(new Set())
@@ -289,49 +317,43 @@ function TemplatesPanel({ view, search }: TemplatesPanelProps) {
   }
 
   function setPinned(ids: string[], pinned: boolean) {
-    edit((current) => current.map((t) => (ids.includes(t.id) ? { ...t, pinned } : t)))
-    const plural = ids.length > 1
-    notify(
-      pinned
-        ? plural
-          ? 'Templates pinned'
-          : 'Template Pinned'
-        : plural
-          ? 'Templates Unpinned'
-          : 'Template Unpinned',
+    void run(
+      ids,
+      (id) => requests.updateTemplate(id, { pinned }),
+      (count) =>
+        pinned
+          ? count > 1
+            ? 'Templates pinned'
+            : 'Template Pinned'
+          : count > 1
+            ? 'Templates Unpinned'
+            : 'Template Unpinned',
+      couldNot,
     )
   }
 
   function duplicate(ids: string[]) {
-    const name = me.data?.first_name || me.data?.legal_full_name || 'You'
-    edit((current) => [
-      ...current,
-      ...duplicateTemplates(current, ids, { name, colour: 'blue' }, Date.now()),
-    ])
-    notify(ids.length > 1 ? 'Templates duplicated' : 'Template Duplicated')
+    // The API names each copy "<name> (copy)".
+    void run(
+      ids,
+      (id) => requests.duplicateTemplate(id),
+      (count) => (count > 1 ? 'Templates duplicated' : 'Template Duplicated'),
+      couldNot,
+    )
   }
 
   function confirmDelete(ids: string[]) {
-    // Only the creator may delete; anything else is reported, not removed.
-    const { deletable, blocked } = partitionDeletable(templates, ids)
-    edit((current) => current.filter((t) => !deletable.includes(t.id)))
-    setSelectedIds((previous) => new Set([...previous].filter((id) => !deletable.includes(id))))
     setDialog(null)
-    toastId.current += 1
-    if (blocked > 0) {
-      setToast({
-        id: toastId.current,
-        kind: 'error',
-        message: `${blocked} ${blocked === 1 ? 'template' : 'templates'} can't be deleted`,
-        detail: 'You can only delete templates you created.',
-      })
-    } else {
-      setToast({
-        id: toastId.current,
-        kind: 'done',
-        message: deletable.length > 1 ? 'Templates deleted' : 'Template deleted',
-      })
-    }
+    // Who may delete is the API's decision; what it refuses is reported.
+    void run(
+      ids,
+      (id) => requests.deleteTemplate(id),
+      (count) => (count > 1 ? 'Templates deleted' : 'Template deleted'),
+      (count) => `${count} ${count === 1 ? 'template' : 'templates'} can't be deleted`,
+    ).then((results) => {
+      const deleted = new Set(results.filter(Boolean))
+      setSelectedIds((previous) => new Set([...previous].filter((id) => !deleted.has(id))))
+    })
   }
 
   if (templatesQuery.isPending) return null
@@ -698,11 +720,14 @@ function TemplatesPanel({ view, search }: TemplatesPanelProps) {
           template={renameTemplate}
           onClose={() => setDialog(null)}
           onSave={(title) => {
-            edit((current) =>
-              current.map((t) => (t.id === renameTemplate.id ? { ...t, title } : t)),
-            )
             setDialog(null)
-            notify('Changes saved')
+            // A name another template already has is refused by the API.
+            void run(
+              [renameTemplate.id],
+              (id) => requests.updateTemplate(id, { name: title }),
+              () => 'Changes saved',
+              couldNot,
+            )
           }}
         />
       ) : null}
@@ -715,12 +740,31 @@ function TemplatesPanel({ view, search }: TemplatesPanelProps) {
             const chosen =
               scope === 'all' ? templates : templates.filter((t) => dialog.ids.includes(t.id))
             setDialog(null)
-            download(
-              `job-templates.${format}`,
-              exportTemplates(chosen, format),
-              format === 'csv' ? 'text/csv;charset=utf-8' : 'application/json',
+            if (format === 'csv') {
+              download(
+                'job-templates.csv',
+                exportTemplates(chosen, 'csv'),
+                'text/csv;charset=utf-8',
+              )
+              notify('Selection exported')
+              return
+            }
+            // JSON is the API's own export: each template whole, with its setup.
+            void Promise.all(chosen.map((template) => requests.exportTemplate(template.id))).then(
+              (files) => {
+                download('job-templates.json', JSON.stringify(files, null, 2), 'application/json')
+                notify('Selection exported')
+              },
+              (error: unknown) => {
+                toastId.current += 1
+                setToast({
+                  id: toastId.current,
+                  kind: 'error',
+                  message: 'Export failed',
+                  detail: apiMessage(error),
+                })
+              },
             )
-            notify('Selection exported')
           }}
         />
       ) : null}
