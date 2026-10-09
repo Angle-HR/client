@@ -16,11 +16,12 @@ function DashboardLayout({ children }: { children: ReactNode }) {
   const me = useMe()
   const [collapsed, setCollapsed] = useState(false)
 
-  // Nothing signed in — the 401 interceptor already gave the refresh token its
-  // one chance before clearing the session.
+  // Nothing signed in. Checked on arrival, and again whenever the account
+  // request fails: by then the 401 interceptor has given the refresh token its
+  // one chance and, if that failed too, cleared the session.
   useEffect(() => {
     if (!getAccessToken()) router.replace('/login')
-  }, [router])
+  }, [router, me.isError])
 
   async function handleSignOut() {
     const refreshToken = getRefreshToken()
@@ -43,7 +44,11 @@ function DashboardLayout({ children }: { children: ReactNode }) {
 
   // The setup screen replaces the whole shell, so it centres on the viewport
   // rather than in the content card beside the sidebar.
-  if (me.isPending) return <DashboardSettingUpState />
+  // Only for the first load. A query that has failed goes back to "pending"
+  // each time something asks for it again, and swapping the shell out for the
+  // setup screen then would unmount the page, which asks again when it
+  // remounts — an endless loop of requests behind a screen that never clears.
+  if (me.isPending && me.errorUpdateCount === 0) return <DashboardSettingUpState />
 
   return (
     <div className="flex h-dvh w-full bg-bg-primary">

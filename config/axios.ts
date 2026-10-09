@@ -20,6 +20,40 @@ axiosInstance.interceptors.request.use((config) => {
   return config
 })
 
+/**
+ * Endpoints that answer 401 because of what was sent — a wrong password, a bad
+ * code, a spent refresh token — rather than because the session has expired. A
+ * refresh would not fix those, so they are passed straight back to the caller.
+ *
+ * Everything else under `/auth/` (`/auth/me`, the TOTP settings) is an ordinary
+ * authenticated call and gets its one refresh like any other.
+ */
+const CREDENTIAL_ENDPOINTS = [
+  ENDPOINTS.auth.signup(),
+  ENDPOINTS.auth.login(),
+  ENDPOINTS.auth.loginOtpRequest(),
+  ENDPOINTS.auth.loginOtpVerify(),
+  ENDPOINTS.auth.loginTotp(),
+  ENDPOINTS.auth.refresh(),
+  ENDPOINTS.auth.logout(),
+  ENDPOINTS.auth.verifyEmail(),
+  ENDPOINTS.auth.resendVerification(),
+  ENDPOINTS.auth.forgotPassword(),
+  ENDPOINTS.auth.resetPassword(),
+  ENDPOINTS.auth.acceptInvite(),
+  ENDPOINTS.auth.invite(''),
+]
+
+/** Whether a 401 from this URL means the session expired and is worth a refresh. */
+function isRefreshable(url: string | undefined): boolean {
+  if (!url) return false
+  const path = url.split('?')[0] ?? ''
+  return !CREDENTIAL_ENDPOINTS.some((endpoint) =>
+    // `invite('')` ends in a slash and stands for every `/auth/invite/{token}`.
+    endpoint.endsWith('/') ? path.startsWith(endpoint) : path === endpoint,
+  )
+}
+
 /** Marks a request that has already been retried, so a failure can't loop. */
 type RetriableConfig = InternalAxiosRequestConfig & { _retried?: boolean }
 
@@ -53,13 +87,10 @@ axiosInstance.interceptors.response.use(
   async (error: AxiosError) => {
     const config = error.config as RetriableConfig | undefined
 
-    // Only a 401 on a first attempt is worth refreshing for. The auth endpoints
-    // answer 401 for bad credentials, which a refresh would not fix.
+    // Only a 401 on a first attempt is worth refreshing for, and only where it
+    // means the session expired.
     const isRetriable =
-      error.response?.status === 401 &&
-      config &&
-      !config._retried &&
-      !config.url?.startsWith('/auth/')
+      error.response?.status === 401 && config && !config._retried && isRefreshable(config.url)
 
     if (!isRetriable) {
       return Promise.reject(error)
@@ -81,4 +112,4 @@ axiosInstance.interceptors.response.use(
   },
 )
 
-export { axiosInstance }
+export { axiosInstance, isRefreshable }
