@@ -14,6 +14,8 @@ interface JobManager {
   colour: AvatarColour
   /** Photo, for people who have uploaded one. */
   avatarUrl?: string
+  /** Set for company people from the API, so typed emails can be matched. */
+  email?: string
 }
 
 interface Job {

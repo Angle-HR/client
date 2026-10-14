@@ -43,6 +43,11 @@ const ENDPOINTS = {
     details: (id: string) => `/jobs/${id}/details`,
     members: (id: string) => `/jobs/${id}/members`,
     preview: (id: string) => `/jobs/${id}/preview`,
+    /** The compliance check: a dry run of publishing, nothing is written. */
+    publishCheck: (id: string) => `/jobs/${id}/publish-check`,
+    /** Publishes the job. Also reachable as the `publish` transition. */
+    publish: (id: string) => `/jobs/${id}/publish`,
+    applicationForm: (id: string) => `/jobs/${id}/application-form`,
   },
   hiring: {
     me: () => '/hiring/me',

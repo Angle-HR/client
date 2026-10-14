@@ -1,9 +1,14 @@
 import { axiosInstance } from '@/config/axios'
 
+import { CAREERS_FIXTURES, jobForRole } from './careers/fixtures'
 import { ENDPOINTS } from './endpoints'
 import { countsByStatus, jobListParams, toJob, toManager, toTemplate } from './jobs/api'
 
+import type { ApplicationAnswers } from './careers/application'
+import type { CareersJobPage, CareersPage } from './careers/types'
 import type {
+  ApiApplicationForm,
+  ApiApplicationFormBody,
   ApiBulkResult,
   ApiCatalog,
   ApiCatalogItem,
@@ -13,7 +18,10 @@ import type {
   ApiJobBody,
   ApiJobView,
   ApiJobListItem,
+  ApiJobMember,
   ApiPerson,
+  ApiPublishCheck,
+  ApiPublishResult,
   ApiTemplate,
   ApiTemplateExport,
   ApiTimezone,
@@ -80,7 +88,7 @@ import type {
 } from './types'
 
 /** The roles a person can hold on one job's hiring team. */
-type JobMemberRole = 'hiring_manager' | 'recruiter' | 'interviewer' | 'viewer'
+export type JobMemberRole = 'hiring_manager' | 'recruiter' | 'interviewer' | 'viewer'
 
 // The most the list endpoint returns at once, and a stop so a bad cursor
 // cannot loop for ever.
@@ -252,6 +260,31 @@ const requests = {
     return data.data
   },
 
+  // No public careers endpoint yet: fixtures until the API serves this.
+  /** The company and its open roles, or null when no company has that slug. */
+  getCareersPage: (companySlug: string): Promise<CareersPage | null> =>
+    Promise.resolve(CAREERS_FIXTURES[companySlug] ?? null),
+
+  // No public job endpoint yet: fixtures until the API serves this.
+  /** One open job of a company, or null when the company or the job is not found. */
+  getPublicJob: (companySlug: string, jobId: string): Promise<CareersJobPage | null> => {
+    const page = CAREERS_FIXTURES[companySlug]
+    const role = page?.roles.find((item) => item.id === jobId)
+    return Promise.resolve(page && role ? { company: page.company, job: jobForRole(role) } : null)
+  },
+
+  // No public application endpoint yet: fixtures until the API serves this.
+  /** Sends a candidate's answers for a job. Nothing is stored until the API serves this. */
+  submitApplication: (
+    companySlug: string,
+    jobId: string,
+    answers: ApplicationAnswers,
+  ): Promise<void> => {
+    // Nothing is stored yet, so the arguments are only named here: the stub keeps the call's shape.
+    void [companySlug, jobId, answers]
+    return Promise.resolve()
+  },
+
   // No jobs endpoints yet — resolves with local fixtures so the query layer and
   // screens are already shaped for the real call.
   /**
@@ -323,6 +356,14 @@ const requests = {
     return data.data?.id ?? ''
   },
 
+  /** The job's hiring team. The creator always has access and is not listed. */
+  getJobMembers: async (id: string): Promise<ApiJobMember[]> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiJobMember[]>>(
+      ENDPOINTS.jobs.members(id),
+    )
+    return data.data ?? []
+  },
+
   /**
    * Replaces a job's hiring team. The creator already has access and must not
    * be listed; the API refuses them.
@@ -342,6 +383,24 @@ const requests = {
   /** Only drafts can be deleted; the API answers 409 for anything else. */
   deleteJob: async (id: string, revision?: number): Promise<void> => {
     await axiosInstance.delete(ENDPOINTS.jobs.one(id), { headers: ifMatch(revision) })
+  },
+
+  /** The compliance check for a job: what would stop it publishing, and what to look at. Writes nothing. */
+  getPublishCheck: async (id: string): Promise<ApiPublishCheck> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiPublishCheck>>(
+      ENDPOINTS.jobs.publishCheck(id),
+    )
+    return data.data ?? {}
+  },
+
+  /** Publishes the job. The API refuses a blocked job with 422 and every issue in the error. */
+  publishJob: async (id: string, revision?: number): Promise<ApiPublishResult> => {
+    const { data } = await axiosInstance.post<ApiResponse<ApiPublishResult>>(
+      ENDPOINTS.jobs.publish(id),
+      undefined,
+      { headers: ifMatch(revision) },
+    )
+    return data.data ?? {}
   },
 
   getJob: async (id: string): Promise<ApiJobView> => {
@@ -429,6 +488,26 @@ const requests = {
 
   deleteTemplate: async (id: string): Promise<void> => {
     await axiosInstance.delete(ENDPOINTS.hiring.template(id))
+  },
+
+  /** The job's application form: its questions and special categories. */
+  getApplicationForm: async (id: string): Promise<ApiApplicationForm> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiApplicationForm>>(
+      ENDPOINTS.jobs.applicationForm(id),
+    )
+    return data.data
+  },
+
+  /** Replaces the whole form, so every question is sent. Returns the saved form. */
+  saveApplicationForm: async (
+    id: string,
+    body: ApiApplicationFormBody,
+  ): Promise<ApiApplicationForm> => {
+    const { data } = await axiosInstance.put<ApiResponse<ApiApplicationForm>>(
+      ENDPOINTS.jobs.applicationForm(id),
+      body,
+    )
+    return data.data
   },
 
   /** A company template made from an existing job. */

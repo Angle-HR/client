@@ -58,6 +58,14 @@ interface ApiPerson {
   roles?: string[]
 }
 
+/** A row of `GET /jobs/{id}/members`: someone on the job's hiring team. The creator is not listed. */
+interface ApiJobMember {
+  user_id?: string
+  name?: string
+  email?: string
+  role?: string
+}
+
 /** A row of `GET /hiring/templates`. */
 interface ApiTemplate {
   id?: string
@@ -85,6 +93,43 @@ interface ApiBulkResult {
   action?: string
   done?: { id?: string; before?: string; after?: string }[]
   skipped?: { id?: string; reason?: string }[]
+}
+
+/** One problem the publish check or the publish call found. Figma: the compliance check, 9270:377288. */
+interface ApiPublishIssue {
+  code?: string
+  message?: string
+  severity?: string
+  path?: string
+  gate_id?: string
+}
+
+/** A compliance gate of the job's markets, and whether it is confirmed. */
+interface ApiPublishGate {
+  id?: string
+  market_code?: string
+  severity?: string
+  requirement?: string
+  legal_basis?: string
+  version?: string
+  auto?: boolean
+  confirmed?: boolean
+  stale?: boolean
+  detail?: string
+  platform?: string
+}
+
+/** `GET /jobs/{id}/publish-check`: a dry run that writes nothing. */
+interface ApiPublishCheck {
+  blocking?: ApiPublishIssue[]
+  warnings?: ApiPublishIssue[]
+  gates?: ApiPublishGate[]
+}
+
+/** `POST /jobs/{id}/publish`. A blocked job is refused with 422 PUBLISH_BLOCKED instead. */
+interface ApiPublishResult {
+  job?: ApiJobView
+  warnings?: ApiPublishIssue[]
 }
 
 interface ApiDepartment {
@@ -185,6 +230,67 @@ interface ApiJobView extends ApiJobBody {
   created_by?: string
 }
 
+/** A choice option. The API gives it an id once the form is saved. */
+interface ApiFormOption {
+  id?: string
+  label?: string
+}
+
+/** The config a question takes: choice options, a linear scale, or upload limits. */
+interface ApiFormConfig {
+  options?: ApiFormOption[]
+  min?: number
+  max?: number
+  min_label?: string
+  max_label?: string
+  accept?: string[]
+  max_mb?: number
+}
+
+/** One question of `GET` and `PUT /jobs/{id}/application-form`. */
+interface ApiFormQuestion {
+  /** Absent on a question not yet saved; the server assigns it. */
+  id?: string
+  /** personal_information | profile | eligibility | screening */
+  section?: string
+  position?: number
+  /** e.g. short_text, phone_number, single_choice, file_upload. */
+  type?: string
+  label?: string
+  description?: string
+  helper_text?: string
+  required?: boolean
+  /** Set by the server; a locked question cannot be removed or made optional. */
+  locked?: boolean
+  system_key?: string | null
+  config?: ApiFormConfig
+  /** Not drawn in the design; sent back as received. */
+  knockout?: unknown
+  special_category?: unknown
+}
+
+/** A special category the candidate is asked about. */
+interface ApiFormDeclaration {
+  /** health_disability | race_ethnicity | religion_belief | criminal_records */
+  category?: string
+  legal_condition?: string
+  purpose?: string
+}
+
+/** The body `PUT /jobs/{id}/application-form` takes. It replaces the whole form. */
+interface ApiApplicationFormBody {
+  questions?: ApiFormQuestion[]
+  declarations?: ApiFormDeclaration[]
+}
+
+/** `GET /jobs/{id}/application-form`: the form for one job. */
+interface ApiApplicationForm extends ApiApplicationFormBody {
+  job_id?: string
+  job_revision?: number
+  automated_screening_enabled?: boolean
+  warnings?: unknown[]
+}
+
 /** The filters and ordering `GET /jobs` accepts. */
 interface JobListQuery {
   status?: string[]
@@ -205,10 +311,20 @@ interface JobListQuery {
 }
 
 export type {
+  ApiApplicationForm,
+  ApiApplicationFormBody,
   ApiBulkResult,
+  ApiPublishCheck,
+  ApiPublishGate,
+  ApiPublishIssue,
+  ApiPublishResult,
   ApiCatalog,
   ApiCatalogItem,
   ApiDepartment,
+  ApiFormConfig,
+  ApiFormDeclaration,
+  ApiFormOption,
+  ApiFormQuestion,
   ApiHiringMe,
   ApiJobBody,
   ApiJobCounts,
@@ -219,6 +335,7 @@ export type {
   ApiJobView,
   ApiListPerson,
   ApiOption,
+  ApiJobMember,
   ApiPerson,
   ApiTemplate,
   ApiTemplateExport,

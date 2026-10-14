@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { DashboardIcon } from '@/components/dashboard/nav-config'
 import { Button } from '@/components/ui'
 
+import type { ReactNode } from 'react'
+
 /**
  * The top bar of the job creation flow: the step trail on the left, Save as
  * draft and Preview on the right. Figma: main-top-container in 8973:613907.
@@ -24,12 +26,17 @@ interface JobFlowHeaderProps {
    * starts the trail at Job Templates.
    */
   mode: 'create' | 'edit-job' | 'edit-template'
-  onSave: () => void
+  /** Left unset on steps whose save has no API yet; the button then does nothing. */
+  onSave?: () => void
+  /** Greys the save button while a save is in flight. */
+  saveDisabled?: boolean
+  /** The job's team, drawn left of the buttons on the Publish step. Figma: 9270:377327. */
+  avatars?: ReactNode
 }
 
 const stepText = 'text-body-xs leading-19_2'
 
-function JobFlowHeader({ current, mode, onSave }: JobFlowHeaderProps) {
+function JobFlowHeader({ current, mode, onSave, saveDisabled, avatars }: JobFlowHeaderProps) {
   const steps = mode === 'edit-template' ? STEPS.slice(0, 1) : STEPS
   const currentIndex = steps.indexOf(current)
   const root =
@@ -47,7 +54,9 @@ function JobFlowHeader({ current, mode, onSave }: JobFlowHeaderProps) {
             </Link>
           </li>
           {steps.map((step, index) => {
-            const reached = index <= currentIndex
+            // Figma 9270:377326: the Publish step reads as not yet reached while it is open.
+            const reached =
+              index < currentIndex || (index === currentIndex && current !== 'Publish')
             return (
               <li
                 key={step}
@@ -76,7 +85,14 @@ function JobFlowHeader({ current, mode, onSave }: JobFlowHeaderProps) {
         </ol>
       </nav>
       <div className="flex items-center gap-[10px] p-[10px]">
-        <Button variant="primary" accent="default" size="sm" onClick={onSave}>
+        {avatars}
+        <Button
+          variant="primary"
+          accent="default"
+          size="sm"
+          disabled={saveDisabled}
+          onClick={onSave}
+        >
           {mode === 'create' ? 'Save as draft' : 'Save Changes'}
         </Button>
         {/* Drawn at rest in the design, with no preview screen behind it yet:

@@ -8,6 +8,24 @@ import { requests } from './requests'
 
 import type { JobListQuery } from './jobs/api-types'
 
+/** The public careers page of one company. Skipped until there is a slug. */
+function useCareersPage(slug: string) {
+  return useQuery({
+    queryKey: queryKeys.careersPage(slug),
+    queryFn: () => requests.getCareersPage(slug),
+    enabled: Boolean(slug),
+  })
+}
+
+/** One public job of a company. Skipped until there is a slug and a job id. */
+function usePublicJob(slug: string, jobId: string) {
+  return useQuery({
+    queryKey: queryKeys.publicJob(slug, jobId),
+    queryFn: () => requests.getPublicJob(slug, jobId),
+    enabled: Boolean(slug) && Boolean(jobId),
+  })
+}
+
 function useCountries() {
   return useQuery({ queryKey: queryKeys.countries, queryFn: requests.getCountries })
 }
@@ -102,6 +120,36 @@ function useJob(id: string | null) {
   })
 }
 
+/** The hiring team of one job. Skipped until there is an id. */
+function useJobMembers(id: string | null) {
+  return useQuery({
+    queryKey: queryKeys.jobMembers(id ?? ''),
+    queryFn: () => requests.getJobMembers(id ?? ''),
+    enabled: Boolean(id),
+  })
+}
+
+/** The compliance check of one job. Skipped until there is an id; refetched after a publish attempt. */
+function usePublishCheck(id: string | null) {
+  return useQuery({
+    queryKey: queryKeys.publishCheck(id ?? ''),
+    queryFn: () => requests.getPublishCheck(id ?? ''),
+    enabled: Boolean(id),
+  })
+}
+
+/** The application form of one job. Skipped until there is an id. */
+function useApplicationForm(id: string | null) {
+  return useQuery({
+    queryKey: queryKeys.applicationForm(id ?? ''),
+    queryFn: () => requests.getApplicationForm(id ?? ''),
+    enabled: Boolean(id),
+    // Edits live on the page; a refetch must not overwrite them.
+    staleTime: Infinity,
+    gcTime: 0,
+  })
+}
+
 /** The job form's fixed pick lists. They change with releases, not sessions. */
 function useHiringCatalog() {
   return useQuery({
@@ -190,6 +238,11 @@ function useSurveyOptions() {
 }
 
 export {
+  useCareersPage,
+  usePublicJob,
+  useApplicationForm,
+  usePublishCheck,
+  useJobMembers,
   useIdentificationRequirements,
   useInvite,
   useMe,

@@ -42,7 +42,8 @@ function colourFor(key: string): AvatarColour {
 
 function toManager(person: ApiListPerson | ApiPerson): JobManager {
   const name = person.name?.trim() || 'Unknown'
-  return { id: person.user_id, name, colour: colourFor(person.user_id || name) }
+  const email = 'email' in person ? person.email : undefined
+  return { id: person.user_id, name, colour: colourFor(person.user_id || name), email }
 }
 
 // The API calls a live job "published"; the screens call it open.

@@ -189,7 +189,12 @@ function NewJobPage() {
         setPendingTemplate(null)
         await queryClient.invalidateQueries({ queryKey: queryKeys.jobTemplates })
       }
-      router.push('/dashboard/jobs?saved=draft')
+      // Finished details carry on to the application form for this job.
+      router.push(
+        requireComplete
+          ? `/dashboard/jobs/new/application?job=${encodeURIComponent(current.id)}`
+          : '/dashboard/jobs?saved=draft',
+      )
     } catch (error) {
       showProblem(error)
     } finally {
