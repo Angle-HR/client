@@ -24,7 +24,8 @@ interface JobFlowHeaderProps {
    * starts the trail at Job Templates.
    */
   mode: 'create' | 'edit-job' | 'edit-template'
-  onSave: () => void
+  /** Left unset on steps whose save has no API yet; the button then does nothing. */
+  onSave?: () => void
 }
 
 const stepText = 'text-body-xs leading-19_2'
