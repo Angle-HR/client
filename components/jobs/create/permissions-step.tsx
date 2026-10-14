@@ -249,9 +249,12 @@ function PermissionsStep({
         </section>
       ) : null}
 
-      <div className="flex h-[4px] shrink-0 items-center">
-        <Divider />
-      </div>
+      {/* With no one to suggest, the rule above already separates the sections. */}
+      {suggested.length > 0 ? (
+        <div className="flex h-[4px] shrink-0 items-center">
+          <Divider />
+        </div>
+      ) : null}
 
       <section className="flex flex-col gap-[12px]">
         <h2 className="text-caption-s leading-none font-semibold text-text-secondary">

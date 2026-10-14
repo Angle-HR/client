@@ -67,7 +67,17 @@ function EmailTagsInput({
         aria-invalid={invalid}
         value={draft}
         placeholder={tags.length === 0 ? 'Add emails, comma separated' : ''}
-        onChange={(event) => onDraftChange(event.target.value)}
+        onChange={(event) => {
+          const value = event.target.value
+          // Pasted or typed commas turn what is before them into tags straight away.
+          const cut = value.lastIndexOf(',')
+          if (cut === -1) {
+            onDraftChange(value)
+            return
+          }
+          onTagsChange(addEmailTags(tags, value.slice(0, cut)))
+          onDraftChange(value.slice(cut + 1).trimStart())
+        }}
         onKeyDown={handleKeyDown}
         onBlur={commit}
         className="min-w-[160px] flex-1 bg-transparent text-body-s text-text-primary outline-none placeholder:text-text-input-placeholder"

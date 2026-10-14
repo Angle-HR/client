@@ -76,6 +76,13 @@ function InviteModal({ person, sending, onSend, onClose }: InviteModalProps) {
           </div>
         ) : (
           <div className="flex flex-col gap-[6px]">
+            {/* 9270:377053 labels the field above it. */}
+            <span
+              aria-hidden="true"
+              className="flex h-[9px] items-center pl-[3px] text-body-xs leading-none font-medium-550 text-text-tertiary"
+            >
+              Email address
+            </span>
             <EmailTagsInput
               tags={tags}
               draft={draft}

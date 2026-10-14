@@ -171,7 +171,8 @@ function PermissionsPage() {
       />
 
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <div className="w-[560px] max-w-full p-[40px]">
+        {/* A 560px column inside 40px padding, as 9270:376943 lays it out. */}
+        <div className="w-[640px] max-w-full p-[40px]">
           <PermissionsStep
             backHref={backHref}
             creator={creator}
