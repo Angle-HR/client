@@ -26,11 +26,13 @@ interface JobFlowHeaderProps {
   mode: 'create' | 'edit-job' | 'edit-template'
   /** Left unset on steps whose save has no API yet; the button then does nothing. */
   onSave?: () => void
+  /** Greys the save button while a save is in flight. */
+  saveDisabled?: boolean
 }
 
 const stepText = 'text-body-xs leading-19_2'
 
-function JobFlowHeader({ current, mode, onSave }: JobFlowHeaderProps) {
+function JobFlowHeader({ current, mode, onSave, saveDisabled }: JobFlowHeaderProps) {
   const steps = mode === 'edit-template' ? STEPS.slice(0, 1) : STEPS
   const currentIndex = steps.indexOf(current)
   const root =
@@ -77,7 +79,13 @@ function JobFlowHeader({ current, mode, onSave }: JobFlowHeaderProps) {
         </ol>
       </nav>
       <div className="flex items-center gap-[10px] p-[10px]">
-        <Button variant="primary" accent="default" size="sm" onClick={onSave}>
+        <Button
+          variant="primary"
+          accent="default"
+          size="sm"
+          disabled={saveDisabled}
+          onClick={onSave}
+        >
           {mode === 'create' ? 'Save as draft' : 'Save Changes'}
         </Button>
         {/* Drawn at rest in the design, with no preview screen behind it yet:

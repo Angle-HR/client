@@ -36,12 +36,11 @@ import type { Dispatch, DragEvent, SetStateAction } from 'react'
  * (default), 9270:376125 (type dropdown), 9270:377879 (Add a question), 9270:377778
  * (Question deleted toast).
  *
- * Save & continue, Save as draft and Preview have no API behind them yet, so
- * they do nothing here.
+ * The page saves the form; this column only reports the footer's clicks.
  */
 
 const SECTION_TITLES: Record<QuestionSection, string> = {
-  personal: 'PERSONAL INFORMATION',
+  personal_information: 'PERSONAL INFORMATION',
   profile: 'PROFILE',
   eligibility: 'ELIGIBILITY, AVAILABILITY & COMPENSATION',
   screening: 'SCREENING QUESTIONS',
@@ -61,18 +60,25 @@ interface ApplicationFormBuilderProps {
   /** The form, owned by the page so the phone preview can show it live. */
   form: ApplicationForm
   onFormChange: Dispatch<SetStateAction<ApplicationForm>>
+  /** Save & continue, and the footer's Back. */
+  onSave: () => void
+  saveDisabled: boolean
+  onBack: () => void
 }
 
 function ApplicationFormBuilder({
   backHref,
   form,
   onFormChange: setForm,
+  onSave,
+  saveDisabled,
+  onBack,
 }: ApplicationFormBuilderProps) {
   // The question being added, in the section it was added to. Only one at a time.
   const [draft, setDraft] = useState<FormQuestion | null>(null)
   // The section whose "Add a question" modal is open.
   const [pickingFor, setPickingFor] = useState<QuestionSection | null>(null)
-  const [dragging, setDragging] = useState<{ id: string; section: QuestionSection } | null>(null)
+  const [dragging, setDragging] = useState<{ key: string; section: QuestionSection } | null>(null)
   const [toast, setToast] = useState<JobToastState | null>(null)
   const [keepForFuture, setKeepForFuture] = useState(false)
   // Toast ids only need to change between toasts; a counter keeps them stable in render.
@@ -80,7 +86,7 @@ function ApplicationFormBuilder({
 
   function removeRow(question: FormQuestion) {
     const index = questionsInSection(form, question.section).indexOf(question)
-    setForm((current) => removeQuestion(current, question.id))
+    setForm((current) => removeQuestion(current, question.key))
     toastIds.current += 1
     setToast({
       id: toastIds.current,
@@ -141,10 +147,10 @@ function ApplicationFormBuilder({
             <ul className="flex flex-col gap-[10px]">
               {rows.map((question, index) => (
                 <QuestionRow
-                  key={question.id}
+                  key={question.key}
                   question={question}
-                  dragging={dragging?.id === question.id}
-                  onDragStart={() => setDragging({ id: question.id, section })}
+                  dragging={dragging?.key === question.key}
+                  onDragStart={() => setDragging({ key: question.key, section })}
                   onDragEnd={() => setDragging(null)}
                   onDragOver={(event) => {
                     // Rows only accept drops from their own section.
@@ -153,13 +159,13 @@ function ApplicationFormBuilder({
                   onDrop={(event) => {
                     event.preventDefault()
                     if (dragging?.section === section) {
-                      const dragged = dragging.id
+                      const dragged = dragging.key
                       setForm((current) => moveQuestion(current, dragged, index))
                     }
                     setDragging(null)
                   }}
                   onRequiredChange={(required) =>
-                    setForm((current) => updateQuestion(current, question.id, { required }))
+                    setForm((current) => updateQuestion(current, question.key, { required }))
                   }
                   onRemove={() => removeRow(question)}
                 />
@@ -236,6 +242,7 @@ function ApplicationFormBuilder({
             accent="blue"
             size="md"
             iconPrefix={<DashboardIcon name="arrow-left-solid" size={14} />}
+            onClick={onBack}
           >
             Back
           </Button>
@@ -244,6 +251,8 @@ function ApplicationFormBuilder({
             variant="primary"
             accent="blue"
             size="md"
+            disabled={saveDisabled}
+            onClick={onSave}
             iconSuffix={<DashboardIcon name="check-circle-solid" size={14} />}
           >
             Save &amp; continue
@@ -322,7 +331,7 @@ function QuestionRow({
         draggable={!question.locked}
         onDragStart={(event) => {
           event.dataTransfer.effectAllowed = 'move'
-          event.dataTransfer.setData('text/plain', question.id)
+          event.dataTransfer.setData('text/plain', question.key)
           onDragStart()
         }}
         onDragEnd={onDragEnd}

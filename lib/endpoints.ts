@@ -43,6 +43,7 @@ const ENDPOINTS = {
     details: (id: string) => `/jobs/${id}/details`,
     members: (id: string) => `/jobs/${id}/members`,
     preview: (id: string) => `/jobs/${id}/preview`,
+    applicationForm: (id: string) => `/jobs/${id}/application-form`,
   },
   hiring: {
     me: () => '/hiring/me',

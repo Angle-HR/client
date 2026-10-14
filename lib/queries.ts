@@ -102,6 +102,18 @@ function useJob(id: string | null) {
   })
 }
 
+/** The application form of one job. Skipped until there is an id. */
+function useApplicationForm(id: string | null) {
+  return useQuery({
+    queryKey: queryKeys.applicationForm(id ?? ''),
+    queryFn: () => requests.getApplicationForm(id ?? ''),
+    enabled: Boolean(id),
+    // Edits live on the page; a refetch must not overwrite them.
+    staleTime: Infinity,
+    gcTime: 0,
+  })
+}
+
 /** The job form's fixed pick lists. They change with releases, not sessions. */
 function useHiringCatalog() {
   return useQuery({
@@ -190,6 +202,7 @@ function useSurveyOptions() {
 }
 
 export {
+  useApplicationForm,
   useIdentificationRequirements,
   useInvite,
   useMe,

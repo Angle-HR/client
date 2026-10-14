@@ -124,7 +124,7 @@ function ApplicationPreview({
         ) : (
           <div className="flex flex-col gap-[9.6px] px-[14.4px] py-[9.6px]">
             {questions.map((question) => (
-              <PreviewField key={question.id} question={question} />
+              <PreviewField key={question.key} question={question} />
             ))}
           </div>
         )}
@@ -204,7 +204,11 @@ function QuestionInput({ question }: { question: FormQuestion }): ReactElement {
       return (
         <div className="flex flex-col gap-[6px]">
           {question.options.map((option, index) => (
-            <RadioButton key={`${index}-${option}`} name={question.id} label={option} />
+            <RadioButton
+              key={`${index}-${option.label}`}
+              name={question.key}
+              label={option.label}
+            />
           ))}
         </div>
       )
@@ -213,14 +217,14 @@ function QuestionInput({ question }: { question: FormQuestion }): ReactElement {
       return (
         <div className="flex flex-col gap-[6px]">
           {question.options.map((option, index) => (
-            <Checkbox key={`${index}-${option}`} label={option} />
+            <Checkbox key={`${index}-${option.label}`} label={option.label} />
           ))}
         </div>
       )
     case 'dropdown':
       return (
         <InputSelection
-          options={question.options.map((option) => ({ value: option, label: option }))}
+          options={question.options.map((option) => ({ value: option.label, label: option.label }))}
           placeholder="Search for an option..."
         />
       )

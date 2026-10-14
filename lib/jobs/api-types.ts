@@ -185,6 +185,67 @@ interface ApiJobView extends ApiJobBody {
   created_by?: string
 }
 
+/** A choice option. The API gives it an id once the form is saved. */
+interface ApiFormOption {
+  id?: string
+  label?: string
+}
+
+/** The config a question takes: choice options, a linear scale, or upload limits. */
+interface ApiFormConfig {
+  options?: ApiFormOption[]
+  min?: number
+  max?: number
+  min_label?: string
+  max_label?: string
+  accept?: string[]
+  max_mb?: number
+}
+
+/** One question of `GET` and `PUT /jobs/{id}/application-form`. */
+interface ApiFormQuestion {
+  /** Absent on a question not yet saved; the server assigns it. */
+  id?: string
+  /** personal_information | profile | eligibility | screening */
+  section?: string
+  position?: number
+  /** e.g. short_text, phone_number, single_choice, file_upload. */
+  type?: string
+  label?: string
+  description?: string
+  helper_text?: string
+  required?: boolean
+  /** Set by the server; a locked question cannot be removed or made optional. */
+  locked?: boolean
+  system_key?: string | null
+  config?: ApiFormConfig
+  /** Not drawn in the design; sent back as received. */
+  knockout?: unknown
+  special_category?: unknown
+}
+
+/** A special category the candidate is asked about. */
+interface ApiFormDeclaration {
+  /** health_disability | race_ethnicity | religion_belief | criminal_records */
+  category?: string
+  legal_condition?: string
+  purpose?: string
+}
+
+/** The body `PUT /jobs/{id}/application-form` takes. It replaces the whole form. */
+interface ApiApplicationFormBody {
+  questions?: ApiFormQuestion[]
+  declarations?: ApiFormDeclaration[]
+}
+
+/** `GET /jobs/{id}/application-form`: the form for one job. */
+interface ApiApplicationForm extends ApiApplicationFormBody {
+  job_id?: string
+  job_revision?: number
+  automated_screening_enabled?: boolean
+  warnings?: unknown[]
+}
+
 /** The filters and ordering `GET /jobs` accepts. */
 interface JobListQuery {
   status?: string[]
@@ -205,10 +266,16 @@ interface JobListQuery {
 }
 
 export type {
+  ApiApplicationForm,
+  ApiApplicationFormBody,
   ApiBulkResult,
   ApiCatalog,
   ApiCatalogItem,
   ApiDepartment,
+  ApiFormConfig,
+  ApiFormDeclaration,
+  ApiFormOption,
+  ApiFormQuestion,
   ApiHiringMe,
   ApiJobBody,
   ApiJobCounts,

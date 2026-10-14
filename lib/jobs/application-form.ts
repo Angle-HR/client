@@ -3,18 +3,27 @@
  * Application Form" 9270:375985 for the default rows, 9346:562575 for the
  * question types.
  *
- * Field names follow the hiring API's FormQuestion where the builder needs
- * them. Position is the order inside the array, not a stored field.
+ * Sections, types and config are the hiring API's own names (`/jobs/{id}/application-form`).
+ * The design's section headings map onto the API's four sections. Position is
+ * the order inside the array; it is renumbered when the form is saved.
  */
 
-type QuestionSection = 'personal' | 'profile' | 'eligibility' | 'screening'
+import type {
+  ApiApplicationForm,
+  ApiApplicationFormBody,
+  ApiFormConfig,
+  ApiFormOption,
+  ApiFormQuestion,
+} from './api-types'
+
+type QuestionSection = 'personal_information' | 'profile' | 'eligibility' | 'screening'
 
 type QuestionType =
   | 'short_text'
   | 'long_text'
   | 'number'
   | 'email'
-  | 'phone'
+  | 'phone_number'
   | 'single_choice'
   | 'multiple_choice'
   | 'checkbox'
@@ -26,34 +35,55 @@ type QuestionType =
   | 'date'
   | 'autofill_resume'
 
-type SpecialCategoryKey = 'health' | 'race' | 'religion' | 'criminal'
+type SpecialCategoryKey =
+  | 'health_disability'
+  | 'race_ethnicity'
+  | 'religion_belief'
+  | 'criminal_records'
+
+interface FormOption {
+  /** Absent on an option not yet saved. */
+  id?: string
+  label: string
+}
 
 interface QuestionScale {
   min: number
   max: number
+  min_label?: string
+  max_label?: string
 }
 
+/** Upload limits, as the API gives them. Only file, image and resume questions keep them. */
+type UploadRules = Pick<ApiFormConfig, 'accept' | 'max_mb'>
+
 interface FormQuestion {
-  id: string
+  /** Keys the row in the builder. A saved question uses its API id; a new one a local key. */
+  key: string
+  /** The API's id. Absent until the question is saved, and then not sent. */
+  id?: string
   section: QuestionSection
   type: QuestionType
   label: string
   description: string
+  helper_text?: string
   required: boolean
-  /** Locked rows cannot be removed, moved or made optional. */
+  /** Locked rows cannot be removed, moved or made optional. Set by the server. */
   locked: boolean
-  /** Choice types only: the option labels, in the order shown. */
-  options: string[]
+  /** Choice types only: the options, in the order shown. */
+  options: FormOption[]
   /** Linear scale only. */
   scale: QuestionScale | null
+  config: UploadRules
   system_key: string | null
+  /** Not drawn in the design; sent back exactly as received. */
+  knockout?: ApiFormQuestion['knockout']
+  special_category?: ApiFormQuestion['special_category']
 }
 
-/** One checked category in "Special category data". Legal wording is filled in later. */
+/** One special category the candidate is asked about. The design collects no legal wording. */
 interface FormDeclaration {
   category: SpecialCategoryKey
-  legal_condition: string
-  purpose: string
 }
 
 interface ApplicationForm {
@@ -76,7 +106,7 @@ const QUESTION_TYPES: readonly QuestionTypeOption[] = [
   { type: 'long_text', label: 'Long text', pillLabel: 'Long text Field', group: 'Input' },
   { type: 'number', label: 'Number', pillLabel: 'Number', group: 'Input' },
   { type: 'email', label: 'Email', pillLabel: 'Email', group: 'Input' },
-  { type: 'phone', label: 'Phone number', pillLabel: 'Phone number', group: 'Input' },
+  { type: 'phone_number', label: 'Phone number', pillLabel: 'Phone number', group: 'Input' },
   { type: 'single_choice', label: 'Single choice', pillLabel: 'Single choice', group: 'Choice' },
   {
     type: 'multiple_choice',
@@ -99,9 +129,13 @@ const QUESTION_TYPES: readonly QuestionTypeOption[] = [
   },
 ]
 
-/** Figma 9270:375985 section titles, in the order they are shown. */
+/**
+ * The API's four sections, in the order the design shows them. The design's
+ * headings: PERSONAL INFORMATION, PROFILE, ELIGIBILITY, AVAILABILITY &
+ * COMPENSATION (under "Eligibility") and SCREENING QUESTIONS.
+ */
 const QUESTION_SECTIONS: readonly QuestionSection[] = [
-  'personal',
+  'personal_information',
   'profile',
   'eligibility',
   'screening',
@@ -109,10 +143,10 @@ const QUESTION_SECTIONS: readonly QuestionSection[] = [
 
 /** Figma 9270:375985 "Special category data" checkboxes, in the order shown. */
 const SPECIAL_CATEGORIES: readonly { key: SpecialCategoryKey; label: string }[] = [
-  { key: 'health', label: 'Health / disability (reasonable adjustments)' },
-  { key: 'race', label: 'Race / ethnicity (diversity monitoring)' },
-  { key: 'religion', label: 'Religion or belief' },
-  { key: 'criminal', label: 'Criminal records' },
+  { key: 'health_disability', label: 'Health / disability (reasonable adjustments)' },
+  { key: 'race_ethnicity', label: 'Race / ethnicity (diversity monitoring)' },
+  { key: 'religion_belief', label: 'Religion or belief' },
+  { key: 'criminal_records', label: 'Criminal records' },
 ]
 
 const CHOICE_TYPES: readonly QuestionType[] = [
@@ -121,6 +155,9 @@ const CHOICE_TYPES: readonly QuestionType[] = [
   'checkbox',
   'dropdown',
 ]
+
+/** The types whose config the API keeps: the upload limits. */
+const UPLOAD_TYPES: readonly QuestionType[] = ['image_upload', 'file_upload', 'autofill_resume']
 
 const DEFAULT_SCALE: QuestionScale = { min: 1, max: 10 }
 
@@ -140,18 +177,18 @@ function typeOption(type: QuestionType): QuestionTypeOption {
 }
 
 /**
- * The rows the form starts with, as drawn. Full name and Email are locked, so
- * they stay on the form and cannot be made optional.
+ * The rows the form starts with, as drawn. Used only when there is no job to
+ * load a form for. Full name and Email are locked, so they stay on the form.
  */
 function defaultApplicationForm(): ApplicationForm {
   const row = (
-    id: string,
+    key: string,
     section: QuestionSection,
     type: QuestionType,
     label: string,
     extra: Partial<FormQuestion> = {},
   ): FormQuestion => ({
-    id,
+    key,
     section,
     type,
     label,
@@ -160,26 +197,27 @@ function defaultApplicationForm(): ApplicationForm {
     locked: false,
     options: [],
     scale: null,
+    config: {},
     system_key: null,
     ...extra,
   })
 
   return {
     questions: [
-      row('autofill-resume', 'personal', 'autofill_resume', 'Autofill with resume', {
+      row('autofill-resume', 'personal_information', 'autofill_resume', 'Autofill with resume', {
         system_key: 'autofill_resume',
       }),
-      row('full-name', 'personal', 'short_text', 'Full name', {
+      row('full-name', 'personal_information', 'short_text', 'Full name', {
         required: true,
         locked: true,
         system_key: 'full_name',
       }),
-      row('email-address', 'personal', 'email', 'Email address', {
+      row('email-address', 'personal_information', 'email', 'Email address', {
         required: true,
         locked: true,
         system_key: 'email',
       }),
-      row('location', 'personal', 'short_text', 'Location'),
+      row('location', 'personal_information', 'short_text', 'Location'),
       row('cv-resume', 'profile', 'file_upload', 'CV / Resume'),
       // The design reads "Linkedln"; a default label should not ship that typo.
       row('socials', 'profile', 'link', 'Socials - LinkedIn / Twitter'),
@@ -205,9 +243,9 @@ function questionsInSection(form: ApplicationForm, section: QuestionSection): Fo
 }
 
 /** A blank question of a type, not yet saved. The editor fills it in. */
-function createQuestion(id: string, type: QuestionType, section: QuestionSection): FormQuestion {
+function createQuestion(key: string, type: QuestionType, section: QuestionSection): FormQuestion {
   return {
-    id,
+    key,
     section,
     type,
     label: '',
@@ -215,8 +253,9 @@ function createQuestion(id: string, type: QuestionType, section: QuestionSection
     required: false,
     locked: false,
     // Two blank options to start, shown with the editor's placeholders.
-    options: isChoiceType(type) ? ['', ''] : [],
+    options: isChoiceType(type) ? [{ label: '' }, { label: '' }] : [],
     scale: type === 'linear_scale' ? DEFAULT_SCALE : null,
+    config: {},
     system_key: null,
   }
 }
@@ -226,7 +265,10 @@ function changeQuestionType(question: FormQuestion, type: QuestionType): FormQue
   return {
     ...question,
     type,
-    options: isChoiceType(type) && question.options.length === 0 ? ['', ''] : question.options,
+    options:
+      isChoiceType(type) && question.options.length === 0
+        ? [{ label: '' }, { label: '' }]
+        : question.options,
     scale: type === 'linear_scale' ? (question.scale ?? DEFAULT_SCALE) : null,
   }
 }
@@ -239,23 +281,23 @@ function addQuestion(form: ApplicationForm, question: FormQuestion): Application
   return { ...form, questions }
 }
 
-/** Changes a question. The id and section stay as they are. */
+/** Changes a question. The key and section stay as they are. */
 function updateQuestion(
   form: ApplicationForm,
-  id: string,
-  patch: Partial<Omit<FormQuestion, 'id' | 'section'>>,
+  key: string,
+  patch: Partial<Omit<FormQuestion, 'key' | 'section'>>,
 ): ApplicationForm {
   return {
     ...form,
     questions: form.questions.map((question) =>
-      question.id === id ? { ...question, ...patch } : question,
+      question.key === key ? { ...question, ...patch } : question,
     ),
   }
 }
 
 /** Removes a question unless it is locked. */
-function removeQuestion(form: ApplicationForm, id: string): ApplicationForm {
-  const target = form.questions.find((question) => question.id === id)
+function removeQuestion(form: ApplicationForm, key: string): ApplicationForm {
+  const target = form.questions.find((question) => question.key === key)
   if (!target || target.locked) return form
   return { ...form, questions: form.questions.filter((question) => question !== target) }
 }
@@ -269,7 +311,7 @@ function restoreQuestion(
   question: FormQuestion,
   indexInSection: number,
 ): ApplicationForm {
-  if (form.questions.some((item) => item.id === question.id)) return form
+  if (form.questions.some((item) => item.key === question.key)) return form
   const sectionIndexes = form.questions.flatMap((item, index) =>
     item.section === question.section ? [index] : [],
   )
@@ -285,8 +327,8 @@ function restoreQuestion(
  * Moves a question to an index within its own section, as the drag handle
  * does. A move that would shift a locked row is refused.
  */
-function moveQuestion(form: ApplicationForm, id: string, toIndex: number): ApplicationForm {
-  const moving = form.questions.find((question) => question.id === id)
+function moveQuestion(form: ApplicationForm, key: string, toIndex: number): ApplicationForm {
+  const moving = form.questions.find((question) => question.key === key)
   if (!moving || moving.locked) return form
 
   const sectionQuestions = questionsInSection(form, moving.section)
@@ -324,10 +366,7 @@ function setSpecialCategory(
 ): ApplicationForm {
   const others = form.declarations.filter((item) => item.category !== category)
   if (!checked) return { ...form, declarations: others }
-  return {
-    ...form,
-    declarations: [...others, { category, legal_condition: '', purpose: '' }],
-  }
+  return { ...form, declarations: [...others, { category }] }
 }
 
 function isSpecialCategoryChecked(form: ApplicationForm, category: SpecialCategoryKey): boolean {
@@ -341,7 +380,9 @@ function isSpecialCategoryChecked(form: ApplicationForm, category: SpecialCatego
 function readyQuestion(question: FormQuestion): FormQuestion | null {
   const label = question.label.trim()
   if (!label) return null
-  const options = question.options.map((option) => option.trim()).filter(Boolean)
+  const options = question.options
+    .map((option) => ({ ...option, label: option.label.trim() }))
+    .filter((option) => option.label)
   if (isChoiceType(question.type) && options.length === 0) return null
   return {
     ...question,
@@ -349,6 +390,105 @@ function readyQuestion(question: FormQuestion): FormQuestion | null {
     description: question.description.trim(),
     options: isChoiceType(question.type) ? options : [],
   }
+}
+
+/** The API's questions into the form. Questions are ordered by position. */
+function formFromApi(view: ApiApplicationForm): ApplicationForm {
+  const sorted = [...(view.questions ?? [])].sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+  return {
+    questions: sorted.map(questionFromApi),
+    declarations: (view.declarations ?? []).map((item) => ({
+      category: item.category as SpecialCategoryKey,
+    })),
+  }
+}
+
+/**
+ * The form as `PUT /jobs/{id}/application-form` takes it. Positions run in the
+ * order the form shows them, across all four sections. The whole form is sent.
+ */
+function formToApi(form: ApplicationForm): ApiApplicationFormBody {
+  const questions = QUESTION_SECTIONS.flatMap((section) => questionsInSection(form, section))
+  return {
+    questions: questions.map((question, position) => questionToApi(question, position)),
+    declarations: form.declarations.map((item) => ({ category: item.category })),
+  }
+}
+
+function questionFromApi(question: ApiFormQuestion): FormQuestion {
+  const type = (question.type ?? 'short_text') as QuestionType
+  const config = question.config ?? {}
+  return {
+    key: question.id ?? '',
+    id: question.id,
+    section: question.section as QuestionSection,
+    type,
+    label: question.label ?? '',
+    description: question.description ?? '',
+    helper_text: question.helper_text,
+    required: question.required ?? false,
+    locked: question.locked ?? false,
+    options: (config.options ?? []).map(optionFromApi),
+    scale:
+      type === 'linear_scale'
+        ? {
+            min: config.min ?? DEFAULT_SCALE.min,
+            max: config.max ?? DEFAULT_SCALE.max,
+            min_label: config.min_label,
+            max_label: config.max_label,
+          }
+        : null,
+    config: { accept: config.accept, max_mb: config.max_mb },
+    system_key: question.system_key ?? null,
+    knockout: question.knockout,
+    special_category: question.special_category,
+  }
+}
+
+function questionToApi(question: FormQuestion, position: number): ApiFormQuestion {
+  return {
+    // A new question has no id: the server assigns one.
+    ...(question.id ? { id: question.id } : {}),
+    section: question.section,
+    position,
+    type: question.type,
+    label: question.label,
+    description: question.description || undefined,
+    helper_text: question.helper_text,
+    required: question.required,
+    locked: question.locked,
+    system_key: question.system_key,
+    config: configToApi(question),
+    knockout: question.knockout,
+    special_category: question.special_category,
+  }
+}
+
+function configToApi(question: FormQuestion): ApiFormConfig | undefined {
+  if (isChoiceType(question.type)) {
+    return { options: question.options.map(optionToApi) }
+  }
+  if (question.type === 'linear_scale') {
+    const scale = question.scale ?? DEFAULT_SCALE
+    return {
+      min: scale.min,
+      max: scale.max,
+      min_label: scale.min_label,
+      max_label: scale.max_label,
+    }
+  }
+  if (UPLOAD_TYPES.includes(question.type)) {
+    return { accept: question.config.accept, max_mb: question.config.max_mb }
+  }
+  return undefined
+}
+
+function optionFromApi(option: ApiFormOption): FormOption {
+  return option.id ? { id: option.id, label: option.label ?? '' } : { label: option.label ?? '' }
+}
+
+function optionToApi(option: FormOption): ApiFormOption {
+  return option.id ? { id: option.id, label: option.label } : { label: option.label }
 }
 
 function findLastIndex<T>(items: readonly T[], test: (item: T) => boolean): number {
@@ -367,6 +507,8 @@ export {
   changeQuestionType,
   createQuestion,
   defaultApplicationForm,
+  formFromApi,
+  formToApi,
   hasRequiredToggle,
   isChoiceType,
   isSpecialCategoryChecked,
@@ -382,6 +524,7 @@ export {
 export type {
   ApplicationForm,
   FormDeclaration,
+  FormOption,
   FormQuestion,
   QuestionScale,
   QuestionSection,

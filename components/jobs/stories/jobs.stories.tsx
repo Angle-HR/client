@@ -162,7 +162,14 @@ function ApplicationFormBuilderFrame() {
   const [form, setForm] = useState<ApplicationForm>(defaultApplicationForm)
   return (
     <div className="bg-bg-primary p-[40px]">
-      <ApplicationFormBuilder backHref="/dashboard/jobs" form={form} onFormChange={setForm} />
+      <ApplicationFormBuilder
+        backHref="/dashboard/jobs"
+        form={form}
+        onFormChange={setForm}
+        onSave={() => undefined}
+        saveDisabled={false}
+        onBack={() => undefined}
+      />
     </div>
   )
 }

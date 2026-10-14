@@ -28,7 +28,7 @@ const TYPE_ICONS: Record<QuestionType, string> = {
   long_text: 'long-text-solid',
   number: 'hashtag-solid',
   email: 'at-symbol-solid',
-  phone: 'phone-solid',
+  phone_number: 'phone-solid',
   single_choice: 'radio-single-choice-solid',
   multiple_choice: 'multiple-choice-solid',
   checkbox: 'checkbox-solid',
@@ -293,13 +293,13 @@ function OptionsEditor({
           )}
           <input
             aria-label={`Option ${index + 1}`}
-            value={option}
+            value={option.label}
             placeholder={placeholders[index] ?? 'Option'}
             onChange={(event) =>
               onChange({
                 ...question,
                 options: question.options.map((item, position) =>
-                  position === index ? event.target.value : item,
+                  position === index ? { ...item, label: event.target.value } : item,
                 ),
               })
             }
@@ -311,7 +311,7 @@ function OptionsEditor({
         <TextButton
           size="md"
           className="text-text-tertiary!"
-          onClick={() => onChange({ ...question, options: [...question.options, ''] })}
+          onClick={() => onChange({ ...question, options: [...question.options, { label: '' }] })}
         >
           Add Option
         </TextButton>

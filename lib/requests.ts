@@ -4,6 +4,8 @@ import { ENDPOINTS } from './endpoints'
 import { countsByStatus, jobListParams, toJob, toManager, toTemplate } from './jobs/api'
 
 import type {
+  ApiApplicationForm,
+  ApiApplicationFormBody,
   ApiBulkResult,
   ApiCatalog,
   ApiCatalogItem,
@@ -429,6 +431,26 @@ const requests = {
 
   deleteTemplate: async (id: string): Promise<void> => {
     await axiosInstance.delete(ENDPOINTS.hiring.template(id))
+  },
+
+  /** The job's application form: its questions and special categories. */
+  getApplicationForm: async (id: string): Promise<ApiApplicationForm> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiApplicationForm>>(
+      ENDPOINTS.jobs.applicationForm(id),
+    )
+    return data.data
+  },
+
+  /** Replaces the whole form, so every question is sent. Returns the saved form. */
+  saveApplicationForm: async (
+    id: string,
+    body: ApiApplicationFormBody,
+  ): Promise<ApiApplicationForm> => {
+    const { data } = await axiosInstance.put<ApiResponse<ApiApplicationForm>>(
+      ENDPOINTS.jobs.applicationForm(id),
+      body,
+    )
+    return data.data
   },
 
   /** A company template made from an existing job. */
