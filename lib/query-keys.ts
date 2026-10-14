@@ -27,6 +27,8 @@ const queryKeys = {
   jobTemplates: ['jobs', 'templates'] as const,
   hiringMe: ['hiring', 'me'] as const,
   invite: (token: string) => ['auth', 'invite', token] as const,
+  /** The public careers page of one company, by slug. */
+  careersPage: (slug: string) => ['careers', slug] as const,
   identificationRequirements: (countryId: string) =>
     ['onboarding', 'identification-requirements', countryId] as const,
 }

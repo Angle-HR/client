@@ -8,6 +8,15 @@ import { requests } from './requests'
 
 import type { JobListQuery } from './jobs/api-types'
 
+/** The public careers page of one company. Skipped until there is a slug. */
+function useCareersPage(slug: string) {
+  return useQuery({
+    queryKey: queryKeys.careersPage(slug),
+    queryFn: () => requests.getCareersPage(slug),
+    enabled: Boolean(slug),
+  })
+}
+
 function useCountries() {
   return useQuery({ queryKey: queryKeys.countries, queryFn: requests.getCountries })
 }
@@ -220,6 +229,7 @@ function useSurveyOptions() {
 }
 
 export {
+  useCareersPage,
   useApplicationForm,
   usePublishCheck,
   useJobMembers,

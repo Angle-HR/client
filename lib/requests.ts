@@ -1,8 +1,10 @@
 import { axiosInstance } from '@/config/axios'
 
+import { CAREERS_FIXTURES } from './careers/fixtures'
 import { ENDPOINTS } from './endpoints'
 import { countsByStatus, jobListParams, toJob, toManager, toTemplate } from './jobs/api'
 
+import type { CareersPage } from './careers/types'
 import type {
   ApiApplicationForm,
   ApiApplicationFormBody,
@@ -256,6 +258,11 @@ const requests = {
     )
     return data.data
   },
+
+  // No public careers endpoint yet: fixtures until the API serves this.
+  /** The company and its open roles, or null when no company has that slug. */
+  getCareersPage: (companySlug: string): Promise<CareersPage | null> =>
+    Promise.resolve(CAREERS_FIXTURES[companySlug] ?? null),
 
   // No jobs endpoints yet — resolves with local fixtures so the query layer and
   // screens are already shaped for the real call.
