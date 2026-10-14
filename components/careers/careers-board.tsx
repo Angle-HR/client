@@ -2,14 +2,7 @@
 
 import { useState } from 'react'
 
-import {
-  Avatar,
-  Checkbox,
-  InputSelection,
-  TextButton,
-  TextInput,
-  getInitials,
-} from '@/components/ui'
+import { Avatar, Checkbox, InputSelection, TextButton, getInitials } from '@/components/ui'
 import {
   EMPLOYMENT_TYPES,
   NO_FILTERS,
@@ -39,7 +32,7 @@ function toList(value: string | string[]): string[] {
 
 /**
  * The public careers page: company header, about text, and the open roles
- * with search and filters. Figma: 9346:561510 (default), 9346:561540
+ * with filters (the design draws no search box). Figma: 9346:561510 (default), 9346:561540
  * (Location open), 9346:561580 (no results), 9346:561611 (filtered).
  */
 function CareersBoard({ slug }: CareersBoardProps): React.ReactElement | null {
@@ -77,14 +70,6 @@ function CareersBoard({ slug }: CareersBoardProps): React.ReactElement | null {
         </h2>
 
         <div className="flex flex-col gap-[16px]">
-          <TextInput
-            aria-label="Search"
-            placeholder="Search"
-            value={filters.query}
-            onChange={(event) => setFilters({ ...filters, query: event.target.value })}
-            className="w-full"
-          />
-
           <div className="flex flex-col gap-[16px] md:flex-row md:flex-wrap">
             <InputSelection
               label="Location"
