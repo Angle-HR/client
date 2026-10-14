@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from './query-keys'
 import { requests } from './requests'
 
+import type { ApplicationAnswers } from './careers/application'
 import type { OnboardingProgressSummary, ProductOnboardingStatusData } from './types'
 
 function useJoinWaitlist() {
@@ -13,6 +14,13 @@ function useJoinWaitlist() {
 
 function useSubmitOnboarding() {
   return useMutation({ mutationFn: requests.submitOnboarding })
+}
+
+/** Sends a candidate's application for one job of a company. */
+function useSubmitApplication(slug: string, jobId: string) {
+  return useMutation({
+    mutationFn: (answers: ApplicationAnswers) => requests.submitApplication(slug, jobId, answers),
+  })
 }
 
 function useSignup() {
@@ -146,6 +154,7 @@ export {
   useLogin,
   useResendVerification,
   useSignup,
+  useSubmitApplication,
   useSubmitOnboarding,
   useUpdateSignupEmail,
   useUpsertAddress,

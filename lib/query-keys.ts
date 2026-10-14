@@ -29,6 +29,7 @@ const queryKeys = {
   invite: (token: string) => ['auth', 'invite', token] as const,
   /** The public careers page of one company, by slug. */
   careersPage: (slug: string) => ['careers', slug] as const,
+  publicJob: (slug: string, jobId: string) => ['careers', slug, 'jobs', jobId] as const,
   identificationRequirements: (countryId: string) =>
     ['onboarding', 'identification-requirements', countryId] as const,
 }

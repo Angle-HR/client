@@ -1,10 +1,11 @@
 import { axiosInstance } from '@/config/axios'
 
-import { CAREERS_FIXTURES } from './careers/fixtures'
+import { CAREERS_FIXTURES, jobForRole } from './careers/fixtures'
 import { ENDPOINTS } from './endpoints'
 import { countsByStatus, jobListParams, toJob, toManager, toTemplate } from './jobs/api'
 
-import type { CareersPage } from './careers/types'
+import type { ApplicationAnswers } from './careers/application'
+import type { CareersJobPage, CareersPage } from './careers/types'
 import type {
   ApiApplicationForm,
   ApiApplicationFormBody,
@@ -263,6 +264,26 @@ const requests = {
   /** The company and its open roles, or null when no company has that slug. */
   getCareersPage: (companySlug: string): Promise<CareersPage | null> =>
     Promise.resolve(CAREERS_FIXTURES[companySlug] ?? null),
+
+  // No public job endpoint yet: fixtures until the API serves this.
+  /** One open job of a company, or null when the company or the job is not found. */
+  getPublicJob: (companySlug: string, jobId: string): Promise<CareersJobPage | null> => {
+    const page = CAREERS_FIXTURES[companySlug]
+    const role = page?.roles.find((item) => item.id === jobId)
+    return Promise.resolve(page && role ? { company: page.company, job: jobForRole(role) } : null)
+  },
+
+  // No public application endpoint yet: fixtures until the API serves this.
+  /** Sends a candidate's answers for a job. Nothing is stored until the API serves this. */
+  submitApplication: (
+    companySlug: string,
+    jobId: string,
+    answers: ApplicationAnswers,
+  ): Promise<void> => {
+    // Nothing is stored yet, so the arguments are only named here: the stub keeps the call's shape.
+    void [companySlug, jobId, answers]
+    return Promise.resolve()
+  },
 
   // No jobs endpoints yet — resolves with local fixtures so the query layer and
   // screens are already shaped for the real call.

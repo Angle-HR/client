@@ -17,6 +17,15 @@ function useCareersPage(slug: string) {
   })
 }
 
+/** One public job of a company. Skipped until there is a slug and a job id. */
+function usePublicJob(slug: string, jobId: string) {
+  return useQuery({
+    queryKey: queryKeys.publicJob(slug, jobId),
+    queryFn: () => requests.getPublicJob(slug, jobId),
+    enabled: Boolean(slug) && Boolean(jobId),
+  })
+}
+
 function useCountries() {
   return useQuery({ queryKey: queryKeys.countries, queryFn: requests.getCountries })
 }
@@ -230,6 +239,7 @@ function useSurveyOptions() {
 
 export {
   useCareersPage,
+  usePublicJob,
   useApplicationForm,
   usePublishCheck,
   useJobMembers,

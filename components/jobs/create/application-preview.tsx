@@ -1,16 +1,7 @@
 'use client'
 
-import { DashboardIcon } from '@/components/dashboard/nav-config'
-import {
-  Button,
-  Checkbox,
-  FileDropzoneText,
-  InputSelection,
-  RadioButton,
-  Tabs,
-  Textarea,
-  TextInput,
-} from '@/components/ui'
+import { QuestionControl } from '@/components/careers/question-field'
+import { Button, Tabs } from '@/components/ui'
 
 import type { FormQuestion } from '@/lib/jobs/application-form'
 import type { PreviewJob } from '@/lib/jobs/application-preview'
@@ -42,13 +33,6 @@ const SUMMARY_ROWS: ReadonlyArray<{
   { label: 'Employment type', value: (job) => job.employmentType },
   { label: 'Team', value: (job) => job.team },
 ]
-
-const IMAGE_FORMATS: readonly string[] = ['SVG', 'WebP', 'PNG', 'JPEG']
-const FILE_FORMATS: readonly string[] = ['DOCX', 'DOTX', 'PDF']
-const MAX_UPLOAD_MB = 5
-/** The linear scale in the preview, when the question has no scale of its own. */
-const DEFAULT_SCALE_MIN = 1
-const DEFAULT_SCALE_MAX = 10
 
 interface ApplicationPreviewProps {
   /** The job's summary, or null while the job loads (Figma 9270:376424). */
@@ -179,93 +163,7 @@ function PreviewField({ question }: { question: FormQuestion }): ReactElement {
           </span>
         ) : null}
       </div>
-      <QuestionInput question={question} />
-    </div>
-  )
-}
-
-/** The input for each question type, as drawn in 9346:562575. */
-function QuestionInput({ question }: { question: FormQuestion }): ReactElement {
-  switch (question.type) {
-    case 'autofill_resume':
-      return (
-        <div>
-          <Button
-            type="button"
-            variant="primary"
-            accent="default"
-            size="sm"
-            iconPrefix={<DashboardIcon name="arrow-up-tray-solid" size={11} />}
-          >
-            Upload file
-          </Button>
-        </div>
-      )
-    case 'long_text':
-      return <Textarea placeholder="Description" />
-    case 'single_choice':
-      return (
-        <div className="flex flex-col gap-[6px]">
-          {question.options.map((option, index) => (
-            <RadioButton
-              key={`${index}-${option.label}`}
-              name={question.key}
-              label={option.label}
-            />
-          ))}
-        </div>
-      )
-    case 'multiple_choice':
-    case 'checkbox':
-      return (
-        <div className="flex flex-col gap-[6px]">
-          {question.options.map((option, index) => (
-            <Checkbox key={`${index}-${option.label}`} label={option.label} />
-          ))}
-        </div>
-      )
-    case 'dropdown':
-      return (
-        <InputSelection
-          options={question.options.map((option) => ({ value: option.label, label: option.label }))}
-          placeholder="Search for an option..."
-        />
-      )
-    case 'linear_scale':
-      return <LinearScale min={question.scale?.min} max={question.scale?.max} />
-    case 'image_upload':
-      return (
-        <div className="rounded-[10px] border border-dashed border-border-transparent-medium p-[12px]">
-          <FileDropzoneText formats={[...IMAGE_FORMATS]} maxSizeMb={MAX_UPLOAD_MB} />
-        </div>
-      )
-    case 'file_upload':
-      return (
-        <div className="rounded-[10px] border border-dashed border-border-transparent-medium p-[12px]">
-          <FileDropzoneText formats={[...FILE_FORMATS]} maxSizeMb={MAX_UPLOAD_MB} />
-        </div>
-      )
-    default:
-      // Short text, number, email, phone, link and date all show one line.
-      return <TextInput placeholder="Description" />
-  }
-}
-
-/** Numbered boxes from the minimum to the maximum. Figma: 9346:562575 (Linear scale). */
-function LinearScale({ min, max }: { min?: number; max?: number }): ReactElement {
-  const from = min ?? DEFAULT_SCALE_MIN
-  const to = max ?? DEFAULT_SCALE_MAX
-  const values = Array.from({ length: Math.max(0, to - from + 1) }, (_, index) => from + index)
-  return (
-    <div className="flex flex-wrap gap-[4px]">
-      {values.map((value) => (
-        <span
-          key={value}
-          className="flex h-[25px] min-w-[25px] flex-1 items-center justify-center rounded-[6px] bg-bg-input-filled text-[10px] text-text-secondary"
-        >
-          {value}
-        </span>
-      ))}
+      <QuestionControl question={question} surface="card" placeholder="Description" />
     </div>
   )
 }
