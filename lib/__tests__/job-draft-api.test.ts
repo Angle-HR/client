@@ -98,6 +98,22 @@ describe('draftToBody', () => {
     expect(body.markets).toEqual([{ market_code: 'UK', city: 'London' }, { market_code: 'US' }])
   })
 
+  it('names only the market for the company address, which the API already holds', () => {
+    const companyAddress = '1 High Street, London, UK'
+    const body = draftToBody(
+      {
+        ...EMPTY_DRAFT,
+        hiringArea: 'area',
+        areas: [companyAddress, 'Leeds, UK'],
+        sameAsCompanyAddress: true,
+      },
+      { ...lookups, companyAddress },
+      today,
+    )
+    expect(body.use_company_address).toBe(true)
+    expect(body.markets).toEqual([{ market_code: 'UK' }, { market_code: 'UK', city: 'Leeds' }])
+  })
+
   it('sends no markets for a job open anywhere', () => {
     const body = draftToBody({ ...EMPTY_DRAFT, areas: ['London, UK'] }, lookups, today)
     expect(body.location_mode).toBe('anywhere')

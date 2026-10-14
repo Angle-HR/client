@@ -63,14 +63,6 @@ const JOB_STATUS_META: Record<JobStatus, JobStatusMeta> = {
     tintClass: 'bg-bg-transparent-lighter',
     hoverTintClass: 'hover:bg-bg-transparent-lighter',
   },
-  expired: {
-    label: 'Expired',
-    shortLabel: 'Expired',
-    icon: 'stop-end-solid',
-    iconClass: 'text-text-secondary',
-    tintClass: 'bg-bg-transparent-lighter',
-    hoverTintClass: 'hover:bg-bg-transparent-lighter',
-  },
 }
 
 /** What a group or column header needs to draw itself. */

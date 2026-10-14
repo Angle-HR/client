@@ -19,8 +19,8 @@ import type { Job, JobManager, JobStatus } from '@/lib/jobs/types'
  *
  * Each action calls the hiring API, then reloads the lists so the page shows
  * what the server now holds. Undo is a second call that reverses the first.
- * Where the API has a bulk endpoint it is used; everything else goes one job
- * at a time, and the jobs that could not be changed are reported.
+ * Where the API has a bulk action it is used; everything else goes one job at
+ * a time, and the jobs that could not be changed are reported with the reason.
  */
 
 type JobDialog =
@@ -101,30 +101,40 @@ function useJobsController() {
   const moveJobs = useCallback(async (targets: Job[], status: JobStatus) => {
     const moved: { job: Job; before: JobStatus }[] = []
     const failed: { error?: unknown; reason?: string }[] = []
-    const bulkAction = BULK_ACTIONS[status]
 
-    if (bulkAction && targets.length > 1) {
-      try {
-        const result = await requests.bulkJobs(
-          bulkAction,
-          targets.map((job) => job.id),
-        )
-        const done = new Set((result.done ?? []).map((item) => item.id))
-        for (const job of targets) if (done.has(job.id)) moved.push({ job, before: job.status })
-        for (const skipped of result.skipped ?? []) failed.push({ reason: skipped.reason })
-      } catch (error) {
-        failed.push({ error })
-      }
-      return { moved, failed }
+    // Jobs in different statuses need different actions to reach the same
+    // one: a paused job is resumed and a closed one reopened.
+    const byAction = new Map<string, Job[]>()
+    for (const job of targets) {
+      const action = transitionFor(job.status, status)
+      if (!action) failed.push({ error: new Error('No such change') })
+      else byAction.set(action, [...(byAction.get(action) ?? []), job])
     }
 
-    const result = await each(targets, (job) => {
-      const action = transitionFor(job.status, status)
-      if (!action) return Promise.reject(new Error('No such change'))
-      return requests.transitionJob(job.id, action, job.revision)
-    })
-    for (const job of result.done) moved.push({ job, before: job.status })
-    failed.push(...result.failed)
+    await Promise.all(
+      [...byAction].map(async ([action, group]) => {
+        const bulkAction = BULK_ACTIONS[action]
+        if (bulkAction && group.length > 1) {
+          try {
+            const result = await requests.bulkJobs(
+              bulkAction,
+              group.map((job) => job.id),
+            )
+            const done = new Set((result.done ?? []).map((item) => item.id))
+            for (const job of group) if (done.has(job.id)) moved.push({ job, before: job.status })
+            for (const skipped of result.skipped ?? []) failed.push({ reason: skipped.reason })
+          } catch (error) {
+            failed.push({ error })
+          }
+          return
+        }
+        const result = await each(group, (job) =>
+          requests.transitionJob(job.id, action, job.revision),
+        )
+        for (const job of result.done) moved.push({ job, before: job.status })
+        failed.push(...result.failed)
+      }),
+    )
     return { moved, failed }
   }, [])
 

@@ -127,7 +127,6 @@ describe('filterOptions', () => {
       'draft',
       'closed',
       'archived',
-      'expired',
     ])
   })
 

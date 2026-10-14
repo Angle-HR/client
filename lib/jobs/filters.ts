@@ -130,17 +130,9 @@ const STATUS_LABELS: Record<JobStatus, string> = {
   draft: 'Draft',
   closed: 'Closed',
   archived: 'Archived',
-  expired: 'Expired',
 }
 
-const STATUS_OPTION_ORDER: JobStatus[] = [
-  'open',
-  'paused',
-  'draft',
-  'closed',
-  'archived',
-  'expired',
-]
+const STATUS_OPTION_ORDER: JobStatus[] = ['open', 'paused', 'draft', 'closed', 'archived']
 
 const DAY_MS = 24 * 60 * 60 * 1000
 

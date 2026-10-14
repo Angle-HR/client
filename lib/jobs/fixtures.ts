@@ -297,7 +297,7 @@ const JOB_FIXTURES: Job[] = (
       employmentType: 'Full-time',
       location: 'France',
       workplace: 'Remote',
-      status: 'expired',
+      status: 'closed',
       managers: [MANAGERS.diana],
       totalApplicants: 32,
       newApplicants: 4,

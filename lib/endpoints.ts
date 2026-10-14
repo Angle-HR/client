@@ -33,6 +33,7 @@ const ENDPOINTS = {
   },
   jobs: {
     list: () => '/jobs',
+    counts: () => '/jobs/counts',
     one: (id: string) => `/jobs/${id}`,
     /** pause, resume, close, reopen, archive, to-draft, withdraw or publish. */
     transition: (id: string, action: string) => `/jobs/${id}/${action}`,

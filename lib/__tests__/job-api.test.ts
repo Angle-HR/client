@@ -7,6 +7,7 @@ import {
   apiMessage,
   serverJobQuery,
   colourFor,
+  countsByStatus,
   jobListParams,
   toJob,
   toManager,
@@ -82,9 +83,17 @@ describe('toJob', () => {
 
 describe('statuses', () => {
   it('reads the API statuses, with published as open', () => {
-    expect(['published', 'paused', 'draft', 'closed', 'archived', 'expired'].map(toStatus)).toEqual(
-      ['open', 'paused', 'draft', 'closed', 'archived', 'expired'],
-    )
+    expect(['published', 'paused', 'draft', 'closed', 'archived'].map(toStatus)).toEqual([
+      'open',
+      'paused',
+      'draft',
+      'closed',
+      'archived',
+    ])
+  })
+
+  it('reads an expired job from the API as closed', () => {
+    expect(toStatus('expired')).toBe('closed')
   })
 
   it('picks the single-job action for a change of status', () => {
@@ -94,17 +103,46 @@ describe('statuses', () => {
     expect(transitionFor('open', 'paused')).toBe('pause')
     expect(transitionFor('open', 'draft')).toBe('to-draft')
     expect(transitionFor('open', 'open')).toBeNull()
-    // Jobs expire on their own; nothing asks for it.
-    expect(transitionFor('open', 'expired')).toBeNull()
   })
 
   it('knows which changes the bulk endpoint can make', () => {
     expect(BULK_ACTIONS).toEqual({
-      paused: 'pause',
-      closed: 'close',
-      archived: 'archive',
-      draft: 'to_draft',
+      pause: 'pause',
+      resume: 'resume',
+      close: 'close',
+      reopen: 'reopen',
+      archive: 'archive',
+      'to-draft': 'to_draft',
     })
+    // Publishing is done one job at a time.
+    expect(BULK_ACTIONS.publish).toBeUndefined()
+  })
+
+  it('adds the counts of the API statuses up into the statuses the screens show', () => {
+    expect(
+      countsByStatus({
+        all: 12,
+        by_status: {
+          published: 4,
+          paused: 1,
+          draft: 3,
+          scheduled: 2,
+          closed: 0,
+          archived: 1,
+        },
+      }),
+    ).toEqual({ open: 4, paused: 1, draft: 5, closed: 0, archived: 1 })
+    expect(countsByStatus({})).toEqual({
+      open: 0,
+      paused: 0,
+      draft: 0,
+      closed: 0,
+      archived: 0,
+    })
+  })
+
+  it('counts expired jobs from the API as closed', () => {
+    expect(countsByStatus({ by_status: { closed: 1, expired: 2 } }).closed).toBe(3)
   })
 })
 

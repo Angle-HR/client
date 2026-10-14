@@ -1,6 +1,6 @@
 import type { AvatarColour } from '@/components/ui'
 
-type JobStatus = 'open' | 'paused' | 'draft' | 'closed' | 'archived' | 'expired'
+type JobStatus = 'open' | 'paused' | 'draft' | 'closed' | 'archived'
 
 type JobWorkplace = 'Remote' | 'Hybrid' | 'On-site'
 

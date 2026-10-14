@@ -1,5 +1,6 @@
 import type {
   ApiJobBody,
+  ApiJobCounts,
   ApiJobListItem,
   ApiListPerson,
   ApiPerson,
@@ -53,7 +54,8 @@ const STATUS_FROM_API: Record<string, JobStatus> = {
   scheduled: 'draft',
   closed: 'closed',
   archived: 'archived',
-  expired: 'expired',
+  // The product treats a job past its closing date as closed.
+  expired: 'closed',
 }
 
 const STATUS_TO_API: Record<JobStatus, string> = {
@@ -62,7 +64,6 @@ const STATUS_TO_API: Record<JobStatus, string> = {
   draft: 'draft',
   closed: 'closed',
   archived: 'archived',
-  expired: 'expired',
 }
 
 function toStatus(status: string | undefined): JobStatus {
@@ -164,7 +165,7 @@ function toTemplate(row: ApiTemplate, lookups: Lookups = {}): JobTemplate {
 /**
  * The single-job action that takes a job from one status to another, as the
  * path segment of `POST /jobs/{id}/{action}`; null where there is none.
- * Jobs expire by themselves when their closing date passes.
+ * Jobs close by themselves when their closing date passes.
  */
 function transitionFor(from: JobStatus, to: JobStatus): string | null {
   if (from === to) return null
@@ -179,18 +180,36 @@ function transitionFor(from: JobStatus, to: JobStatus): string | null {
       return 'archive'
     case 'draft':
       return 'to-draft'
-    case 'expired':
-      return null
   }
 }
 
-/** The statuses `POST /jobs/bulk` can move jobs to; the rest go one job at a time. */
-const BULK_ACTIONS: Partial<Record<JobStatus, string>> = {
-  paused: 'pause',
-  closed: 'close',
-  archived: 'archive',
+/**
+ * The single-job actions `POST /jobs/bulk` can also do for many jobs at once,
+ * as the bulk endpoint names them. Publishing stays one job at a time.
+ */
+const BULK_ACTIONS: Record<string, string> = {
+  pause: 'pause',
+  resume: 'resume',
+  close: 'close',
+  reopen: 'reopen',
+  archive: 'archive',
   // The bulk endpoint spells it with an underscore; the single-job path with a hyphen.
-  draft: 'to_draft',
+  'to-draft': 'to_draft',
+}
+
+/** The API's count per status as a count per status the screens know. */
+function countsByStatus(counts: ApiJobCounts): Record<JobStatus, number> {
+  const totals: Record<JobStatus, number> = {
+    open: 0,
+    paused: 0,
+    draft: 0,
+    closed: 0,
+    archived: 0,
+  }
+  for (const [status, count] of Object.entries(counts.by_status ?? {})) {
+    totals[toStatus(status)] += count
+  }
+  return totals
 }
 
 /** Query parameters for `GET /jobs`, leaving out everything unset. */
@@ -330,6 +349,7 @@ export {
   STATUS_TO_API,
   WORKPLACE_TO_API,
   colourFor,
+  countsByStatus,
   jobListParams,
   toJob,
   toManager,

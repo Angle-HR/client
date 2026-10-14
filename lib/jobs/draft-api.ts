@@ -27,6 +27,8 @@ interface DraftLookups {
   catalog?: ApiCatalog
   /** Skills the catalogue knows; anything else is sent as the user's own label. */
   skills?: ApiCatalogItem[]
+  /** The company's registered address, which the job can be based at. */
+  companyAddress?: string
 }
 
 const HIRING_AREA_TO_API: Record<HiringArea, string> = {
@@ -74,10 +76,14 @@ function marketFor(place: string): ApiJobMarket {
   return city ? { market_code: code, city } : { market_code: code }
 }
 
-function marketsOf(draft: JobDraft): ApiJobMarket[] {
+function marketsOf(draft: JobDraft, companyAddress: string | undefined): ApiJobMarket[] {
   if (draft.hiringArea === 'area') {
     const seen = new Set<string>()
-    return draft.areas.map(marketFor).filter((market) => {
+    const markets = draft.areas.map((area) =>
+      // The API has the company's address itself, so only its market is named.
+      area === companyAddress ? { market_code: marketFor(area).market_code } : marketFor(area),
+    )
+    return markets.filter((market) => {
       const key = `${market.market_code}/${market.city ?? ''}`
       if (seen.has(key)) return false
       seen.add(key)
@@ -131,7 +137,7 @@ function draftToBody(draft: JobDraft, lookups: DraftLookups, today: Date): ApiJo
       const id = idOf(lookups.skills, skill)
       return id ? { skill_id: id } : { custom_label: skill }
     }),
-    markets: marketsOf(draft),
+    markets: marketsOf(draft, lookups.companyAddress),
   }
 }
 
