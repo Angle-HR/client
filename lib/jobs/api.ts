@@ -54,7 +54,8 @@ const STATUS_FROM_API: Record<string, JobStatus> = {
   scheduled: 'draft',
   closed: 'closed',
   archived: 'archived',
-  expired: 'expired',
+  // The product treats a job past its closing date as closed.
+  expired: 'closed',
 }
 
 const STATUS_TO_API: Record<JobStatus, string> = {
@@ -63,7 +64,6 @@ const STATUS_TO_API: Record<JobStatus, string> = {
   draft: 'draft',
   closed: 'closed',
   archived: 'archived',
-  expired: 'expired',
 }
 
 function toStatus(status: string | undefined): JobStatus {
@@ -165,7 +165,7 @@ function toTemplate(row: ApiTemplate, lookups: Lookups = {}): JobTemplate {
 /**
  * The single-job action that takes a job from one status to another, as the
  * path segment of `POST /jobs/{id}/{action}`; null where there is none.
- * Jobs expire by themselves when their closing date passes.
+ * Jobs close by themselves when their closing date passes.
  */
 function transitionFor(from: JobStatus, to: JobStatus): string | null {
   if (from === to) return null
@@ -180,8 +180,6 @@ function transitionFor(from: JobStatus, to: JobStatus): string | null {
       return 'archive'
     case 'draft':
       return 'to-draft'
-    case 'expired':
-      return null
   }
 }
 
@@ -207,7 +205,6 @@ function countsByStatus(counts: ApiJobCounts): Record<JobStatus, number> {
     draft: 0,
     closed: 0,
     archived: 0,
-    expired: 0,
   }
   for (const [status, count] of Object.entries(counts.by_status ?? {})) {
     totals[toStatus(status)] += count

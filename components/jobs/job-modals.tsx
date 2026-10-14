@@ -53,11 +53,6 @@ const STATUS_CONFIRM: Record<ConfirmableStatus, { title: string; body: string; a
     body: 'The job listing will be archived and removed from job boards.',
     action: 'Archive',
   },
-  expired: {
-    title: 'Move to expired',
-    body: 'The job listing will be marked as expired and removed from job boards.',
-    action: 'Mark as expired',
-  },
 }
 
 interface StatusConfirmModalProps {

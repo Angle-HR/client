@@ -41,7 +41,6 @@ describe('statusTargets', () => {
       'closed',
       'draft',
       'archived',
-      'expired',
     ])
   })
 
@@ -50,18 +49,8 @@ describe('statusTargets', () => {
   })
 
   it('does not let closed or draft jobs be paused', () => {
-    expect(statusTargets([job({ status: 'closed' })])).toEqual([
-      'open',
-      'draft',
-      'archived',
-      'expired',
-    ])
-    expect(statusTargets([job({ status: 'draft' })])).toEqual([
-      'open',
-      'closed',
-      'archived',
-      'expired',
-    ])
+    expect(statusTargets([job({ status: 'closed' })])).toEqual(['open', 'draft', 'archived'])
+    expect(statusTargets([job({ status: 'draft' })])).toEqual(['open', 'closed', 'archived'])
   })
 })
 
@@ -73,7 +62,6 @@ describe('statusChangeMessage', () => {
 
   it('counts the jobs for several', () => {
     expect(statusChangeMessage('paused', 3)).toBe('3 jobs paused')
-    expect(statusChangeMessage('expired', 2)).toBe('2 jobs moved to expired')
   })
 })
 

@@ -83,9 +83,17 @@ describe('toJob', () => {
 
 describe('statuses', () => {
   it('reads the API statuses, with published as open', () => {
-    expect(['published', 'paused', 'draft', 'closed', 'archived', 'expired'].map(toStatus)).toEqual(
-      ['open', 'paused', 'draft', 'closed', 'archived', 'expired'],
-    )
+    expect(['published', 'paused', 'draft', 'closed', 'archived'].map(toStatus)).toEqual([
+      'open',
+      'paused',
+      'draft',
+      'closed',
+      'archived',
+    ])
+  })
+
+  it('reads an expired job from the API as closed', () => {
+    expect(toStatus('expired')).toBe('closed')
   })
 
   it('picks the single-job action for a change of status', () => {
@@ -95,8 +103,6 @@ describe('statuses', () => {
     expect(transitionFor('open', 'paused')).toBe('pause')
     expect(transitionFor('open', 'draft')).toBe('to-draft')
     expect(transitionFor('open', 'open')).toBeNull()
-    // Jobs expire on their own; nothing asks for it.
-    expect(transitionFor('open', 'expired')).toBeNull()
   })
 
   it('knows which changes the bulk endpoint can make', () => {
@@ -123,18 +129,20 @@ describe('statuses', () => {
           scheduled: 2,
           closed: 0,
           archived: 1,
-          expired: 1,
         },
       }),
-    ).toEqual({ open: 4, paused: 1, draft: 5, closed: 0, archived: 1, expired: 1 })
+    ).toEqual({ open: 4, paused: 1, draft: 5, closed: 0, archived: 1 })
     expect(countsByStatus({})).toEqual({
       open: 0,
       paused: 0,
       draft: 0,
       closed: 0,
       archived: 0,
-      expired: 0,
     })
+  })
+
+  it('counts expired jobs from the API as closed', () => {
+    expect(countsByStatus({ by_status: { closed: 1, expired: 2 } }).closed).toBe(3)
   })
 })
 

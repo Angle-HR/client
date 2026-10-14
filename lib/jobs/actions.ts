@@ -6,7 +6,7 @@ import type { Job, JobStatus } from './types'
  */
 
 /** Group and column order, per the dev note on the job table. */
-const JOB_STATUS_ORDER: JobStatus[] = ['open', 'paused', 'draft', 'closed', 'archived', 'expired']
+const JOB_STATUS_ORDER: JobStatus[] = ['open', 'paused', 'draft', 'closed', 'archived']
 
 /**
  * Which statuses a job in a given status can move to. Not simply "every other
@@ -15,16 +15,15 @@ const JOB_STATUS_ORDER: JobStatus[] = ['open', 'paused', 'draft', 'closed', 'arc
  * (7964:212845).
  */
 const STATUS_TARGETS: Record<JobStatus, JobStatus[]> = {
-  open: ['paused', 'closed', 'draft', 'archived', 'expired'],
-  paused: ['open', 'closed', 'draft', 'archived', 'expired'],
-  closed: ['open', 'draft', 'archived', 'expired'],
-  draft: ['open', 'closed', 'archived', 'expired'],
-  archived: ['open', 'closed', 'draft', 'expired'],
-  expired: ['open', 'paused', 'closed', 'draft', 'archived'],
+  open: ['paused', 'closed', 'draft', 'archived'],
+  paused: ['open', 'closed', 'draft', 'archived'],
+  closed: ['open', 'draft', 'archived'],
+  draft: ['open', 'closed', 'archived'],
+  archived: ['open', 'closed', 'draft'],
 }
 
 /** Menu order for status lists, which differs from the table's group order. */
-const STATUS_MENU_ORDER: JobStatus[] = ['open', 'paused', 'closed', 'draft', 'archived', 'expired']
+const STATUS_MENU_ORDER: JobStatus[] = ['open', 'paused', 'closed', 'draft', 'archived']
 
 /**
  * The statuses offered for a selection. A selection within one status gets
@@ -43,7 +42,6 @@ const SINGLE_TOAST: Record<JobStatus, string> = {
   closed: 'Job closed',
   draft: 'Moved to draft',
   archived: 'Archived',
-  expired: 'Move to expired',
 }
 
 const MULTI_TOAST: Record<JobStatus, string> = {
@@ -52,7 +50,6 @@ const MULTI_TOAST: Record<JobStatus, string> = {
   closed: 'closed',
   draft: 'moved to draft',
   archived: 'archived',
-  expired: 'moved to expired',
 }
 
 /** Toast copy after a status change, e.g. "Job reopened" or "3 jobs paused". */

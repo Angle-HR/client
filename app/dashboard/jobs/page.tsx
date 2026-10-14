@@ -57,7 +57,7 @@ type JobsView = 'list' | 'board'
 const TAB_STATUSES: Record<JobsTab, JobStatus[]> = {
   all: JOB_STATUS_ORDER,
   drafts: ['draft'],
-  archived: ['archived', 'expired'],
+  archived: ['archived'],
   // Templates are their own flow and are not jobs with a status.
   templates: [],
 }
