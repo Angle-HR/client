@@ -131,6 +131,8 @@ function PublishStep({
           accent="blue"
           size="md"
           disabled={publishDisabled}
+          // 9270:377457 draws both disabled buttons at 24% opacity.
+          className="disabled:opacity-[0.24]!"
           onClick={onPublish}
         >
           Publish (Careers page only)
@@ -140,6 +142,8 @@ function PublishStep({
           accent="blue"
           size="md"
           disabled={publishDisabled}
+          // 9270:377457 draws both disabled buttons at 24% opacity.
+          className="disabled:opacity-[0.24]!"
           onClick={onPublish}
         >
           Publish job
