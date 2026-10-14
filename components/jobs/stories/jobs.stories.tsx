@@ -1,14 +1,20 @@
 import { useState } from 'react'
 
+import { defaultApplicationForm } from '@/lib/jobs/application-form'
+
 import { ApplicationFormBuilder } from '../create/application-form-builder'
+import { ApplicationPreview } from '../create/application-preview'
 import { DescriptionField } from '../create/description-field'
 import { FirstJobArt, FunnelArt, StartThumbnail } from '../job-art'
 import { JobToast } from '../job-toast'
 import { ManagersChip } from '../managers-chip'
 import { PersonAvatar } from '../person-avatar'
 
+import type { PreviewTab } from '../create/application-preview'
 import type { JobToastState } from '../job-toast'
 import type { AiAccess } from '@/lib/jobs/ai-description'
+import type { ApplicationForm } from '@/lib/jobs/application-form'
+import type { PreviewJob } from '@/lib/jobs/application-preview'
 import type { JobManager } from '@/lib/jobs/types'
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
 
@@ -151,11 +157,54 @@ export const DescriptionWithoutAi: Story = {
 }
 
 /** The application form step's builder column. Figma: 9270:375985. */
+/** The builder with the form held here, as the page holds it. */
+function ApplicationFormBuilderFrame() {
+  const [form, setForm] = useState<ApplicationForm>(defaultApplicationForm)
+  return (
+    <div className="bg-bg-primary p-[40px]">
+      <ApplicationFormBuilder backHref="/dashboard/jobs" form={form} onFormChange={setForm} />
+    </div>
+  )
+}
+
 export const ApplicationFormBuilderColumn: Story = {
   parameters: { layout: 'fullscreen' },
-  render: () => (
+  render: () => <ApplicationFormBuilderFrame />,
+}
+
+const previewJob: PreviewJob = {
+  title: 'Experienced Product Designer',
+  companyName: 'Revolut',
+  location: 'San Francisco, California',
+  workplace: 'Hybrid',
+  employmentType: 'Full-time',
+  team: 'Design',
+  descriptionHtml:
+    '<p>Own the product design of the core banking experience.</p><ul><li>Lead design for a squad of four.</li></ul>',
+}
+
+/** The phone preview with its own tab state, as the page holds it. */
+function ApplicationPreviewFrame({ job }: { job: PreviewJob | null }) {
+  const [tab, setTab] = useState<PreviewTab>('application')
+  return (
     <div className="bg-bg-primary p-[40px]">
-      <ApplicationFormBuilder backHref="/dashboard/jobs" />
+      <ApplicationPreview
+        job={job}
+        questions={defaultApplicationForm().questions}
+        tab={tab}
+        onTabChange={setTab}
+      />
     </div>
-  ),
+  )
+}
+
+export const ApplicationPreviewColumn: Story = {
+  parameters: { layout: 'fullscreen' },
+  render: () => <ApplicationPreviewFrame job={previewJob} />,
+}
+
+/** The job is still loading: the card shows only its notch. */
+export const ApplicationPreviewLoading: Story = {
+  parameters: { layout: 'fullscreen' },
+  render: () => <ApplicationPreviewFrame job={null} />,
 }

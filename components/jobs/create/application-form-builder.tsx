@@ -12,7 +12,6 @@ import {
   SPECIAL_CATEGORIES,
   addQuestion,
   createQuestion,
-  defaultApplicationForm,
   isSpecialCategoryChecked,
   moveQuestion,
   questionsInSection,
@@ -29,7 +28,7 @@ import type {
   QuestionSection,
   QuestionType,
 } from '@/lib/jobs/application-form'
-import type { DragEvent } from 'react'
+import type { Dispatch, DragEvent, SetStateAction } from 'react'
 
 /**
  * The left column of "Create Application Form": the rows of each section, the
@@ -59,10 +58,16 @@ const SECTION_NOTE = 'text-body-xs leading-19_2 text-text-tertiary'
 interface ApplicationFormBuilderProps {
   /** Where the Back buttons go: the job details step for this job. */
   backHref: string
+  /** The form, owned by the page so the phone preview can show it live. */
+  form: ApplicationForm
+  onFormChange: Dispatch<SetStateAction<ApplicationForm>>
 }
 
-function ApplicationFormBuilder({ backHref }: ApplicationFormBuilderProps) {
-  const [form, setForm] = useState<ApplicationForm>(defaultApplicationForm)
+function ApplicationFormBuilder({
+  backHref,
+  form,
+  onFormChange: setForm,
+}: ApplicationFormBuilderProps) {
   // The question being added, in the section it was added to. Only one at a time.
   const [draft, setDraft] = useState<FormQuestion | null>(null)
   // The section whose "Add a question" modal is open.
