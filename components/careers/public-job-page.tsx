@@ -2,7 +2,10 @@
 
 import { useState, type ReactElement } from 'react'
 
-import { CandidateApplicationForm } from '@/components/careers/candidate-application-form'
+import {
+  CandidateApplicationForm,
+  PoweredBy,
+} from '@/components/careers/candidate-application-form'
 import { DashboardIcon } from '@/components/dashboard/nav-config'
 import { Avatar, Button, Tabs, getInitials } from '@/components/ui'
 import { usePublicJob } from '@/lib/queries'
@@ -86,7 +89,8 @@ function PublicJobPage({ slug, jobId }: PublicJobPageProps): ReactElement | null
                 </div>
               ))}
             </dl>
-            <div className="px-[8px] py-[24px]">
+            {/* Only the description tab offers it (9346:561642); the form tabs do not draw it. */}
+            <div hidden={tab !== 'description'} className="px-[8px] py-[24px]">
               <Button
                 type="button"
                 variant="primary"
@@ -115,6 +119,11 @@ function PublicJobPage({ slug, jobId }: PublicJobPageProps): ReactElement | null
             </div>
           </div>
         </div>
+        {tab === 'application' ? (
+          <div className="flex justify-center py-[48px]">
+            <PoweredBy />
+          </div>
+        ) : null}
       </div>
     </div>
   )

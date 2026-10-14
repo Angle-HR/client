@@ -60,9 +60,9 @@ function CandidateApplicationForm({ slug, job }: CandidateApplicationFormProps):
         role="status"
         className="flex flex-col gap-[24px] rounded-[20px] bg-bg-banner-success pt-[18px] pr-[20px] pb-[28px] pl-[20px]"
       >
-        {/* The check circle is drawn in green-5 on the success tint (9346:561769). */}
-        <span className="flex size-[31.5px] items-center justify-center rounded-full bg-text-success">
-          <Check className="size-[13px] text-text-btn-blue-primary" />
+        {/* The check circle is #448039 in 9346:561739; no token has that green. */}
+        <span className="flex size-[31.5px] items-center justify-center rounded-full bg-[#448039]">
+          <Check className="size-[13px] text-text-inverted" />
         </span>
         <div className="flex flex-col gap-[14px]">
           <p className="text-[15.9px] leading-[24px] font-semibold text-text-primary">
@@ -72,7 +72,6 @@ function CandidateApplicationForm({ slug, job }: CandidateApplicationFormProps):
             We&apos;ll contact you if there are next steps.
           </p>
         </div>
-        <PoweredBy />
       </div>
     )
   }
@@ -107,8 +106,6 @@ function CandidateApplicationForm({ slug, job }: CandidateApplicationFormProps):
         </Button>
         <p className="text-[9.6px] leading-[15.36px] text-text-tertiary">{LEGAL_TEXT}</p>
       </div>
-
-      <PoweredBy />
     </form>
   )
 }
@@ -176,7 +173,10 @@ function FormField({
   )
 }
 
-/** The footer under the form. The OPEN HR mark is a vector in the design and is not drawn here. */
+/**
+ * The page footer on the application tab, centred under the content (9346:561694,
+ * 9346:561739). The OPEN HR mark is a vector in the design and is not drawn here.
+ */
 function PoweredBy(): ReactElement {
   return (
     <div className="flex items-center gap-[8px]">
@@ -186,5 +186,5 @@ function PoweredBy(): ReactElement {
   )
 }
 
-export { CandidateApplicationForm }
+export { CandidateApplicationForm, PoweredBy }
 export type { CandidateApplicationFormProps }
