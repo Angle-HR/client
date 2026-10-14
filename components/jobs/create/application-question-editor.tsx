@@ -24,15 +24,15 @@ import type { FormQuestion, QuestionType } from '@/lib/jobs/application-form'
  */
 
 const TYPE_ICONS: Record<QuestionType, string> = {
-  short_text: 'short-text-solid',
+  short_text: 'short-text-2-solid',
   long_text: 'long-text-solid',
   number: 'hashtag-solid',
   email: 'at-symbol-solid',
   phone: 'phone-solid',
   single_choice: 'radio-single-choice-solid',
-  multiple_choice: 'list-bullet-solid',
+  multiple_choice: 'multiple-choice-solid',
   checkbox: 'checkbox-solid',
-  dropdown: 'chevron-double-down-solid',
+  dropdown: 'chevron-double-down-outline',
   linear_scale: 'linear-scale-solid',
   image_upload: 'photo-upload-solid',
   file_upload: 'arrow-up-tray-solid',

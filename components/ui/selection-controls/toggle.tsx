@@ -47,7 +47,8 @@ const Toggle = forwardRef<HTMLButtonElement, ToggleProps>(function Toggle(
     'rounded-[80px] relative inline-flex items-center shrink-0 transition-colors p-[2px]',
     // Figma combines hover/focus into a track border; add a WCAG focus ring in code.
     'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bg-selection-controls-selected',
-    isOn ? 'bg-bg-selection-controls-selected' : 'bg-border-selection-controls-rest',
+    // Figma's off track (Toggled=No, State=Rest) is black at 15%.
+    isOn ? 'bg-bg-selection-controls-selected' : 'bg-bg-transparent-strong',
     disabled
       ? isOn
         ? 'opacity-40 cursor-not-allowed'

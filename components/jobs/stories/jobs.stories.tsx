@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { ApplicationFormBuilder } from '../create/application-form-builder'
 import { DescriptionField } from '../create/description-field'
 import { FirstJobArt, FunnelArt, StartThumbnail } from '../job-art'
 import { JobToast } from '../job-toast'
@@ -147,4 +148,14 @@ export const DescriptionNotConnected: Story = {
 
 export const DescriptionWithoutAi: Story = {
   render: () => <Description access="unavailable" />,
+}
+
+/** The application form step's builder column. Figma: 9270:375985. */
+export const ApplicationFormBuilderColumn: Story = {
+  parameters: { layout: 'fullscreen' },
+  render: () => (
+    <div className="bg-bg-primary p-[40px]">
+      <ApplicationFormBuilder backHref="/dashboard/jobs" />
+    </div>
+  ),
 }

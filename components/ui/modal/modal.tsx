@@ -16,6 +16,8 @@ interface ModalProps {
   children: ReactNode
   /** Shell width in px. 400 for confirmations; wider for pickers. */
   width?: 400 | 500 | 700
+  /** Title colour: blue where the title reads as an action, e.g. "+ Add a question". */
+  titleAccent?: 'default' | 'blue'
 }
 
 /**
@@ -28,7 +30,15 @@ interface ModalProps {
  */
 const WIDTHS = { 400: 'w-[400px]', 500: 'w-[500px]', 700: 'w-[700px]' } as const
 
-function Modal({ open, title, icon, onClose, children, width = 400 }: ModalProps): ReactNode {
+function Modal({
+  open,
+  title,
+  icon,
+  onClose,
+  children,
+  width = 400,
+  titleAccent = 'default',
+}: ModalProps): ReactNode {
   const titleId = useId()
   const panelRef = useRef<HTMLDivElement>(null)
 
@@ -86,7 +96,7 @@ function Modal({ open, title, icon, onClose, children, width = 400 }: ModalProps
         <div className="flex h-[42px] shrink-0 items-center justify-between">
           <h2
             id={titleId}
-            className="flex items-center gap-[2px] px-[20px] text-body-s leading-19_5 font-medium text-text-primary"
+            className={`flex items-center gap-[2px] px-[20px] text-body-s leading-19_5 font-medium ${titleAccent === 'blue' ? 'text-text-blue-accent' : 'text-text-primary'}`}
           >
             {icon}
             {title}

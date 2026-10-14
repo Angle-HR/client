@@ -249,6 +249,7 @@ function ApplicationFormBuilder({ backHref }: ApplicationFormBuilderProps) {
       <Modal
         open={pickingFor !== null}
         title="Add a question"
+        titleAccent="blue"
         icon={<DashboardIcon name="plus-solid" size={11} />}
         width={700}
         onClose={() => setPickingFor(null)}
