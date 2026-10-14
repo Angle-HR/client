@@ -68,7 +68,7 @@ function ApplicationPreview({
   // Loading: the card with only its notch pill, as drawn in 9270:376424.
   if (!job) {
     return (
-      <div className="flex min-h-[612px] w-[283px] flex-col rounded-[32px] border-[0.5px] border-border-transparent-medium bg-bg-secondary">
+      <div className="flex h-[612px] w-[283px] flex-col rounded-[32px] border-[0.5px] border-border-transparent-medium bg-bg-secondary">
         <Notch />
       </div>
     )
@@ -77,57 +77,60 @@ function ApplicationPreview({
   const initial = job.companyName.trim().charAt(0).toUpperCase()
 
   return (
-    <div className="flex min-h-[612px] w-[283px] flex-col overflow-hidden rounded-[32px] border-[0.5px] border-border-transparent-medium bg-bg-secondary">
+    // A fixed 612px phone (9270:375985); a long form scrolls inside it.
+    <div className="flex h-[612px] w-[283px] flex-col overflow-hidden rounded-[32px] border-[0.5px] border-border-transparent-medium bg-bg-secondary">
       <Notch />
-      <div inert className="flex flex-col">
-        {initial ? (
-          <div className="flex items-center gap-[4px] px-[18px] py-[12px]">
-            {/* The company logo is not in the API, so its first letter stands in for it. */}
-            <span
-              aria-hidden="true"
-              className="flex size-[12px] items-center justify-center rounded-[3px] bg-bg-logo text-[7px] leading-none font-semibold text-text-logo"
-            >
-              {initial}
-            </span>
-            <span className="text-[12px] leading-[19.2px] font-medium text-text-primary">
-              {job.companyName}
-            </span>
-          </div>
-        ) : null}
-
-        <h2 className="px-[18px] py-[12px] text-[14px] leading-[21px] font-semibold text-text-primary">
-          {job.title}
-        </h2>
-
-        <dl className="flex flex-col gap-[6px] px-[18px] pt-[4px] pb-[12px]">
-          {SUMMARY_ROWS.map((row) => (
-            <div
-              key={row.label}
-              className="flex flex-col gap-[2px] border-b-[0.5px] border-border-transparent-medium py-[6px]"
-            >
-              <dt className="text-[9px] leading-[14.4px] font-medium text-text-tertiary">
-                {row.label}
-              </dt>
-              <dd className="text-[12px] leading-[19.2px] font-medium text-text-primary">
-                {row.value(job)}
-              </dd>
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        <div inert className="flex flex-col">
+          {initial ? (
+            <div className="flex items-center gap-[4px] px-[18px] py-[12px]">
+              {/* The company logo is not in the API, so its first letter stands in for it. */}
+              <span
+                aria-hidden="true"
+                className="flex size-[12px] items-center justify-center rounded-[3px] bg-bg-logo text-[7px] leading-none font-semibold text-text-logo"
+              >
+                {initial}
+              </span>
+              <span className="text-[12px] leading-[19.2px] font-medium text-text-primary">
+                {job.companyName}
+              </span>
             </div>
-          ))}
-        </dl>
-      </div>
+          ) : null}
 
-      <Tabs tabs={TABS} value={tab} onValueChange={onTabChange} aria-label="Job preview" />
+          <h2 className="px-[18px] py-[12px] text-[14px] leading-[21px] font-semibold text-text-primary">
+            {job.title}
+          </h2>
 
-      <div inert className="flex flex-col">
-        {tab === 'overview' ? (
-          <OverviewTab job={job} />
-        ) : (
-          <div className="flex flex-col gap-[9.6px] px-[14.4px] py-[9.6px]">
-            {questions.map((question) => (
-              <PreviewField key={question.key} question={question} />
+          <dl className="flex flex-col gap-[6px] px-[18px] pt-[4px] pb-[12px]">
+            {SUMMARY_ROWS.map((row) => (
+              <div
+                key={row.label}
+                className="flex flex-col gap-[2px] border-b-[0.5px] border-border-transparent-medium py-[6px]"
+              >
+                <dt className="text-[9px] leading-[14.4px] font-medium text-text-tertiary">
+                  {row.label}
+                </dt>
+                <dd className="text-[12px] leading-[19.2px] font-medium text-text-primary">
+                  {row.value(job)}
+                </dd>
+              </div>
             ))}
-          </div>
-        )}
+          </dl>
+        </div>
+
+        <Tabs tabs={TABS} value={tab} onValueChange={onTabChange} aria-label="Job preview" />
+
+        <div inert className="flex flex-col">
+          {tab === 'overview' ? (
+            <OverviewTab job={job} />
+          ) : (
+            <div className="flex flex-col gap-[9.6px] px-[14.4px] py-[9.6px]">
+              {questions.map((question) => (
+                <PreviewField key={question.key} question={question} />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

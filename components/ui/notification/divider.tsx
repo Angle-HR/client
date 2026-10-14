@@ -43,7 +43,7 @@ function Divider({
   return (
     <div
       aria-hidden="true"
-      className={`flex shrink-0 ${isVertical ? 'w-fit flex-row gap-[3px]' : 'h-fit flex-col gap-[3px]'} ${padded ? (isVertical ? 'py-[8px]' : 'px-[8px]') : ''} ${className}`}
+      className={`flex shrink-0 ${isVertical ? 'w-fit flex-row gap-[3px]' : 'h-fit w-full flex-col gap-[3px]'} ${padded ? (isVertical ? 'py-[8px]' : 'px-[8px]') : ''} ${className}`}
     >
       {line}
       {double && width === 'medium' && line}
