@@ -95,6 +95,43 @@ interface ApiBulkResult {
   skipped?: { id?: string; reason?: string }[]
 }
 
+/** One problem the publish check or the publish call found. Figma: the compliance check, 9270:377288. */
+interface ApiPublishIssue {
+  code?: string
+  message?: string
+  severity?: string
+  path?: string
+  gate_id?: string
+}
+
+/** A compliance gate of the job's markets, and whether it is confirmed. */
+interface ApiPublishGate {
+  id?: string
+  market_code?: string
+  severity?: string
+  requirement?: string
+  legal_basis?: string
+  version?: string
+  auto?: boolean
+  confirmed?: boolean
+  stale?: boolean
+  detail?: string
+  platform?: string
+}
+
+/** `GET /jobs/{id}/publish-check`: a dry run that writes nothing. */
+interface ApiPublishCheck {
+  blocking?: ApiPublishIssue[]
+  warnings?: ApiPublishIssue[]
+  gates?: ApiPublishGate[]
+}
+
+/** `POST /jobs/{id}/publish`. A blocked job is refused with 422 PUBLISH_BLOCKED instead. */
+interface ApiPublishResult {
+  job?: ApiJobView
+  warnings?: ApiPublishIssue[]
+}
+
 interface ApiDepartment {
   id?: string
   name?: string
@@ -277,6 +314,10 @@ export type {
   ApiApplicationForm,
   ApiApplicationFormBody,
   ApiBulkResult,
+  ApiPublishCheck,
+  ApiPublishGate,
+  ApiPublishIssue,
+  ApiPublishResult,
   ApiCatalog,
   ApiCatalogItem,
   ApiDepartment,

@@ -17,6 +17,8 @@ import type {
   ApiJobListItem,
   ApiJobMember,
   ApiPerson,
+  ApiPublishCheck,
+  ApiPublishResult,
   ApiTemplate,
   ApiTemplateExport,
   ApiTimezone,
@@ -353,6 +355,24 @@ const requests = {
   /** Only drafts can be deleted; the API answers 409 for anything else. */
   deleteJob: async (id: string, revision?: number): Promise<void> => {
     await axiosInstance.delete(ENDPOINTS.jobs.one(id), { headers: ifMatch(revision) })
+  },
+
+  /** The compliance check for a job: what would stop it publishing, and what to look at. Writes nothing. */
+  getPublishCheck: async (id: string): Promise<ApiPublishCheck> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiPublishCheck>>(
+      ENDPOINTS.jobs.publishCheck(id),
+    )
+    return data.data ?? {}
+  },
+
+  /** Publishes the job. The API refuses a blocked job with 422 and every issue in the error. */
+  publishJob: async (id: string, revision?: number): Promise<ApiPublishResult> => {
+    const { data } = await axiosInstance.post<ApiResponse<ApiPublishResult>>(
+      ENDPOINTS.jobs.publish(id),
+      undefined,
+      { headers: ifMatch(revision) },
+    )
+    return data.data ?? {}
   },
 
   getJob: async (id: string): Promise<ApiJobView> => {

@@ -61,6 +61,9 @@ function PermissionsPage() {
   const backHref = jobId
     ? `/dashboard/jobs/new/application?job=${encodeURIComponent(jobId)}`
     : '/dashboard/jobs/new/application'
+  const publishHref = jobId
+    ? `/dashboard/jobs/new/publish?job=${encodeURIComponent(jobId)}`
+    : '/dashboard/jobs/new/publish'
 
   const job = useJob(jobId).data
   const people = usePeople().data ?? NO_PEOPLE
@@ -186,8 +189,7 @@ function PermissionsPage() {
             onChangeLevel={(member, level) => setModal({ kind: 'level', member, level })}
             onRevoke={(member) => setModal({ kind: 'revoke', member })}
             onBack={() => router.push(backHref)}
-            // TODO(publish): the Publish step is not built yet, so this goes to the job list.
-            onContinue={() => router.push('/dashboard/jobs?saved=draft')}
+            onContinue={() => router.push(publishHref)}
           />
         </div>
       </div>

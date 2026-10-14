@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { DashboardIcon } from '@/components/dashboard/nav-config'
 import { Button } from '@/components/ui'
 
+import type { ReactNode } from 'react'
+
 /**
  * The top bar of the job creation flow: the step trail on the left, Save as
  * draft and Preview on the right. Figma: main-top-container in 8973:613907.
@@ -28,11 +30,13 @@ interface JobFlowHeaderProps {
   onSave?: () => void
   /** Greys the save button while a save is in flight. */
   saveDisabled?: boolean
+  /** The job's team, drawn left of the buttons on the Publish step. Figma: 9270:377327. */
+  avatars?: ReactNode
 }
 
 const stepText = 'text-body-xs leading-19_2'
 
-function JobFlowHeader({ current, mode, onSave, saveDisabled }: JobFlowHeaderProps) {
+function JobFlowHeader({ current, mode, onSave, saveDisabled, avatars }: JobFlowHeaderProps) {
   const steps = mode === 'edit-template' ? STEPS.slice(0, 1) : STEPS
   const currentIndex = steps.indexOf(current)
   const root =
@@ -50,7 +54,9 @@ function JobFlowHeader({ current, mode, onSave, saveDisabled }: JobFlowHeaderPro
             </Link>
           </li>
           {steps.map((step, index) => {
-            const reached = index <= currentIndex
+            // Figma 9270:377326: the Publish step reads as not yet reached while it is open.
+            const reached =
+              index < currentIndex || (index === currentIndex && current !== 'Publish')
             return (
               <li
                 key={step}
@@ -79,6 +85,7 @@ function JobFlowHeader({ current, mode, onSave, saveDisabled }: JobFlowHeaderPro
         </ol>
       </nav>
       <div className="flex items-center gap-[10px] p-[10px]">
+        {avatars}
         <Button
           variant="primary"
           accent="default"

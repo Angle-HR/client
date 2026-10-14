@@ -18,6 +18,7 @@ const queryKeys = {
   job: (id: string) => ['jobs', 'one', id] as const,
   applicationForm: (id: string) => ['jobs', 'one', id, 'application-form'] as const,
   jobMembers: (id: string) => ['jobs', 'one', id, 'members'] as const,
+  publishCheck: (id: string) => ['jobs', 'one', id, 'publish-check'] as const,
   people: ['hiring', 'people'] as const,
   hiringCatalog: ['hiring', 'catalog'] as const,
   departments: ['hiring', 'departments'] as const,

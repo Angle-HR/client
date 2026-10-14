@@ -74,7 +74,7 @@ interface PermissionsStepProps {
   onChangeLevel: (member: AccessMember, level: AccessLevel) => void
   onRevoke: (member: AccessMember) => void
   onBack: () => void
-  /** Save & continue. The Publish step is not built yet, so this goes to the job list. */
+  /** Save & continue: on to the Publish step. */
   onContinue: () => void
 }
 
@@ -366,7 +366,6 @@ function PermissionsStep({
         >
           Back
         </Button>
-        {/* TODO(publish): this moves on to the job list until the Publish step is built. */}
         <Button
           variant="primary"
           accent="blue"

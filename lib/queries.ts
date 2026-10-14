@@ -111,6 +111,15 @@ function useJobMembers(id: string | null) {
   })
 }
 
+/** The compliance check of one job. Skipped until there is an id; refetched after a publish attempt. */
+function usePublishCheck(id: string | null) {
+  return useQuery({
+    queryKey: queryKeys.publishCheck(id ?? ''),
+    queryFn: () => requests.getPublishCheck(id ?? ''),
+    enabled: Boolean(id),
+  })
+}
+
 /** The application form of one job. Skipped until there is an id. */
 function useApplicationForm(id: string | null) {
   return useQuery({
@@ -212,6 +221,7 @@ function useSurveyOptions() {
 
 export {
   useApplicationForm,
+  usePublishCheck,
   useJobMembers,
   useIdentificationRequirements,
   useInvite,
