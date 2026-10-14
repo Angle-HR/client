@@ -58,6 +58,14 @@ interface ApiPerson {
   roles?: string[]
 }
 
+/** A row of `GET /jobs/{id}/members`: someone on the job's hiring team. The creator is not listed. */
+interface ApiJobMember {
+  user_id?: string
+  name?: string
+  email?: string
+  role?: string
+}
+
 /** A row of `GET /hiring/templates`. */
 interface ApiTemplate {
   id?: string
@@ -286,6 +294,7 @@ export type {
   ApiJobView,
   ApiListPerson,
   ApiOption,
+  ApiJobMember,
   ApiPerson,
   ApiTemplate,
   ApiTemplateExport,

@@ -36,6 +36,9 @@ function ApplicationFormPage() {
   const backHref = jobId
     ? `/dashboard/jobs/new?job=${encodeURIComponent(jobId)}`
     : '/dashboard/jobs/new'
+  const permissionsHref = jobId
+    ? `/dashboard/jobs/new/permissions?job=${encodeURIComponent(jobId)}`
+    : '/dashboard/jobs/new/permissions'
 
   const savedForm = useApplicationForm(jobId).data
   // Without a job there is no saved form to load, so the drawn rows stand in.
@@ -74,8 +77,7 @@ function ApplicationFormPage() {
       await requests.saveApplicationForm(jobId, formToApi(form))
       await queryClient.invalidateQueries({ queryKey: queryKeys.jobs })
       await queryClient.invalidateQueries({ queryKey: queryKeys.applicationForm(jobId) })
-      // Permissions is the next step, not designed yet. Until it is, the list is shown.
-      router.push('/dashboard/jobs?saved=draft')
+      router.push(permissionsHref)
     } catch (error) {
       setToast({ id: Date.now(), kind: 'error', message: apiMessage(error) })
     } finally {

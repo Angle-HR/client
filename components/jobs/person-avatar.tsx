@@ -4,7 +4,7 @@ import type { JobManager } from '@/lib/jobs/types'
 
 interface PersonAvatarProps {
   person: Pick<JobManager, 'name' | 'colour' | 'avatarUrl'>
-  size?: 14 | 16
+  size?: 14 | 16 | 20 | 24
   /** Filter chips draw people as circles; everywhere else they are square. */
   circular?: boolean
 }

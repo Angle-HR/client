@@ -15,6 +15,7 @@ import type {
   ApiJobBody,
   ApiJobView,
   ApiJobListItem,
+  ApiJobMember,
   ApiPerson,
   ApiTemplate,
   ApiTemplateExport,
@@ -82,7 +83,7 @@ import type {
 } from './types'
 
 /** The roles a person can hold on one job's hiring team. */
-type JobMemberRole = 'hiring_manager' | 'recruiter' | 'interviewer' | 'viewer'
+export type JobMemberRole = 'hiring_manager' | 'recruiter' | 'interviewer' | 'viewer'
 
 // The most the list endpoint returns at once, and a stop so a bad cursor
 // cannot loop for ever.
@@ -323,6 +324,14 @@ const requests = {
       ENDPOINTS.jobs.duplicate(id),
     )
     return data.data?.id ?? ''
+  },
+
+  /** The job's hiring team. The creator always has access and is not listed. */
+  getJobMembers: async (id: string): Promise<ApiJobMember[]> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiJobMember[]>>(
+      ENDPOINTS.jobs.members(id),
+    )
+    return data.data ?? []
   },
 
   /**
