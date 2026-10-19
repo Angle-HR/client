@@ -1,0 +1,66 @@
+# Builds the Docker image, pushes it to the staging ECR repository as :staging (plus the commit sha), and redeploys
+# the ECS service. Needs a "staging" GitHub environment with these variables:
+#   AWS_DEPLOY_ROLE_ARN  terraform output frontend_deploy_role_arns in Angle-HR/server infra/envs/staging
+#   API_BASE_URL         https://api.staging.tryopenhr.com/api/v1
+#   GA_ID, GOOGLE_MAPS_API_KEY  optional (NEXT_PUBLIC_GA_ID, NEXT_PUBLIC_GOOGLE_MAPS_API_KEY)
+# NEXT_PUBLIC_* values are inlined into the bundle at build time, so they are build args, not runtime env.
+name: Deploy staging
+
+on:
+  push:
+    branches: [dev]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: eu-west-2
+  CLUSTER: openhr-staging
+  SERVICE: client
+  REPOSITORY: openhr/client
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Log in to ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          build-args: |
+            NEXT_PUBLIC_API_BASE_URL=${{ vars.API_BASE_URL }}
+            NEXT_PUBLIC_GA_ID=${{ vars.GA_ID }}
+            NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ vars.GOOGLE_MAPS_API_KEY }}
+          tags: |
+            ${{ steps.ecr.outputs.registry }}/${{ env.REPOSITORY }}:staging
+            ${{ steps.ecr.outputs.registry }}/${{ env.REPOSITORY }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Redeploy
+        run: |
+          aws ecs update-service --cluster "$CLUSTER" --service "$SERVICE" --force-new-deployment >/dev/null
+          aws ecs wait services-stable --cluster "$CLUSTER" --services "$SERVICE"
