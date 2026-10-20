@@ -17,6 +17,8 @@ interface PublishStepProps {
   backHref: string
   /** Null until the check has loaded. */
   view: ComplianceView | null
+  /** The gates to confirm, drawn under the status. */
+  gates?: ReactNode
   /** Both publish buttons are off while a publish is in flight or can't publish yet. */
   publishDisabled: boolean
   indexing: boolean
@@ -34,6 +36,7 @@ const rowText = 'min-w-0 truncate text-body-s leading-19_5 text-text-secondary'
 function PublishStep({
   backHref,
   view,
+  gates,
   publishDisabled,
   indexing,
   onIndexingChange,
@@ -76,6 +79,7 @@ function PublishStep({
           </p>
         </div>
         {view ? <ComplianceStatus state={view.state} bullets={view.bullets} /> : null}
+        {gates}
       </section>
 
       <div className="flex h-[4px] shrink-0 items-center">

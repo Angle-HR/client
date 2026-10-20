@@ -96,6 +96,7 @@ function DashboardSidebar({
             size="sm"
             className="w-fit"
             iconPrefix={<MaskIcon src="/dashboard/icons/spinner-solid.svg" size={14} />}
+            onClick={() => window.location.assign('/dashboard/verification')}
           >
             Verification in progress
           </Button>

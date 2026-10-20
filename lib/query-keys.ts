@@ -17,6 +17,19 @@ const queryKeys = {
   jobCounts: ['jobs', 'list', 'counts'] as const,
   job: (id: string) => ['jobs', 'one', id] as const,
   applicationForm: (id: string) => ['jobs', 'one', id, 'application-form'] as const,
+  /** Every cached page of a job's applications: the key to invalidate after a change. */
+  applications: (jobId: string) => ['jobs', 'one', jobId, 'applications'] as const,
+  applicationList: (jobId: string, query: object) =>
+    ['jobs', 'one', jobId, 'applications', 'list', query] as const,
+  application: (jobId: string, appId: string) =>
+    ['jobs', 'one', jobId, 'applications', 'one', appId] as const,
+  compliance: (id: string) => ['jobs', 'one', id, 'compliance'] as const,
+  screeningRules: (id: string) => ['jobs', 'one', id, 'screening-rules'] as const,
+  shareKit: (id: string) => ['jobs', 'one', id, 'share-kit'] as const,
+  companySetup: ['organization', 'setup'] as const,
+  kyb: ['organization', 'verification'] as const,
+  hiringSettings: ['hiring', 'settings'] as const,
+  applicantSettings: ['hiring', 'applicant-settings'] as const,
   jobMembers: (id: string) => ['jobs', 'one', id, 'members'] as const,
   publishCheck: (id: string) => ['jobs', 'one', id, 'publish-check'] as const,
   people: ['hiring', 'people'] as const,

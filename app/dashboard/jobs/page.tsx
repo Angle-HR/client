@@ -241,7 +241,8 @@ function JobsPage() {
     else if (action === 'assign') controller.openDialog({ type: 'assign', jobIds: [job.id] })
     else if (action === 'closing-date') {
       controller.openDialog({ type: 'closing-date', jobIds: [job.id] })
-    } else if (action === 'edit') router.push(`/dashboard/jobs/new?job=${job.id}`)
+    } else if (action === 'applicants') router.push(`/dashboard/jobs/${job.id}/applications`)
+    else if (action === 'edit') router.push(`/dashboard/jobs/new?job=${job.id}`)
   }
 
   // Coming back from the job form: confirm the save once, then tidy the URL.

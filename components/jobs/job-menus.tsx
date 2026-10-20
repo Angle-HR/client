@@ -71,6 +71,7 @@ function FloatingMenu({ label, anchor, place, className, onClose, children }: Fl
 
 type JobRowAction =
   | 'edit'
+  | 'applicants'
   | 'closing-date'
   | 'assign'
   | 'duplicate'
@@ -105,6 +106,7 @@ function JobRowMenu({ job, anchor, onAction, onChangeStatus, onClose }: JobRowMe
       })}
       className="w-[190px] gap-[2px] rounded-t-lg-10 rounded-b-lg-12 p-[5px] shadow-md"
     >
+      <MenuRow icon="user-circle-solid" label="View applicants" onClick={act('applicants')} />
       <MenuRow icon="pencil-square-solid" label="Edit Job" onClick={act('edit')} />
       {/* Only a published listing has a closing date to change. */}
       {job.status === 'open' ? (
