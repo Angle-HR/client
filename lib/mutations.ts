@@ -141,7 +141,7 @@ function useConfirmKybAddress() {
 }
 
 function useConfirmKybName() {
-  return useKybWrite(() => requests.confirmKybName())
+  return useKybWrite<void>(() => requests.confirmKybName())
 }
 
 function useSetAutomatedScreening() {
