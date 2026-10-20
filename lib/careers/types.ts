@@ -4,7 +4,7 @@ import type { FormQuestion } from '../jobs/application-form'
 type CareersWorkplace = 'Remote' | 'On-site' | 'Hybrid'
 
 /** The employment types the meta line shows. */
-type CareersEmploymentType = 'Full time' | 'Part time' | 'Contract'
+type CareersEmploymentType = 'Full time' | 'Part time' | 'Contract' | 'Internship'
 
 interface CareersCompany {
   name: string
@@ -30,6 +30,14 @@ interface CareersJob {
   questions: readonly FormQuestion[]
   /** Input placeholders by question key. The form model has none, so the job carries them. */
   placeholders: Readonly<Record<string, string>>
+  /** Markets the job is open in, ISO 3166-1 alpha-2. Absent on fixtures. */
+  markets?: readonly string[]
+  /** Whether the candidate must consent, as the job's lawful basis is consent. */
+  consentRequired?: boolean
+  /** open | closed | paused | archived. Absent on fixtures, which are always open. */
+  state?: 'open' | 'closed' | 'paused' | 'archived'
+  /** False once the job takes no more applications. */
+  accepting?: boolean
 }
 
 interface CareersJobPage {

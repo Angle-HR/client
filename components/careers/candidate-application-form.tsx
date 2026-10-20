@@ -1,5 +1,6 @@
 'use client'
 
+import { useSearchParams } from 'next/navigation'
 import { useId, useState, type FormEvent, type ReactElement } from 'react'
 
 import { QuestionControl } from '@/components/careers/question-field'
@@ -28,12 +29,12 @@ const LEGAL_TEXT =
  * The application form a candidate fills in. Figma: 9346:561694 (the form),
  * 9346:561739 (the received state).
  */
-function CandidateApplicationForm({ slug, job }: CandidateApplicationFormProps): ReactElement {
+function CandidateApplicationForm({ job }: CandidateApplicationFormProps): ReactElement {
   const idPrefix = useId()
   const [answers, setAnswers] = useState<ApplicationAnswers>({})
   const [errors, setErrors] = useState<ApplicationErrors>({})
   const [received, setReceived] = useState(false)
-  const submit = useSubmitApplication(slug, job.id)
+  const submit = useSubmitApplication(job, useSearchParams().get('src') ?? undefined)
 
   function changeAnswer(key: string, value: AnswerValue): void {
     setAnswers((previous) => ({ ...previous, [key]: value }))

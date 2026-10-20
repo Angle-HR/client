@@ -1,11 +1,12 @@
 'use client'
 
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-query'
 
 import { toJobPermissions } from './jobs/permissions'
 import { queryKeys } from './query-keys'
 import { requests } from './requests'
 
+import type { ApplicationListQuery } from './applications/api-types'
 import type { JobListQuery } from './jobs/api-types'
 
 /** The public careers page of one company. Skipped until there is a slug. */
@@ -138,6 +139,75 @@ function usePublishCheck(id: string | null) {
   })
 }
 
+/** A job's applications, a page at a time. Fetch the next page while `hasNextPage`. */
+function useApplications(jobId: string, query: ApplicationListQuery = {}) {
+  return useInfiniteQuery({
+    queryKey: queryKeys.applicationList(jobId, query),
+    queryFn: ({ pageParam }) => requests.getApplications(jobId, query, pageParam),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (page) => page.nextCursor,
+    enabled: Boolean(jobId),
+    placeholderData: keepPreviousData,
+  })
+}
+
+/** One application. Skipped until one is picked. Opening it is recorded, so it is never refetched on focus. */
+function useApplication(jobId: string, appId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.application(jobId, appId ?? ''),
+    queryFn: () => requests.getApplication(jobId, appId ?? ''),
+    enabled: Boolean(jobId) && Boolean(appId),
+    refetchOnWindowFocus: false,
+  })
+}
+
+/** The compliance gates of one job. Skipped until there is an id. */
+function useComplianceGates(id: string | null) {
+  return useQuery({
+    queryKey: queryKeys.compliance(id ?? ''),
+    queryFn: () => requests.getComplianceGates(id ?? ''),
+    enabled: Boolean(id),
+  })
+}
+
+/** The job's screening rules. Skipped until there is an id. */
+function useScreeningRules(id: string | null) {
+  return useQuery({
+    queryKey: queryKeys.screeningRules(id ?? ''),
+    queryFn: () => requests.getScreeningRules(id ?? ''),
+    enabled: Boolean(id),
+  })
+}
+
+/** The share links of a published job. Pass null until it has been published: the API refuses before then. */
+function useShareKit(id: string | null) {
+  return useQuery({
+    queryKey: queryKeys.shareKit(id ?? ''),
+    queryFn: () => requests.getShareKit(id ?? ''),
+    enabled: Boolean(id),
+  })
+}
+
+/** What the company has on file to publish: agreement, DPIA, privacy contact. */
+function useCompanySetup() {
+  return useQuery({ queryKey: queryKeys.companySetup, queryFn: requests.getCompanySetup })
+}
+
+/** The company's verification (KYB) state. Not retried: a 404 means none was started. */
+function useKyb() {
+  return useQuery({ queryKey: queryKeys.kyb, queryFn: requests.getKyb })
+}
+
+/** The company's hiring switches. */
+function useHiringSettings() {
+  return useQuery({ queryKey: queryKeys.hiringSettings, queryFn: requests.getHiringSettings })
+}
+
+/** The company's candidate settings: reapply block and status emails. */
+function useApplicantSettings() {
+  return useQuery({ queryKey: queryKeys.applicantSettings, queryFn: requests.getApplicantSettings })
+}
+
 /** The application form of one job. Skipped until there is an id. */
 function useApplicationForm(id: string | null) {
   return useQuery({
@@ -241,6 +311,15 @@ export {
   useCareersPage,
   usePublicJob,
   useApplicationForm,
+  useApplicantSettings,
+  useHiringSettings,
+  useCompanySetup,
+  useKyb,
+  useComplianceGates,
+  useScreeningRules,
+  useShareKit,
+  useApplications,
+  useApplication,
   usePublishCheck,
   useJobMembers,
   useIdentificationRequirements,

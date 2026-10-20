@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar'
 import { DashboardSettingUpState } from '@/components/dashboard/dashboard-states'
 import { clearSession, getAccessToken, getRefreshToken } from '@/lib/auth-session'
-import { useMe } from '@/lib/queries'
+import { useKyb, useMe } from '@/lib/queries'
 import { requests } from '@/lib/requests'
 
 import type { ReactNode } from 'react'
@@ -38,9 +38,16 @@ function DashboardLayout({ children }: { children: ReactNode }) {
   const workspaceName =
     me.data?.legal_full_name || me.data?.first_name || me.data?.email || 'Your workspace'
 
-  // KYB status is not on the API yet, so a workspace counts as still under
-  // review until onboarding reports itself complete.
-  const verification = me.data?.onboarding?.status === 'completed' ? 'verified' : 'pending'
+  // The company's KYB state decides it; until that has loaded, or where none can
+  // be read, a workspace counts as still under review until onboarding completes.
+  const kyb = useKyb()
+  const verification = kyb.data
+    ? kyb.data.status === 'verified'
+      ? 'verified'
+      : 'pending'
+    : me.data?.onboarding?.status === 'completed'
+      ? 'verified'
+      : 'pending'
 
   // The setup screen replaces the whole shell, so it centres on the viewport
   // rather than in the content card beside the sidebar.

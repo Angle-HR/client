@@ -4,6 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useMemo, useState } from 'react'
 
+import { ComplianceGates } from '@/components/jobs/create/compliance-gates'
 import { JobFlowHeader } from '@/components/jobs/create/job-flow-header'
 import { JobPublishedModal } from '@/components/jobs/create/job-published-modal'
 import { JobTeamAvatars } from '@/components/jobs/create/job-team-avatars'
@@ -12,11 +13,20 @@ import { JobToast } from '@/components/jobs/job-toast'
 import { apiMessage } from '@/lib/jobs/api'
 import { toAccessMembers } from '@/lib/jobs/permissions-step'
 import { canPublish, complianceView, headerTeam } from '@/lib/jobs/publish-step'
-import { useJob, useJobMembers, usePeople, usePublishCheck } from '@/lib/queries'
+import { useConfirmGate } from '@/lib/mutations'
+import {
+  useComplianceGates,
+  useJob,
+  useJobMembers,
+  usePeople,
+  usePublishCheck,
+  useShareKit,
+} from '@/lib/queries'
 import { queryKeys } from '@/lib/query-keys'
 import { requests } from '@/lib/requests'
 
 import type { JobToastState } from '@/components/jobs/job-toast'
+import type { ApiGate } from '@/lib/compliance/api-types'
 import type { ApiJobMember } from '@/lib/jobs/api-types'
 import type { JobManager } from '@/lib/jobs/types'
 
@@ -30,12 +40,7 @@ import type { JobManager } from '@/lib/jobs/types'
 
 const NO_PEOPLE: JobManager[] = []
 const NO_MEMBERS: ApiJobMember[] = []
-
-/**
- * The job's public link. The app has no base address for careers pages, so
- * the link is not built: the modal's link row stays empty and Copy stays off.
- */
-const PUBLIC_JOB_URL: string | null = null
+const NO_GATES: ApiGate[] = []
 
 function PublishPage() {
   const router = useRouter()
@@ -48,6 +53,8 @@ function PublishPage() {
 
   const job = useJob(jobId).data
   const check = usePublishCheck(jobId).data
+  const gates = useComplianceGates(jobId).data ?? NO_GATES
+  const confirmGate = useConfirmGate(jobId ?? '')
   const people = usePeople().data ?? NO_PEOPLE
   const teamRows = useJobMembers(jobId).data ?? NO_MEMBERS
   const creatorId = job?.created_by
@@ -66,6 +73,9 @@ function PublishPage() {
   // The title of the job that was just published; null while the modal is closed.
   const [published, setPublished] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  // The share kit exists only once the job is live, so it is asked for after publishing.
+  const shareKit = useShareKit(published === null ? null : jobId).data
+  const publicUrl = shareKit?.job_url || null
   const [toast, setToast] = useState<JobToastState | null>(null)
 
   async function publish() {
@@ -88,9 +98,9 @@ function PublishPage() {
   }
 
   async function copyUrl() {
-    if (!PUBLIC_JOB_URL) return
+    if (!publicUrl) return
     try {
-      await navigator.clipboard.writeText(PUBLIC_JOB_URL)
+      await navigator.clipboard.writeText(publicUrl)
       setCopied(true)
     } catch (error) {
       setToast({ id: Date.now(), kind: 'error', message: apiMessage(error) })
@@ -118,6 +128,21 @@ function PublishPage() {
           <PublishStep
             backHref={backHref}
             view={view}
+            gates={
+              <ComplianceGates
+                gates={gates}
+                pendingId={confirmGate.isPending ? confirmGate.variables?.gateId : undefined}
+                onChange={(gate, confirmed) =>
+                  confirmGate.mutate(
+                    { gateId: gate.id ?? '', confirmed, revision: job?.revision },
+                    {
+                      onError: (error) =>
+                        setToast({ id: Date.now(), kind: 'error', message: apiMessage(error) }),
+                    },
+                  )
+                }
+              />
+            }
             publishDisabled={!publishable || publishing}
             indexing={indexing}
             onIndexingChange={setIndexing}
@@ -131,7 +156,12 @@ function PublishPage() {
       <JobPublishedModal
         open={published !== null}
         jobTitle={published ?? ''}
-        url={PUBLIC_JOB_URL}
+        url={publicUrl}
+        shareLinks={(shareKit?.links ?? []).map((link) => ({
+          channel: link.channel ?? '',
+          label: link.label ?? link.channel ?? '',
+          url: link.url ?? '',
+        }))}
         copied={copied}
         onCopy={() => void copyUrl()}
         onDone={leave}

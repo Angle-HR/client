@@ -15,6 +15,8 @@ interface JobPublishedModalProps {
   url: string | null
   /** Whether the link has been copied; the Copy button then reads "Copied". */
   copied: boolean
+  /** Ready-made share links from the share kit, one per channel. */
+  shareLinks?: ReadonlyArray<{ channel: string; label: string; url: string }>
   onCopy: () => void
   onDone: () => void
   onViewJob: () => void
@@ -28,6 +30,7 @@ function JobPublishedModal({
   jobTitle,
   url,
   copied,
+  shareLinks = [],
   onCopy,
   onDone,
   onViewJob,
@@ -81,6 +84,23 @@ function JobPublishedModal({
           </Button>
         </div>
       </div>
+
+      {shareLinks.length > 0 ? (
+        <ul aria-label="Share" className="flex flex-wrap gap-[8px]">
+          {shareLinks.map((link) => (
+            <li key={link.channel}>
+              <a
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-body-xs leading-19_2 font-medium text-text-link underline"
+              >
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : null}
 
       <ModalActions>
         <Button variant="primary" accent="default" size="md" onClick={onDone}>

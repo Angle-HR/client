@@ -1,11 +1,32 @@
+import axios from 'axios'
+
 import { axiosInstance } from '@/config/axios'
 
-import { CAREERS_FIXTURES, jobForRole } from './careers/fixtures'
+import { applicationListParams, toApplicant, toApplicantDetail } from './applications/api'
+import { toApplicationBody, toCareersJobPage, toUploadBody } from './careers/api'
+import { CAREERS_FIXTURES } from './careers/fixtures'
 import { ENDPOINTS } from './endpoints'
 import { countsByStatus, jobListParams, toJob, toManager, toTemplate } from './jobs/api'
 
+import type { Applicant, ApplicantDetail, ApplicationStatus } from './applications/api'
+import type {
+  ApiApplicationDetail,
+  ApiApplicationPage,
+  ApiApplicationResult,
+  ApiFileLink,
+  ApplicationDecision,
+  ApplicationListQuery,
+} from './applications/api-types'
+import type { ApiApplicationReceipt, ApiPublicJobData, ApiUploadTarget } from './careers/api-types'
 import type { ApplicationAnswers } from './careers/application'
-import type { CareersJobPage, CareersPage } from './careers/types'
+import type { CareersJob, CareersJobPage, CareersPage } from './careers/types'
+import type {
+  ApiGate,
+  ApiMarketsBody,
+  ApiRulesBody,
+  ApiRulesView,
+  ApiShareKit,
+} from './compliance/api-types'
 import type {
   ApiApplicationForm,
   ApiApplicationFormBody,
@@ -29,6 +50,19 @@ import type {
 } from './jobs/api-types'
 import type { JobTemplate } from './jobs/templates'
 import type { Job, JobManager, JobStatus } from './jobs/types'
+import type {
+  ApiCompanySetup,
+  ApiDpiaBody,
+  ApiKybRetryBody,
+  ApiKybState,
+  ApiKybSubmitBody,
+  ApiPrivacyContactBody,
+} from './organization/api-types'
+import type {
+  ApiApplicantSettings,
+  ApiApplicantSettingsBody,
+  ApiHiringSettings,
+} from './settings/api-types'
 import type {
   ApiResponse,
   AuthAcceptInvitePayload,
@@ -265,24 +299,325 @@ const requests = {
   getCareersPage: (companySlug: string): Promise<CareersPage | null> =>
     Promise.resolve(CAREERS_FIXTURES[companySlug] ?? null),
 
-  // No public job endpoint yet: fixtures until the API serves this.
-  /** One open job of a company, or null when the company or the job is not found. */
-  getPublicJob: (companySlug: string, jobId: string): Promise<CareersJobPage | null> => {
-    const page = CAREERS_FIXTURES[companySlug]
-    const role = page?.roles.find((item) => item.id === jobId)
-    return Promise.resolve(page && role ? { company: page.company, job: jobForRole(role) } : null)
+  /**
+   * One public job, by its `public_id` (the careers URL's job segment). Null
+   * when there is no such job or it is gone. The slug stays in the URL only;
+   * the endpoint needs the id alone.
+   */
+  getPublicJob: async (_companySlug: string, jobId: string): Promise<CareersJobPage | null> => {
+    try {
+      const { data } = await axiosInstance.get<ApiResponse<ApiPublicJobData>>(
+        ENDPOINTS.public.job(jobId),
+      )
+      return toCareersJobPage(data.data, jobId)
+    } catch (error) {
+      if (
+        axios.isAxiosError(error) &&
+        (error.response?.status === 404 || error.response?.status === 410)
+      ) {
+        return null
+      }
+      throw error
+    }
   },
 
-  // No public application endpoint yet: fixtures until the API serves this.
-  /** Sends a candidate's answers for a job. Nothing is stored until the API serves this. */
-  submitApplication: (
-    companySlug: string,
-    jobId: string,
+  /**
+   * Sends a candidate's answers. Each picked file is sent to its own one-time
+   * URL first, and its token stands in for the file in the application. The
+   * idempotency key keeps a retry from filing the application twice.
+   */
+  submitApplication: async (
+    job: CareersJob,
     answers: ApplicationAnswers,
+    source?: string,
   ): Promise<void> => {
-    // Nothing is stored yet, so the arguments are only named here: the stub keeps the call's shape.
-    void [companySlug, jobId, answers]
-    return Promise.resolve()
+    const uploads: Record<string, string[]> = {}
+    for (const question of job.questions) {
+      const files = answers[question.key]
+      if (!Array.isArray(files) || !files.every((item): item is File => item instanceof File))
+        continue
+      const tokens: string[] = []
+      uploads[question.key] = tokens
+      for (const file of files) {
+        const { data } = await axiosInstance.post<ApiResponse<ApiUploadTarget>>(
+          ENDPOINTS.public.uploads(job.id),
+          toUploadBody(question, file),
+        )
+        const target = data.data
+        // The target is a pre-signed URL: it takes exactly the returned headers and no sign-in.
+        await axios.request({
+          url: target.url,
+          method: target.method ?? 'PUT',
+          headers: target.headers,
+          data: file,
+        })
+        if (target.token) tokens.push(target.token)
+      }
+    }
+    await axiosInstance.post<ApiResponse<ApiApplicationReceipt>>(
+      ENDPOINTS.public.applications(job.id),
+      toApplicationBody({
+        questions: job.questions,
+        answers,
+        uploads,
+        markets: job.markets ?? [],
+        consentRequired: job.consentRequired ?? false,
+        source,
+      }),
+      { headers: { 'Idempotency-Key': crypto.randomUUID() } },
+    )
+  },
+
+  /** One page of a job's applications, newest first, with the job's counts per status. */
+  getApplications: async (
+    jobId: string,
+    query: ApplicationListQuery = {},
+    cursor?: string,
+  ): Promise<{ items: Applicant[]; counts: Record<string, number>; nextCursor?: string }> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiApplicationPage>>(
+      ENDPOINTS.jobs.applications(jobId),
+      { params: applicationListParams(query, cursor) },
+    )
+    return {
+      items: (data.data.items ?? []).map(toApplicant),
+      counts: data.data.counts ?? {},
+      nextCursor: data.data.next_cursor || undefined,
+    }
+  },
+
+  /** One application with its answers. Reading it records that this person opened it. */
+  getApplication: async (jobId: string, appId: string): Promise<ApplicantDetail> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiApplicationDetail>>(
+      ENDPOINTS.jobs.application(jobId, appId),
+    )
+    return toApplicantDetail(data.data)
+  },
+
+  /** A link to one of an application's files. It works for five minutes. */
+  getApplicationFileLink: async (
+    jobId: string,
+    appId: string,
+    fileId: string,
+  ): Promise<ApiFileLink> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiFileLink>>(
+      ENDPOINTS.jobs.applicationFile(jobId, appId, fileId),
+    )
+    return data.data
+  },
+
+  /** Decides a flagged application. The person deciding must have been the last to open it. */
+  reviewApplication: async (
+    jobId: string,
+    appId: string,
+    body: { decision: ApplicationDecision; note?: string },
+  ): Promise<ApiApplicationResult> => {
+    const { data } = await axiosInstance.post<ApiResponse<ApiApplicationResult>>(
+      ENDPOINTS.jobs.applicationReview(jobId, appId),
+      body,
+    )
+    return data.data
+  },
+
+  /** Moves an application along: see `STATUS_TARGETS` for what each status allows. */
+  changeApplicationStatus: async (
+    jobId: string,
+    appId: string,
+    body: { status: ApplicationStatus; note?: string },
+  ): Promise<ApiApplicationResult> => {
+    const { data } = await axiosInstance.post<ApiResponse<ApiApplicationResult>>(
+      ENDPOINTS.jobs.applicationStatus(jobId, appId),
+      body,
+    )
+    return data.data
+  },
+
+  /** The gates that apply to the job, with where each stands. */
+  getComplianceGates: async (jobId: string): Promise<ApiGate[]> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiGate[]>>(
+      ENDPOINTS.jobs.compliance(jobId),
+    )
+    return data.data ?? []
+  },
+
+  /** Confirms or withdraws a gate. The company's confirmation is logged against the caller. */
+  confirmComplianceGate: async (
+    jobId: string,
+    gateId: string,
+    confirmed: boolean,
+    revision?: number,
+  ): Promise<ApiGate[]> => {
+    const { data } = await axiosInstance.put<ApiResponse<ApiGate[]>>(
+      ENDPOINTS.jobs.complianceGate(jobId, gateId),
+      { confirmed },
+      { headers: ifMatch(revision) },
+    )
+    return data.data ?? []
+  },
+
+  /** The job's screening rules. A rule flags a candidate for a person to review; it never rejects. */
+  getScreeningRules: async (jobId: string): Promise<ApiRulesView> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiRulesView>>(
+      ENDPOINTS.jobs.disqualificationRules(jobId),
+    )
+    return data.data
+  },
+
+  /** Replaces a draft's screening rules. */
+  setScreeningRules: async (
+    jobId: string,
+    body: ApiRulesBody,
+    revision?: number,
+  ): Promise<ApiRulesView> => {
+    const { data } = await axiosInstance.put<ApiResponse<ApiRulesView>>(
+      ENDPOINTS.jobs.disqualificationRules(jobId),
+      body,
+      { headers: ifMatch(revision) },
+    )
+    return data.data
+  },
+
+  /** Replaces the places the job is open to. Returns the job, carrying the market warnings. */
+  setJobMarkets: async (
+    jobId: string,
+    body: ApiMarketsBody,
+    revision?: number,
+  ): Promise<ApiJobView> => {
+    const { data } = await axiosInstance.put<ApiResponse<ApiJobView>>(
+      ENDPOINTS.jobs.markets(jobId),
+      body,
+      { headers: ifMatch(revision) },
+    )
+    return data.data
+  },
+
+  /** The public link and the share links of a published job. */
+  getShareKit: async (jobId: string): Promise<ApiShareKit> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiShareKit>>(
+      ENDPOINTS.jobs.shareKit(jobId),
+    )
+    return data.data
+  },
+
+  /** Records that the user saw the duplicate-job warning and kept going. */
+  dismissDuplicateWarning: async (jobId: string): Promise<void> => {
+    await axiosInstance.post(ENDPOINTS.jobs.dismissDuplicates(jobId))
+  },
+
+  /** What the company must have on file before it can publish. */
+  getCompanySetup: async (): Promise<ApiCompanySetup> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiCompanySetup>>(
+      ENDPOINTS.organization.agreements(),
+    )
+    return data.data
+  },
+
+  /** Accepts the data processing agreement. `version` is the one `getCompanySetup` asked for. */
+  acceptAgreements: async (version: string): Promise<ApiCompanySetup> => {
+    const { data } = await axiosInstance.post<ApiResponse<ApiCompanySetup>>(
+      ENDPOINTS.organization.agreements(),
+      { version },
+    )
+    return data.data
+  },
+
+  recordDpia: async (body: ApiDpiaBody): Promise<ApiCompanySetup> => {
+    const { data } = await axiosInstance.put<ApiResponse<ApiCompanySetup>>(
+      ENDPOINTS.organization.dpia(),
+      body,
+    )
+    return data.data
+  },
+
+  setPrivacyContact: async (body: ApiPrivacyContactBody): Promise<ApiCompanySetup> => {
+    const { data } = await axiosInstance.put<ApiResponse<ApiCompanySetup>>(
+      ENDPOINTS.organization.privacyContact(),
+      body,
+    )
+    return data.data
+  },
+
+  /** Where the company's verification (KYB) stands. */
+  getKyb: async (): Promise<ApiKybState> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiKybState>>(
+      ENDPOINTS.organization.verification(),
+    )
+    return data.data
+  },
+
+  /** First submission, or a full resubmission after a failure. */
+  submitKyb: async (body: ApiKybSubmitBody): Promise<ApiKybState> => {
+    const { data } = await axiosInstance.post<ApiResponse<ApiKybState>>(
+      ENDPOINTS.organization.verification(),
+      body,
+    )
+    return data.data
+  },
+
+  /** Light retry after number_not_found or name_mismatch; country and address are reused. */
+  retryKyb: async (body: ApiKybRetryBody): Promise<ApiKybState> => {
+    const { data } = await axiosInstance.post<ApiResponse<ApiKybState>>(
+      ENDPOINTS.organization.verificationRetry(),
+      body,
+    )
+    return data.data
+  },
+
+  /** Clears the registration number and identifiers; name and address stay. Back to not_started. */
+  changeKybCountry: async (countryCode: string): Promise<ApiKybState> => {
+    const { data } = await axiosInstance.post<ApiResponse<ApiKybState>>(
+      ENDPOINTS.organization.verificationChangeCountry(),
+      { country_code: countryCode },
+    )
+    return data.data
+  },
+
+  /** Accepts an address_mismatch warning, saying whether the address is registered or trading. */
+  confirmKybAddress: async (addressType: 'registered' | 'trading'): Promise<ApiKybState> => {
+    const { data } = await axiosInstance.post<ApiResponse<ApiKybState>>(
+      ENDPOINTS.organization.verificationConfirmAddress(),
+      { address_type: addressType },
+    )
+    return data.data
+  },
+
+  /** One-click fix for a name_mismatch: the registry's legal name replaces what was typed. */
+  confirmKybName: async (): Promise<ApiKybState> => {
+    const { data } = await axiosInstance.post<ApiResponse<ApiKybState>>(
+      ENDPOINTS.organization.verificationConfirmName(),
+    )
+    return data.data
+  },
+
+  /** Company-level switches. Automated screening is off until the legal contact turns it on. */
+  getHiringSettings: async (): Promise<ApiHiringSettings> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiHiringSettings>>(
+      ENDPOINTS.hiring.settings(),
+    )
+    return data.data
+  },
+
+  setAutomatedScreening: async (enabled: boolean): Promise<ApiHiringSettings> => {
+    const { data } = await axiosInstance.put<ApiResponse<ApiHiringSettings>>(
+      ENDPOINTS.hiring.settings(),
+      { automated_screening_enabled: enabled },
+    )
+    return data.data
+  },
+
+  /** Whether rejected candidates are blocked from reapplying, and whether they are emailed. */
+  getApplicantSettings: async (): Promise<ApiApplicantSettings> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiApplicantSettings>>(
+      ENDPOINTS.hiring.applicantSettings(),
+    )
+    return data.data
+  },
+
+  setApplicantSettings: async (body: ApiApplicantSettingsBody): Promise<ApiApplicantSettings> => {
+    const { data } = await axiosInstance.put<ApiResponse<ApiApplicantSettings>>(
+      ENDPOINTS.hiring.applicantSettings(),
+      body,
+    )
+    return data.data
   },
 
   // No jobs endpoints yet — resolves with local fixtures so the query layer and
