@@ -2,7 +2,7 @@
 # the ECS service. Needs a "staging" GitHub environment with these variables:
 #   AWS_DEPLOY_ROLE_ARN  terraform output frontend_deploy_role_arns in Angle-HR/server infra/envs/staging
 #   API_BASE_URL         https://api.staging.tryopenhr.com/api/v1
-#   GA_ID, GOOGLE_MAPS_API_KEY  optional (NEXT_PUBLIC_GA_ID, NEXT_PUBLIC_GOOGLE_MAPS_API_KEY)
+# and these optional environment secrets: NEXT_PUBLIC_GA_ID, NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 # NEXT_PUBLIC_* values are inlined into the bundle at build time, so they are build args, not runtime env.
 name: Deploy staging
 
@@ -52,8 +52,8 @@ jobs:
           push: true
           build-args: |
             NEXT_PUBLIC_API_BASE_URL=${{ vars.API_BASE_URL }}
-            NEXT_PUBLIC_GA_ID=${{ vars.GA_ID }}
-            NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ vars.GOOGLE_MAPS_API_KEY }}
+            NEXT_PUBLIC_GA_ID=${{ secrets.NEXT_PUBLIC_GA_ID }}
+            NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}
           tags: |
             ${{ steps.ecr.outputs.registry }}/${{ env.REPOSITORY }}:staging
             ${{ steps.ecr.outputs.registry }}/${{ env.REPOSITORY }}:${{ github.sha }}
