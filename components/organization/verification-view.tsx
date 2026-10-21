@@ -4,6 +4,7 @@ import { useState, type FormEvent, type ReactElement } from 'react'
 
 import { Button, TextInput } from '@/components/ui'
 import { getApiError } from '@/lib/api-error'
+import { toCountryCode, toMarketCode } from '@/lib/markets'
 import { useConfirmKybAddress, useConfirmKybName, useRetryKyb, useSubmitKyb } from '@/lib/mutations'
 import { useHiringCatalog, useKyb } from '@/lib/queries'
 
@@ -27,7 +28,7 @@ const sectionText = 'text-body-xs leading-19_2 text-text-tertiary'
  */
 function VerificationView(): ReactElement {
   const kyb = useKyb()
-  // The hiring catalog's markets carry ISO country codes, which the verification takes.
+  // The select lists the hiring catalog's markets, which spell the UK `UK`; the verification takes ISO codes.
   const catalog = useHiringCatalog()
   const submit = useSubmitKyb()
   const retry = useRetryKyb()
@@ -53,7 +54,8 @@ function VerificationView(): ReactElement {
 
   const display = state.display ?? 'not_started'
   const editing = display === 'not_started' || (display === 'failed' && !state.light_retry)
-  const countryCode = country || state.country_code || ''
+  const market = country || toMarketCode(state.country_code ?? '')
+  const countryCode = market ? toCountryCode(market) : ''
   const busy =
     submit.isPending || retry.isPending || confirmName.isPending || confirmAddress.isPending
   const failure = [submit, retry, confirmName, confirmAddress].find((item) => item.isError)
@@ -169,7 +171,7 @@ function VerificationView(): ReactElement {
             Country
             <select
               className="h-[32px] rounded-lg-10 border border-border-transparent-light bg-transparent px-[8px] text-body-s text-text-primary"
-              value={countryCode}
+              value={market}
               onChange={(event) => setCountry(event.target.value)}
             >
               <option value="">Select a country</option>
@@ -207,7 +209,7 @@ function VerificationView(): ReactElement {
             accent="blue"
             size="md"
             className="w-fit"
-            disabled={!countryCode || !legalName.trim()}
+            disabled={!market || !legalName.trim()}
             loading={submit.isPending}
           >
             Submit for verification

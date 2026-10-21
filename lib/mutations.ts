@@ -24,7 +24,8 @@ function useSubmitOnboarding() {
 /** Sends a candidate's application for one job. `source` is the `src` of the link they came from. */
 function useSubmitApplication(job: CareersJob, source?: string) {
   return useMutation({
-    mutationFn: (answers: ApplicationAnswers) => requests.submitApplication(job, answers, source),
+    mutationFn: ({ answers, market }: { answers: ApplicationAnswers; market?: string }) =>
+      requests.submitApplication(job, answers, source, market),
   })
 }
 
@@ -68,6 +69,8 @@ function useConfirmGate(jobId: string) {
       revision?: number
     }) => requests.confirmComplianceGate(jobId, gateId, confirmed, revision),
     onSuccess: async () => {
+      // Every gate write bumps the job's revision, and the next write needs the new one.
+      await queryClient.invalidateQueries({ queryKey: queryKeys.job(jobId) })
       await queryClient.invalidateQueries({ queryKey: queryKeys.compliance(jobId) })
       await queryClient.invalidateQueries({ queryKey: queryKeys.publishCheck(jobId) })
     },
@@ -81,6 +84,7 @@ function useSetScreeningRules(jobId: string) {
     mutationFn: ({ body, revision }: { body: ApiRulesBody; revision?: number }) =>
       requests.setScreeningRules(jobId, body, revision),
     onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.job(jobId) })
       await queryClient.invalidateQueries({ queryKey: queryKeys.screeningRules(jobId) })
       await queryClient.invalidateQueries({ queryKey: queryKeys.publishCheck(jobId) })
     },
