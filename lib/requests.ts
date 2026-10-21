@@ -156,8 +156,17 @@ interface CursorMeta {
 }
 
 /** The revision the client loaded, so the API can refuse to overwrite a newer one. */
-const ifMatch = (revision: number | undefined): Record<string, string> =>
-  revision === undefined ? {} : { 'If-Match': String(revision) }
+/**
+ * The header every job write carries. A caller that never loaded the job, such as an undo, has no
+ * revision, so the job's current one is read; the write is then not checked against anything older.
+ */
+const ifMatch = async (jobId: string, revision?: number): Promise<Record<string, string>> => {
+  const current =
+    revision ??
+    (await axiosInstance.get<ApiResponse<{ revision?: number }>>(ENDPOINTS.jobs.one(jobId))).data
+      .data.revision
+  return { 'If-Match': String(current ?? 0) }
+}
 
 const requests = {
   joinWaitlist: async (payload: WaitlistPayload): Promise<WaitlistResponse> => {
@@ -451,7 +460,7 @@ const requests = {
     const { data } = await axiosInstance.put<ApiResponse<ApiGate[]>>(
       ENDPOINTS.jobs.complianceGate(jobId, gateId),
       { confirmed },
-      { headers: ifMatch(revision) },
+      { headers: await ifMatch(jobId, revision) },
     )
     return data.data ?? []
   },
@@ -473,7 +482,7 @@ const requests = {
     const { data } = await axiosInstance.put<ApiResponse<ApiRulesView>>(
       ENDPOINTS.jobs.disqualificationRules(jobId),
       body,
-      { headers: ifMatch(revision) },
+      { headers: await ifMatch(jobId, revision) },
     )
     return data.data
   },
@@ -487,7 +496,7 @@ const requests = {
     const { data } = await axiosInstance.put<ApiResponse<ApiJobView>>(
       ENDPOINTS.jobs.markets(jobId),
       body,
-      { headers: ifMatch(revision) },
+      { headers: await ifMatch(jobId, revision) },
     )
     return data.data
   },
@@ -672,7 +681,7 @@ const requests = {
   /** A single-job status change: pause, resume, close, reopen, archive, to-draft or publish. */
   transitionJob: async (id: string, action: string, revision?: number): Promise<void> => {
     await axiosInstance.post(ENDPOINTS.jobs.transition(id, action), undefined, {
-      headers: ifMatch(revision),
+      headers: await ifMatch(id, revision),
     })
   },
 
@@ -713,13 +722,13 @@ const requests = {
     await axiosInstance.put(
       ENDPOINTS.jobs.members(id),
       { members: members.map((member) => ({ user_id: member.userId, role: member.role })) },
-      { headers: ifMatch(revision) },
+      { headers: await ifMatch(id, revision) },
     )
   },
 
   /** Only drafts can be deleted; the API answers 409 for anything else. */
   deleteJob: async (id: string, revision?: number): Promise<void> => {
-    await axiosInstance.delete(ENDPOINTS.jobs.one(id), { headers: ifMatch(revision) })
+    await axiosInstance.delete(ENDPOINTS.jobs.one(id), { headers: await ifMatch(id, revision) })
   },
 
   /** The compliance check for a job: what would stop it publishing, and what to look at. Writes nothing. */
@@ -735,7 +744,7 @@ const requests = {
     const { data } = await axiosInstance.post<ApiResponse<ApiPublishResult>>(
       ENDPOINTS.jobs.publish(id),
       undefined,
-      { headers: ifMatch(revision) },
+      { headers: await ifMatch(id, revision) },
     )
     return data.data ?? {}
   },
@@ -756,7 +765,7 @@ const requests = {
     const { data } = await axiosInstance.patch<ApiResponse<ApiJobView>>(
       ENDPOINTS.jobs.one(id),
       body,
-      { headers: ifMatch(revision) },
+      { headers: await ifMatch(id, revision) },
     )
     return data.data
   },
@@ -770,7 +779,7 @@ const requests = {
     const { data } = await axiosInstance.put<ApiResponse<ApiJobView>>(
       ENDPOINTS.jobs.details(id),
       body,
-      { headers: ifMatch(revision) },
+      { headers: await ifMatch(id, revision) },
     )
     return data.data
   },
@@ -780,7 +789,7 @@ const requests = {
     await axiosInstance.patch(
       ENDPOINTS.jobs.one(id),
       { closing_date: closingDate },
-      { headers: ifMatch(revision) },
+      { headers: await ifMatch(id, revision) },
     )
   },
 
@@ -839,10 +848,12 @@ const requests = {
   saveApplicationForm: async (
     id: string,
     body: ApiApplicationFormBody,
+    revision?: number,
   ): Promise<ApiApplicationForm> => {
     const { data } = await axiosInstance.put<ApiResponse<ApiApplicationForm>>(
       ENDPOINTS.jobs.applicationForm(id),
       body,
+      { headers: await ifMatch(id, revision) },
     )
     return data.data
   },

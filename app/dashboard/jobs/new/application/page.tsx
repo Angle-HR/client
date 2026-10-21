@@ -74,7 +74,7 @@ function ApplicationFormPage() {
     if (saving || !jobId || !form) return
     setSaving(true)
     try {
-      await requests.saveApplicationForm(jobId, formToApi(form))
+      await requests.saveApplicationForm(jobId, formToApi(form), job?.revision)
       await queryClient.invalidateQueries({ queryKey: queryKeys.jobs })
       await queryClient.invalidateQueries({ queryKey: queryKeys.applicationForm(jobId) })
       router.push(permissionsHref)
