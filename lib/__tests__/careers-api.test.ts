@@ -78,7 +78,7 @@ describe('toApplicationBody', () => {
       questions: [question({}), choice, question({ key: 'n', id: 'n' })],
       answers: { q1: 'hello', c: ['Two'], n: '' },
       uploads: {},
-      markets: ['GB'],
+      markets: ['UK'],
       consentRequired: false,
       source: 'linkedin',
     })
@@ -89,6 +89,16 @@ describe('toApplicationBody', () => {
       consent: undefined,
       source: 'linkedin',
     })
+  })
+
+  it('sends the candidate country as an ISO code, the picked market when the job has several', () => {
+    const base = { questions: [], answers: {}, uploads: {}, consentRequired: false }
+    expect(
+      toApplicationBody({ ...base, markets: ['UK', 'US'], market: 'UK' }).candidate_country,
+    ).toBe('GB')
+    expect(
+      toApplicationBody({ ...base, markets: ['UK', 'US'], market: 'US' }).candidate_country,
+    ).toBe('US')
   })
 
   it('swaps files for upload tokens and asks for consent when required', () => {

@@ -1,4 +1,5 @@
 import { formFromApi, isChoiceType } from '../jobs/application-form'
+import { toCountryCode } from '../markets'
 
 import type { ApiApplicationBody, ApiPublicJob, ApiPublicJobData, ApiUploadBody } from './api-types'
 import type { ApplicationAnswers } from './application'
@@ -86,8 +87,15 @@ interface ApplicationBodyInput {
   /** Upload tokens by question key, for the file answers already sent. */
   uploads: Readonly<Record<string, string[]>>
   markets: readonly string[]
+  /** The market the candidate picked, for a job in more than one. */
+  market?: string
   consentRequired: boolean
   source?: string
+}
+
+function candidateCountry(input: ApplicationBodyInput): string | undefined {
+  const market = input.market ?? (input.markets.length === 1 ? input.markets[0] : undefined)
+  return market ? toCountryCode(market) : undefined
 }
 
 /** The body of an application: answered questions only, keyed by question id. */
@@ -107,8 +115,8 @@ function toApplicationBody(input: ApplicationBodyInput): ApiApplicationBody {
   }
   return {
     answers,
-    // The API wants the candidate's country, one of the job's markets. A job with one market has no choice.
-    candidate_country: input.markets.length === 1 ? input.markets[0] : undefined,
+    // The API wants the candidate's country as an ISO code, one of the job's markets. A job with one market has no choice.
+    candidate_country: candidateCountry(input),
     // The form's legal line is shown above the button, so submitting acknowledges it.
     privacy_notice_acknowledged: true,
     consent: input.consentRequired ? true : undefined,

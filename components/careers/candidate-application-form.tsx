@@ -11,6 +11,7 @@ import {
   type ApplicationAnswers,
   type ApplicationErrors,
 } from '@/lib/careers/application'
+import { marketName } from '@/lib/markets'
 import { useSubmitApplication } from '@/lib/mutations'
 
 import type { CareersJob } from '@/lib/careers/types'
@@ -34,6 +35,10 @@ function CandidateApplicationForm({ job }: CandidateApplicationFormProps): React
   const [answers, setAnswers] = useState<ApplicationAnswers>({})
   const [errors, setErrors] = useState<ApplicationErrors>({})
   const [received, setReceived] = useState(false)
+  // A job in several markets asks which one the candidate applies from; one market needs no question.
+  const markets = job.markets ?? []
+  const [market, setMarket] = useState('')
+  const [marketMissing, setMarketMissing] = useState(false)
   const submit = useSubmitApplication(job, useSearchParams().get('src') ?? undefined)
 
   function changeAnswer(key: string, value: AnswerValue): void {
@@ -51,8 +56,10 @@ function CandidateApplicationForm({ job }: CandidateApplicationFormProps): React
     event.preventDefault()
     const found = validateApplication(job.questions, answers)
     setErrors(found)
-    if (Object.keys(found).length > 0) return
-    submit.mutate(answers, { onSuccess: () => setReceived(true) })
+    const needsMarket = markets.length > 1 && !market
+    setMarketMissing(needsMarket)
+    if (Object.keys(found).length > 0 || needsMarket) return
+    submit.mutate({ answers, market: market || undefined }, { onSuccess: () => setReceived(true) })
   }
 
   if (received) {
@@ -92,6 +99,36 @@ function CandidateApplicationForm({ job }: CandidateApplicationFormProps): React
             onChange={(value) => changeAnswer(question.key, value)}
           />
         ))}
+        {markets.length > 1 ? (
+          <div className="flex flex-col gap-[6px]">
+            <label
+              htmlFor={`${idPrefix}-market`}
+              className="flex h-[9px] items-center pl-[3px] text-body-xs leading-none font-medium-550 text-text-primary"
+            >
+              Country you are applying from
+              <span aria-hidden="true" className="ml-[4px] text-[9px] text-text-error">
+                *
+              </span>
+            </label>
+            <select
+              id={`${idPrefix}-market`}
+              value={market}
+              aria-invalid={marketMissing}
+              onChange={(event) => {
+                setMarket(event.target.value)
+                setMarketMissing(false)
+              }}
+              className="h-[40px] rounded-[10px] border border-border-transparent-light bg-transparent px-[8px] text-body-s text-text-primary"
+            >
+              <option value="">Select a country</option>
+              {markets.map((code) => (
+                <option key={code} value={code}>
+                  {marketName(code)}
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : null}
       </div>
 
       <div className="flex flex-col gap-[16px] py-[20px]">

@@ -330,6 +330,7 @@ const requests = {
     job: CareersJob,
     answers: ApplicationAnswers,
     source?: string,
+    market?: string,
   ): Promise<void> => {
     const uploads: Record<string, string[]> = {}
     for (const question of job.questions) {
@@ -361,6 +362,7 @@ const requests = {
         answers,
         uploads,
         markets: job.markets ?? [],
+        market,
         consentRequired: job.consentRequired ?? false,
         source,
       }),
