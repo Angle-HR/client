@@ -20,6 +20,26 @@ function getApiErrorDetails(error: unknown): Record<string, unknown> | undefined
   return getApiError(error)?.details
 }
 
+interface ApiFieldError {
+  path: string
+  message: string
+}
+
+/**
+ * The per-field problems of a validation error. The hiring endpoints name the
+ * field `path` and the auth ones `field`; both are read.
+ */
+function getFieldErrors(error: unknown): ApiFieldError[] {
+  const fields = getApiErrorDetails(error)?.fields
+  if (!Array.isArray(fields)) return []
+  return fields.flatMap((item: unknown) => {
+    if (typeof item !== 'object' || item === null) return []
+    const { path, field, message } = item as Record<string, unknown>
+    const name = typeof path === 'string' ? path : field
+    return typeof name === 'string' && typeof message === 'string' ? [{ path: name, message }] : []
+  })
+}
+
 /**
  * Maps an API error onto a form field via react-hook-form's `setError` when the
  * error `code` is known for this form; otherwise returns a message to show as a
@@ -44,5 +64,5 @@ function applyApiError<T extends FieldValues>(
   return apiError.message || fallbackMessage
 }
 
-export { applyApiError, getApiError, getApiErrorDetails }
-export type { FieldErrorMap }
+export { applyApiError, getApiError, getApiErrorDetails, getFieldErrors }
+export type { ApiFieldError, FieldErrorMap }
