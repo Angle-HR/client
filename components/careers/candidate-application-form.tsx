@@ -4,7 +4,8 @@ import { useSearchParams } from 'next/navigation'
 import { useId, useState, type FormEvent, type ReactElement } from 'react'
 
 import { QuestionControl } from '@/components/careers/question-field'
-import { Button, Check, HelperText } from '@/components/ui'
+import { Button, BannerSmall, Check, HelperText } from '@/components/ui'
+import { getApiError, getFieldErrors } from '@/lib/api-error'
 import {
   validateApplication,
   type AnswerValue,
@@ -39,6 +40,7 @@ function CandidateApplicationForm({ job }: CandidateApplicationFormProps): React
   const markets = job.markets ?? []
   const [market, setMarket] = useState('')
   const [marketMissing, setMarketMissing] = useState(false)
+  const [formError, setFormError] = useState('')
   const submit = useSubmitApplication(job, useSearchParams().get('src') ?? undefined)
 
   function changeAnswer(key: string, value: AnswerValue): void {
@@ -52,6 +54,25 @@ function CandidateApplicationForm({ job }: CandidateApplicationFormProps): React
     })
   }
 
+  /** Puts the API's per-answer messages on their questions; anything else goes in the banner above the button. */
+  function showSubmitError(error: unknown): void {
+    const found: ApplicationErrors = {}
+    let message = ''
+    for (const item of getFieldErrors(error)) {
+      const id = /^answers\.(.+)$/.exec(item.path)?.[1]
+      const question = id ? job.questions.find((q) => (q.id ?? q.key) === id) : undefined
+      if (question) found[question.key] = item.message
+      else message = item.message
+    }
+    if (Object.keys(found).length > 0) {
+      setErrors((previous) => ({ ...previous, ...found }))
+      message ||= 'Check the highlighted answers and try again.'
+    }
+    setFormError(
+      message || getApiError(error)?.message || "We couldn't send your application. Try again.",
+    )
+  }
+
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault()
     const found = validateApplication(job.questions, answers)
@@ -59,7 +80,11 @@ function CandidateApplicationForm({ job }: CandidateApplicationFormProps): React
     const needsMarket = markets.length > 1 && !market
     setMarketMissing(needsMarket)
     if (Object.keys(found).length > 0 || needsMarket) return
-    submit.mutate({ answers, market: market || undefined }, { onSuccess: () => setReceived(true) })
+    setFormError('')
+    submit.mutate(
+      { answers, market: market || undefined },
+      { onSuccess: () => setReceived(true), onError: showSubmitError },
+    )
   }
 
   if (received) {
@@ -132,6 +157,11 @@ function CandidateApplicationForm({ job }: CandidateApplicationFormProps): React
       </div>
 
       <div className="flex flex-col gap-[16px] py-[20px]">
+        {formError ? (
+          <BannerSmall state="error" showCloseButton={false}>
+            {formError}
+          </BannerSmall>
+        ) : null}
         <Button
           type="submit"
           variant="primary"
