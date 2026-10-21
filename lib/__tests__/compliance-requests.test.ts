@@ -24,13 +24,15 @@ describe('compliance requests', () => {
     expect(gates[0]?.confirmed).toBe(true)
   })
 
-  it('sends no If-Match without a revision', async () => {
+  it("reads the job's current revision for If-Match when the caller has none", async () => {
+    api.get.mockResolvedValueOnce({ data: { data: { revision: 7 } } })
     api.put.mockResolvedValue({ data: { data: {} } })
     await requests.setScreeningRules('j1', { rules: [] })
+    expect(api.get).toHaveBeenCalledWith('/jobs/j1')
     expect(api.put).toHaveBeenCalledWith(
       '/jobs/j1/disqualification-rules',
       { rules: [] },
-      { headers: {} },
+      { headers: { 'If-Match': '7' } },
     )
   })
 

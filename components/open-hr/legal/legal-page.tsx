@@ -70,8 +70,8 @@ function LegalBlockView({ block }: { block: LegalBlock }) {
 function LegalPage({ title, meta, sections }: LegalPageProps) {
   return (
     <>
-      <StickyNav sentinelId="legal-nav-sentinel" basePath="/" />
-      <Header basePath="/" />
+      <StickyNav sentinelId="legal-nav-sentinel" basePath="/waitlist" />
+      <Header basePath="/waitlist" />
       <main className="flex flex-1 flex-col">
         <section className="relative flex justify-center px-[20px] py-[80px] md:px-[32px]">
           {/* Sticky nav's reveal sentinel. StickyNav's observer uses a

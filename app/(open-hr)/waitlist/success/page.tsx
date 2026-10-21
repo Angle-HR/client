@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default function OpenHrSuccessPage() {
   return (
     <>
-      <Header basePath="/" />
+      <Header basePath="/waitlist" />
       {/* flex flex-col (not just flex-1) so SuccessSection's own flex-1
           below can chain through it — a percentage height (h-full) doesn't
           reliably resolve through an intermediate flex item that got its

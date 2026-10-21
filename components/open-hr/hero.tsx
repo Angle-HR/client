@@ -52,7 +52,7 @@ function Hero() {
       // email carries it as `?token=`, and that's the only way into /survey.
       sendGAEvent('event', 'waitlist_signup', { method: 'landing_hero' })
       setJoined(true)
-      router.push('/success')
+      router.push('/waitlist/success')
     } catch (err) {
       // A known API code (e.g. CONFLICT for an email already on the list) comes
       // back as the server's own message; anything else uses the fallback.

@@ -6,7 +6,11 @@ import Link from 'next/link'
 // tightly tracked.
 function WaitlistLogo() {
   return (
-    <Link href="/" className="inline-flex items-center text-text-primary" aria-label="Open HR">
+    <Link
+      href="/waitlist"
+      className="inline-flex items-center text-text-primary"
+      aria-label="Open HR"
+    >
       <svg
         className="h-24 w-24"
         viewBox="0 0 24 24"

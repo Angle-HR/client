@@ -16,7 +16,7 @@ interface StickyNavProps {
   // section (Privacy Policy, Terms & Conditions) pass their own sentinel.
   sentinelId?: string
   // Forwarded to NavLinks — see its own doc comment. Unset on the landing
-  // page itself, "/" everywhere else.
+  // page itself, "/waitlist" everywhere else.
   basePath?: string
 }
 

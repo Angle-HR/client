@@ -6,7 +6,7 @@ const linkClassName =
 
 interface NavLinksProps {
   tabIndex?: number
-  // Set to "/" when rendered from a route other than the landing page
+  // Set to "/waitlist" when rendered from a route other than the landing page
   // itself (e.g. the success page), so the anchors navigate back to the
   // landing page's sections instead of looking for #story/#faq here.
   basePath?: string
