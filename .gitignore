@@ -59,4 +59,5 @@ playwright-report/
 test-results/
 pr_template/
 *storybook.log
-storybook-static
+/out-landing/
+/.landing-build/

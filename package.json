@@ -17,7 +17,8 @@
     "prebuild": "npm rebuild lightningcss --verbose || true",
     "prepare": "husky",
     "storybook": "node scripts/copy-flags.mjs && storybook dev -p 6006",
-    "build-storybook": "node scripts/copy-flags.mjs && storybook build"
+    "build-storybook": "node scripts/copy-flags.mjs && storybook build",
+    "build:landing": "node scripts/build-landing.mjs"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,mjs,cjs}": [

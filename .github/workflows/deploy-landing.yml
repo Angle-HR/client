@@ -1,0 +1,57 @@
+# Publishes the public landing site (the `(open-hr)` routes, built by scripts/build-landing.mjs as a static export) to
+# the landing bucket in the production AWS account, which serves tryopenhr.com. Independent of deploy-staging.yml,
+# which ships the app image to ECS.
+#
+# Infra: Angle-HR/infra envs/landing. The role below trusts this repo's `staging` branch only (no GitHub environment,
+# so the OIDC subject is repo:Angle-HR/client:ref:refs/heads/staging).
+name: Deploy landing
+
+on:
+  push:
+    branches: [staging]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-landing
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: eu-west-2
+  AWS_DEPLOY_ROLE_ARN: arn:aws:iam::710459742652:role/openhr-landing-github-deploy
+  BUCKET: openhr-landing-710459742652-site
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build landing site
+        run: npm run build:landing
+        env:
+          NEXT_PUBLIC_GA_ID: ${{ secrets.NEXT_PUBLIC_GA_ID }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # Assets first so a visitor never gets new HTML that points at files that are not there yet. HTML last, with
+      # --delete to drop files that no longer exist. Cache-Control is set by the serving Lambda, not here.
+      - name: Upload assets
+        run: aws s3 sync out-landing/ "s3://$BUCKET/" --exclude "*.html" --exclude "*.txt" --no-progress
+
+      - name: Upload pages
+        run: aws s3 sync out-landing/ "s3://$BUCKET/" --delete --no-progress
