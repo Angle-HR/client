@@ -17,6 +17,7 @@ function DashboardPage() {
       <DashboardErrorState
         kind={offline ? 'connection' : 'unknown'}
         onContactSupport={() => router.push('/login/help')}
+        onRetry={() => void me.refetch()}
       />
     )
   }
