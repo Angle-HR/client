@@ -81,9 +81,13 @@ interface FormQuestion {
   special_category?: ApiFormQuestion['special_category']
 }
 
-/** One special category the candidate is asked about. The design collects no legal wording. */
+/** One special category the candidate is asked about, with the recruiter's lawful basis. */
 interface FormDeclaration {
   category: SpecialCategoryKey
+  /** The API's condition value. Empty until the recruiter chooses one. */
+  legalCondition: string
+  /** Why the data is collected. Empty until the recruiter writes it. */
+  purpose: string
 }
 
 interface ApplicationForm {
@@ -148,6 +152,29 @@ const SPECIAL_CATEGORIES: readonly { key: SpecialCategoryKey; label: string }[] 
   { key: 'religion_belief', label: 'Religion or belief' },
   { key: 'criminal_records', label: 'Criminal records' },
 ]
+
+/** The longest purpose the API accepts, in characters. */
+const PURPOSE_MAX_LENGTH = 300
+
+const ART_9_CONDITIONS: readonly { value: string; label: string }[] = [
+  { value: 'explicit_consent', label: 'Explicit consent' },
+  { value: 'employment_law', label: 'Employment and social security law' },
+  { value: 'legal_claims', label: 'Establishment or defence of legal claims' },
+  { value: 'substantial_public_interest', label: 'Substantial public interest' },
+  { value: 'occupational_medicine', label: 'Occupational medicine' },
+]
+
+const ART_10_CONDITIONS: readonly { value: string; label: string }[] = [
+  { value: 'law_authorised', label: 'Authorised by law' },
+  { value: 'official_authority', label: 'Under the control of official authority' },
+]
+
+/** The legal conditions a category can be collected under: Art. 10 for criminal records, else Art. 9. */
+function legalConditionsFor(
+  category: SpecialCategoryKey,
+): readonly { value: string; label: string }[] {
+  return category === 'criminal_records' ? ART_10_CONDITIONS : ART_9_CONDITIONS
+}
 
 const CHOICE_TYPES: readonly QuestionType[] = [
   'single_choice',
@@ -366,7 +393,73 @@ function setSpecialCategory(
 ): ApplicationForm {
   const others = form.declarations.filter((item) => item.category !== category)
   if (!checked) return { ...form, declarations: others }
-  return { ...form, declarations: [...others, { category }] }
+  return { ...form, declarations: [...others, { category, legalCondition: '', purpose: '' }] }
+}
+
+/** Sets the legal condition or purpose of a ticked category. */
+function updateDeclaration(
+  form: ApplicationForm,
+  category: SpecialCategoryKey,
+  changes: Partial<Pick<FormDeclaration, 'legalCondition' | 'purpose'>>,
+): ApplicationForm {
+  return {
+    ...form,
+    declarations: form.declarations.map((item) =>
+      item.category === category ? { ...item, ...changes } : item,
+    ),
+  }
+}
+
+/** What is wrong with one ticked category, as messages for its two fields. */
+interface DeclarationIssues {
+  legalCondition?: string
+  purpose?: string
+}
+
+/** The ticked categories that cannot be saved yet, by category. Empty when all are complete. */
+function declarationIssues(
+  form: ApplicationForm,
+): Partial<Record<SpecialCategoryKey, DeclarationIssues>> {
+  const issues: Partial<Record<SpecialCategoryKey, DeclarationIssues>> = {}
+  for (const item of form.declarations) {
+    const found: DeclarationIssues = {}
+    if (!legalConditionsFor(item.category).some((option) => option.value === item.legalCondition)) {
+      found.legalCondition = 'Choose the legal condition for collecting this data'
+    }
+    const purpose = item.purpose.trim()
+    if (!purpose) found.purpose = 'Say why this data is collected'
+    else if ([...purpose].length > PURPOSE_MAX_LENGTH) {
+      found.purpose = `Keep this to ${PURPOSE_MAX_LENGTH} characters or fewer`
+    }
+    if (found.legalCondition || found.purpose) issues[item.category] = found
+  }
+  return issues
+}
+
+/**
+ * Server field errors (paths like `special_categories[0].legal_condition`, or
+ * `declarations[0]...`) as issues by category. The index is the position in the
+ * declarations that were sent. Returns the errors it could not place.
+ */
+function declarationIssuesFromServer(
+  form: ApplicationForm,
+  fields: { path: string; message: string }[],
+): { issues: Partial<Record<SpecialCategoryKey, DeclarationIssues>>; unplaced: string[] } {
+  const issues: Partial<Record<SpecialCategoryKey, DeclarationIssues>> = {}
+  const unplaced: string[] = []
+  for (const field of fields) {
+    const match = /^(?:special_categories|declarations)\[(\d+)\]\.(legal_condition|purpose)$/.exec(
+      field.path,
+    )
+    const category = match ? form.declarations[Number(match[1])]?.category : undefined
+    if (!match || !category) {
+      unplaced.push(field.message)
+      continue
+    }
+    const key = match[2] === 'purpose' ? 'purpose' : 'legalCondition'
+    issues[category] = { ...issues[category], [key]: field.message }
+  }
+  return { issues, unplaced }
 }
 
 function isSpecialCategoryChecked(form: ApplicationForm, category: SpecialCategoryKey): boolean {
@@ -399,6 +492,8 @@ function formFromApi(view: ApiApplicationForm): ApplicationForm {
     questions: sorted.map(questionFromApi),
     declarations: (view.declarations ?? []).map((item) => ({
       category: item.category as SpecialCategoryKey,
+      legalCondition: item.legal_condition ?? '',
+      purpose: item.purpose ?? '',
     })),
   }
 }
@@ -411,7 +506,11 @@ function formToApi(form: ApplicationForm): ApiApplicationFormBody {
   const questions = QUESTION_SECTIONS.flatMap((section) => questionsInSection(form, section))
   return {
     questions: questions.map((question, position) => questionToApi(question, position)),
-    declarations: form.declarations.map((item) => ({ category: item.category })),
+    declarations: form.declarations.map((item) => ({
+      category: item.category,
+      legal_condition: item.legalCondition,
+      purpose: item.purpose.trim(),
+    })),
   }
 }
 
@@ -500,18 +599,22 @@ function findLastIndex<T>(items: readonly T[], test: (item: T) => boolean): numb
 }
 
 export {
+  PURPOSE_MAX_LENGTH,
   QUESTION_SECTIONS,
   QUESTION_TYPES,
   SPECIAL_CATEGORIES,
   addQuestion,
   changeQuestionType,
   createQuestion,
+  declarationIssues,
+  declarationIssuesFromServer,
   defaultApplicationForm,
   formFromApi,
   formToApi,
   hasRequiredToggle,
   isChoiceType,
   isSpecialCategoryChecked,
+  legalConditionsFor,
   moveQuestion,
   questionsInSection,
   readyQuestion,
@@ -519,10 +622,12 @@ export {
   restoreQuestion,
   setSpecialCategory,
   typeOption,
+  updateDeclaration,
   updateQuestion,
 }
 export type {
   ApplicationForm,
+  DeclarationIssues,
   FormDeclaration,
   FormOption,
   FormQuestion,

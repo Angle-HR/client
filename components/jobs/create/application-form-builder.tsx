@@ -5,26 +5,40 @@ import { useRef, useState } from 'react'
 import { DashboardIcon } from '@/components/dashboard/nav-config'
 import { QuestionEditor, TYPE_ICONS } from '@/components/jobs/create/application-question-editor'
 import { JobToast } from '@/components/jobs/job-toast'
-import { Button, Checkbox, Divider, Modal, TextButton, Toggle } from '@/components/ui'
 import {
+  Button,
+  Checkbox,
+  Divider,
+  InputSelection,
+  Modal,
+  TextButton,
+  TextInput,
+  Toggle,
+} from '@/components/ui'
+import {
+  PURPOSE_MAX_LENGTH,
   QUESTION_SECTIONS,
   QUESTION_TYPES,
   SPECIAL_CATEGORIES,
   addQuestion,
   createQuestion,
   isSpecialCategoryChecked,
+  legalConditionsFor,
   moveQuestion,
   questionsInSection,
   removeQuestion,
   restoreQuestion,
   setSpecialCategory,
+  updateDeclaration,
   updateQuestion,
 } from '@/lib/jobs/application-form'
 
 import type { JobToastState } from '@/components/jobs/job-toast'
 import type {
   ApplicationForm,
+  DeclarationIssues,
   FormQuestion,
+  SpecialCategoryKey,
   QuestionSection,
   QuestionType,
 } from '@/lib/jobs/application-form'
@@ -64,6 +78,8 @@ interface ApplicationFormBuilderProps {
   onSave: () => void
   saveDisabled: boolean
   onBack: () => void
+  /** Problems with the ticked special categories, shown under their fields. */
+  declarationErrors?: Partial<Record<SpecialCategoryKey, DeclarationIssues>>
 }
 
 function ApplicationFormBuilder({
@@ -73,6 +89,7 @@ function ApplicationFormBuilder({
   onSave,
   saveDisabled,
   onBack,
+  declarationErrors = {},
 }: ApplicationFormBuilderProps) {
   // The question being added, in the section it was added to. Only one at a time.
   const [draft, setDraft] = useState<FormQuestion | null>(null)
@@ -218,6 +235,14 @@ function ApplicationFormBuilder({
                   )
                 }
               />
+              {isSpecialCategoryChecked(form, category.key) ? (
+                <DeclarationFields
+                  form={form}
+                  category={category.key}
+                  issues={declarationErrors[category.key]}
+                  onChange={setForm}
+                />
+              ) : null}
             </li>
           ))}
         </ul>
@@ -380,3 +405,49 @@ function QuestionRow({
 
 export { ApplicationFormBuilder }
 export type { ApplicationFormBuilderProps }
+
+interface DeclarationFieldsProps {
+  form: ApplicationForm
+  category: SpecialCategoryKey
+  issues?: DeclarationIssues
+  onChange: Dispatch<SetStateAction<ApplicationForm>>
+}
+
+/** The legal condition and purpose of a ticked special category. Nothing is preselected. */
+function DeclarationFields({ form, category, issues, onChange }: DeclarationFieldsProps) {
+  const declaration = form.declarations.find((item) => item.category === category)
+  if (!declaration) return null
+  return (
+    <div className="mt-[10px] ml-[26px] flex flex-col gap-[12px]">
+      <InputSelection
+        label={category === 'criminal_records' ? 'Art. 10 condition' : 'Art. 9 condition'}
+        required
+        placeholder="Choose a condition"
+        options={legalConditionsFor(category).map((option) => ({ ...option }))}
+        value={declaration.legalCondition}
+        errorText={issues?.legalCondition}
+        onChange={(value) =>
+          onChange((current) =>
+            updateDeclaration(current, category, {
+              legalCondition: Array.isArray(value) ? (value[0] ?? '') : value,
+            }),
+          )
+        }
+      />
+      <TextInput
+        label={`Purpose (${PURPOSE_MAX_LENGTH} characters max)`}
+        required
+        placeholder="Why is this data collected?"
+        value={declaration.purpose}
+        errorText={issues?.purpose}
+        onChange={(event) =>
+          onChange((current) =>
+            updateDeclaration(current, category, {
+              purpose: [...event.target.value].slice(0, PURPOSE_MAX_LENGTH).join(''),
+            }),
+          )
+        }
+      />
+    </div>
+  )
+}
