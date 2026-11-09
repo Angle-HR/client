@@ -24,7 +24,7 @@ interface ListItemLocationProps {
 function CheckCircleIcon() {
   return (
     <svg
-      className="h-[12px] w-[12px] text-text-blue-accent"
+      className="h-[12px] w-[12px] shrink-0 text-text-success"
       viewBox="0 0 12 12"
       fill="currentColor"
     >

@@ -110,6 +110,16 @@ describe('ListItemLocation', () => {
     expect(screen.getByRole('radio')).toBeInTheDocument()
   })
 
+  it('shows a green check mark when selected', () => {
+    const { container } = render(
+      <ListItemLocation address="123 Main St" state="selected" showCheckMark />,
+    )
+    const check = container.querySelector('svg')
+    expect(check).toBeInTheDocument()
+    expect(check).toHaveClass('text-text-success')
+    expect(check).not.toHaveClass('text-text-blue-accent')
+  })
+
   it('reflects selected state', () => {
     render(<ListItemLocation address="123 Main St" state="selected" />)
     expect(screen.getByRole('radio')).toHaveAttribute('aria-checked', 'true')

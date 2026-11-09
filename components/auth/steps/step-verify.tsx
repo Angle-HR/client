@@ -216,7 +216,7 @@ function StepVerify({ email, onEditEmail, onVerified }: StepVerifyProps) {
             Continue
           </FlowButton>
 
-          <p className="flex flex-wrap items-center justify-center gap-[2px] text-body-s font-medium leading-19_5 text-text-secondary">
+          <p className="flex flex-wrap items-center justify-start gap-[2px] text-body-s font-medium leading-19_5 text-text-secondary">
             <span>Didn&apos;t receive the code?</span>
             <TextButton
               type="button"
