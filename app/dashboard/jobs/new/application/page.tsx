@@ -8,8 +8,15 @@ import { ApplicationFormBuilder } from '@/components/jobs/create/application-for
 import { ApplicationPreview } from '@/components/jobs/create/application-preview'
 import { JobFlowHeader } from '@/components/jobs/create/job-flow-header'
 import { JobToast } from '@/components/jobs/job-toast'
+import { getFieldErrors } from '@/lib/api-error'
 import { apiMessage } from '@/lib/jobs/api'
-import { defaultApplicationForm, formFromApi, formToApi } from '@/lib/jobs/application-form'
+import {
+  declarationIssues,
+  declarationIssuesFromServer,
+  defaultApplicationForm,
+  formFromApi,
+  formToApi,
+} from '@/lib/jobs/application-form'
 import { previewJobFrom } from '@/lib/jobs/application-preview'
 import { useApplicationForm, useHiringMe, useJob } from '@/lib/queries'
 import { queryKeys } from '@/lib/query-keys'
@@ -17,7 +24,11 @@ import { requests } from '@/lib/requests'
 
 import type { PreviewTab } from '@/components/jobs/create/application-preview'
 import type { JobToastState } from '@/components/jobs/job-toast'
-import type { ApplicationForm } from '@/lib/jobs/application-form'
+import type {
+  ApplicationForm,
+  DeclarationIssues,
+  SpecialCategoryKey,
+} from '@/lib/jobs/application-form'
 import type { Dispatch, SetStateAction } from 'react'
 
 /**
@@ -52,6 +63,10 @@ function ApplicationFormPage() {
   const [previewTab, setPreviewTab] = useState<PreviewTab>('application')
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState<JobToastState | null>(null)
+  // Shown under the special category fields: from the check before saving, or the server's.
+  const [declarationErrors, setDeclarationErrors] = useState<
+    Partial<Record<SpecialCategoryKey, DeclarationIssues>>
+  >({})
 
   const job = useJob(jobId).data
   const companyName = useHiringMe().data?.company_name ?? ''
@@ -72,6 +87,16 @@ function ApplicationFormPage() {
 
   async function save() {
     if (saving || !jobId || !form) return
+    const issues = declarationIssues(form)
+    setDeclarationErrors(issues)
+    if (Object.keys(issues).length > 0) {
+      setToast({
+        id: Date.now(),
+        kind: 'error',
+        message: 'Complete the legal condition and purpose for each special category you ticked',
+      })
+      return
+    }
     setSaving(true)
     try {
       await requests.saveApplicationForm(jobId, formToApi(form), job?.revision)
@@ -79,7 +104,16 @@ function ApplicationFormPage() {
       await queryClient.invalidateQueries({ queryKey: queryKeys.applicationForm(jobId) })
       router.push(permissionsHref)
     } catch (error) {
-      setToast({ id: Date.now(), kind: 'error', message: apiMessage(error) })
+      const placed = declarationIssuesFromServer(form, getFieldErrors(error))
+      setDeclarationErrors(placed.issues)
+      const placedAny = Object.keys(placed.issues).length > 0
+      setToast({
+        id: Date.now(),
+        kind: 'error',
+        message: placedAny
+          ? 'Complete the legal condition and purpose for each special category you ticked'
+          : apiMessage(error),
+      })
     } finally {
       setSaving(false)
     }
@@ -108,6 +142,7 @@ function ApplicationFormPage() {
                 onSave={() => void save()}
                 saveDisabled={saveDisabled}
                 onBack={() => router.push(backHref)}
+                declarationErrors={declarationErrors}
               />
             ) : null}
           </div>

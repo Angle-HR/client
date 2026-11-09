@@ -4,15 +4,19 @@ import {
   addQuestion,
   changeQuestionType,
   createQuestion,
+  declarationIssues,
+  declarationIssuesFromServer,
   defaultApplicationForm,
   formFromApi,
   formToApi,
+  legalConditionsFor,
   moveQuestion,
   questionsInSection,
   readyQuestion,
   removeQuestion,
   restoreQuestion,
   setSpecialCategory,
+  updateDeclaration,
   updateQuestion,
 } from '../jobs/application-form'
 
@@ -188,9 +192,26 @@ describe('formFromApi and formToApi', () => {
     expect(sent?.config).toEqual({ min: 0, max: 5, min_label: 'Low', max_label: 'High' })
   })
 
-  it('sends special categories as category only', () => {
+  it('ticks a category with no condition or purpose chosen', () => {
     const form = setSpecialCategory(formFromApi(serverForm), 'health_disability', true)
-    expect(formToApi(form).declarations).toEqual([{ category: 'health_disability' }])
+    expect(form.declarations).toEqual([
+      { category: 'health_disability', legalCondition: '', purpose: '' },
+    ])
+  })
+
+  it('sends the legal condition and trimmed purpose', () => {
+    let form = setSpecialCategory(formFromApi(serverForm), 'health_disability', true)
+    form = updateDeclaration(form, 'health_disability', {
+      legalCondition: 'explicit_consent',
+      purpose: '  Reasonable adjustments  ',
+    })
+    expect(formToApi(form).declarations).toEqual([
+      {
+        category: 'health_disability',
+        legal_condition: 'explicit_consent',
+        purpose: 'Reasonable adjustments',
+      },
+    ])
   })
 
   it('reads the special categories the API returns', () => {
@@ -204,7 +225,66 @@ describe('formFromApi and formToApi', () => {
         },
       ],
     })
-    expect(form.declarations).toEqual([{ category: 'criminal_records' }])
+    expect(form.declarations).toEqual([
+      {
+        category: 'criminal_records',
+        legalCondition: 'Art. 10 condition',
+        purpose: 'Right to work checks',
+      },
+    ])
+  })
+})
+
+describe('special category declarations', () => {
+  it('offers Art. 9 conditions, and Art. 10 ones for criminal records', () => {
+    expect(legalConditionsFor('religion_belief').map((item) => item.value)).toEqual([
+      'explicit_consent',
+      'employment_law',
+      'legal_claims',
+      'substantial_public_interest',
+      'occupational_medicine',
+    ])
+    expect(legalConditionsFor('criminal_records').map((item) => item.value)).toEqual([
+      'law_authorised',
+      'official_authority',
+    ])
+  })
+
+  it('flags ticked categories that are incomplete or invalid', () => {
+    let form = setSpecialCategory(defaultApplicationForm(), 'criminal_records', true)
+    expect(declarationIssues(form).criminal_records).toEqual({
+      legalCondition: expect.any(String),
+      purpose: expect.any(String),
+    })
+    // An Art. 9 value is not valid for criminal records.
+    form = updateDeclaration(form, 'criminal_records', {
+      legalCondition: 'explicit_consent',
+      purpose: 'x'.repeat(301),
+    })
+    expect(declarationIssues(form).criminal_records).toEqual({
+      legalCondition: expect.any(String),
+      purpose: expect.any(String),
+    })
+    form = updateDeclaration(form, 'criminal_records', {
+      legalCondition: 'law_authorised',
+      purpose: 'Regulated role',
+    })
+    expect(declarationIssues(form)).toEqual({})
+  })
+
+  it('places server field errors on the category at that index', () => {
+    let form = setSpecialCategory(defaultApplicationForm(), 'religion_belief', true)
+    form = setSpecialCategory(form, 'health_disability', true)
+    const { issues, unplaced } = declarationIssuesFromServer(form, [
+      { path: 'special_categories[1].legal_condition', message: 'is required' },
+      { path: 'special_categories[0].purpose', message: 'too long' },
+      { path: 'questions[0].label', message: 'bad' },
+    ])
+    expect(issues).toEqual({
+      health_disability: { legalCondition: 'is required' },
+      religion_belief: { purpose: 'too long' },
+    })
+    expect(unplaced).toEqual(['bad'])
   })
 })
 
@@ -286,7 +366,9 @@ describe('moveQuestion', () => {
 describe('setSpecialCategory', () => {
   it('keeps one declaration per ticked category and drops it when unticked', () => {
     const ticked = setSpecialCategory(defaultApplicationForm(), 'health_disability', true)
-    expect(ticked.declarations).toEqual([{ category: 'health_disability' }])
+    expect(ticked.declarations).toEqual([
+      { category: 'health_disability', legalCondition: '', purpose: '' },
+    ])
     const again = setSpecialCategory(ticked, 'health_disability', true)
     expect(again.declarations).toHaveLength(1)
     expect(setSpecialCategory(again, 'health_disability', false).declarations).toEqual([])
