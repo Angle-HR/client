@@ -258,7 +258,8 @@ function JobsPage() {
     router.replace(tab === 'templates' ? '/dashboard/jobs?tab=templates' : '/dashboard/jobs')
   }, [searchParams, notify, router, tab])
 
-  if (jobsQuery.isError) return <DashboardErrorState kind="unknown" />
+  if (jobsQuery.isError)
+    return <DashboardErrorState kind="unknown" onRetry={() => void jobsQuery.refetch()} />
   if (jobsQuery.isPending) return null
 
   // Nothing created yet: the first-job invitation replaces the whole list.

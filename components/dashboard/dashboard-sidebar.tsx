@@ -5,8 +5,17 @@ import { usePathname } from 'next/navigation'
 import { DashboardIcon, NAV_GROUPS, NavIcon, TOP_LINKS } from '@/components/dashboard/nav-config'
 import { Button, CompanySelector, Sidebar, SidebarGroupItem, SidebarItem } from '@/components/ui'
 import { MaskIcon } from '@/components/ui/icons/mask-icon'
+import { buildFeedbackMailto } from '@/lib/feedback'
+import { useTheme } from '@/providers/theme'
 
 import type { VerificationState } from '@/components/dashboard/dashboard-states'
+import type { ThemePreference } from '@/lib/theme'
+
+const THEME_LABELS: Record<ThemePreference, string> = {
+  light: 'Light mode',
+  dark: 'Dark mode',
+  system: 'System theme',
+}
 
 interface DashboardSidebarProps {
   workspaceName: string
@@ -35,6 +44,7 @@ function DashboardSidebar({
   onSignOut,
 }: DashboardSidebarProps) {
   const pathname = usePathname()
+  const { theme, setTheme } = useTheme()
 
   return (
     <Sidebar
@@ -61,19 +71,23 @@ function DashboardSidebar({
             },
             {
               key: 'theme',
-              // Figma labels the row "Light mode" even with System checked.
-              label: 'Light mode',
-              icon: <MenuIcon name="menu-sun" />,
+              label: THEME_LABELS[theme],
+              icon: (
+                <MenuIcon
+                  name={
+                    theme === 'dark' ? 'menu-moon' : theme === 'light' ? 'menu-sun' : 'menu-desktop'
+                  }
+                />
+              ),
               submenu: [
                 { key: 'light', label: 'Light mode', icon: <MenuIcon name="menu-sun" /> },
                 { key: 'dark', label: 'Dark mode', icon: <MenuIcon name="menu-moon" /> },
-                {
-                  key: 'system',
-                  label: 'System theme',
-                  icon: <MenuIcon name="menu-desktop" />,
-                  selected: true,
-                },
-              ],
+                { key: 'system', label: 'System theme', icon: <MenuIcon name="menu-desktop" /> },
+              ].map((option) => ({
+                ...option,
+                selected: option.key === theme,
+                onClick: () => setTheme(option.key as ThemePreference),
+              })),
             },
             {
               key: 'signout',
@@ -101,7 +115,13 @@ function DashboardSidebar({
             Verification in progress
           </Button>
         ) : (
-          <Button variant="secondary" accent="default" size="sm" className="w-fit">
+          <Button
+            variant="secondary"
+            accent="default"
+            size="sm"
+            className="w-fit"
+            onClick={() => window.location.assign(buildFeedbackMailto())}
+          >
             Send us feedback
           </Button>
         )

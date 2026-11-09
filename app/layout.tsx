@@ -1,6 +1,7 @@
 import { GoogleAnalytics } from '@next/third-parties/google'
 import { Inter, Fira_Code } from 'next/font/google'
 
+import { THEME_INIT_SCRIPT } from '@/lib/theme'
 import { Providers } from '@/providers'
 
 import type { Metadata } from 'next'
@@ -40,7 +41,10 @@ export default function RootLayout({
 }>): React.ReactElement {
   const gaId = process.env.NEXT_PUBLIC_GA_ID
   return (
-    <html lang="en" className={`${inter.variable} ${firaCode.variable}`}>
+    <html lang="en" className={`${inter.variable} ${firaCode.variable}`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body>
         <Providers>{children}</Providers>
         {gaId && <GoogleAnalytics gaId={gaId} />}

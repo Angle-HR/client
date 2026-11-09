@@ -72,9 +72,11 @@ type DashboardErrorKind = 'connection' | 'unknown'
 interface DashboardErrorStateProps {
   kind: DashboardErrorKind
   onContactSupport?: () => void
+  /** Re-runs whatever failed (refetch the query, reset the boundary). */
+  onRetry?: () => void
 }
 
-function DashboardErrorState({ kind, onContactSupport }: DashboardErrorStateProps) {
+function DashboardErrorState({ kind, onContactSupport, onRetry }: DashboardErrorStateProps) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-[32px]">
       <ErrorScreenArt />
@@ -85,9 +87,21 @@ function DashboardErrorState({ kind, onContactSupport }: DashboardErrorStateProp
         </p>
         <p className="w-full text-body-xs leading-19_2 text-text-secondary">
           {kind === 'connection'
-            ? 'Can’t load your dashboard. Check your connection and refresh.'
-            : 'We’re having trouble loading your dashboard. Refresh to try again.'}
+            ? 'Can’t load your dashboard. Check your connection, then try again.'
+            : 'We’re having trouble loading this page. This is usually temporary, so try again.'}
         </p>
+        {onRetry ? (
+          <Button
+            type="button"
+            variant="secondary"
+            accent="default"
+            size="sm"
+            className="w-full justify-center"
+            onClick={onRetry}
+          >
+            Try again
+          </Button>
+        ) : null}
         {kind === 'unknown' ? (
           <TextButton
             type="button"
