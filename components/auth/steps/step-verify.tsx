@@ -12,7 +12,7 @@ import {
   TextButton,
   type OTPInputState,
 } from '@/components/ui'
-import { applyApiError } from '@/lib/api-error'
+import { applyApiError, getRetryAfterSeconds } from '@/lib/api-error'
 import {
   clearVerificationSession,
   getCodeExpiresAt,
@@ -95,6 +95,13 @@ function StepVerify({ email, onEditEmail, onVerified }: StepVerifyProps) {
       setResendCooldown(result.resend_available_in_seconds)
       setResendBanner(true)
     } catch (err) {
+      // Rate limited: run the countdown from the server's remaining time.
+      const retryAfter = getRetryAfterSeconds(err)
+      if (retryAfter) {
+        setResendCooldown(retryAfter)
+        setFallbackError(`Please wait ${retryAfter}s before requesting another code.`)
+        return
+      }
       setFallbackError(applyApiError(err))
     }
   }
