@@ -11,7 +11,12 @@ import {
   type LoginPasswordValues,
 } from '@/components/auth/steps/step-login-password'
 import { useLoginEmail } from '@/components/auth/use-flow-storage'
-import { applyApiError, getApiError, getApiErrorDetails } from '@/lib/api-error'
+import {
+  applyApiError,
+  getApiError,
+  getApiErrorDetails,
+  getRetryAfterSeconds,
+} from '@/lib/api-error'
 import { landAfterLogin, setLoginOtpSession, setVerificationSession } from '@/lib/auth-session'
 import { useLogin, useRequestLoginOtp } from '@/lib/mutations'
 
@@ -77,6 +82,25 @@ function LoginPasswordPage() {
         }
       }
 
+      // Unverified account signing in again inside the resend cooldown: the 429
+      // carries the live session, so resume the code page with its countdown.
+      const retryAfter = getRetryAfterSeconds(err)
+      if (retryAfter && typeof details?.verification_session_id === 'string') {
+        setVerificationSession({
+          email: values.email,
+          verification_session_id: details.verification_session_id,
+          code_expires_in_seconds: 300,
+          resend_available_in_seconds: retryAfter,
+        })
+        setSignupEmail(values.email)
+        router.push(`/verify?email=${encodeURIComponent(values.email)}`)
+        return
+      }
+      if (retryAfter) {
+        setFormError(`Please wait ${retryAfter}s before trying again.`)
+        return
+      }
+
       setFormError(
         applyApiError(err, undefined, {}, apiError?.message || 'Incorrect email or password'),
       )
@@ -90,7 +114,12 @@ function LoginPasswordPage() {
       setLoginOtpSession(session)
       router.push('/login/verify')
     } catch (err) {
-      setFormError(applyApiError(err))
+      const retryAfter = getRetryAfterSeconds(err)
+      setFormError(
+        retryAfter
+          ? `Please wait ${retryAfter}s before requesting another code.`
+          : applyApiError(err),
+      )
     }
   }
 

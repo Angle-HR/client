@@ -1,7 +1,7 @@
 import { AxiosError, AxiosHeaders } from 'axios'
 import { describe, expect, it } from 'vitest'
 
-import { getFieldErrors } from '../api-error'
+import { getFieldErrors, getRetryAfterSeconds } from '../api-error'
 
 function failure(details: Record<string, unknown> | undefined): AxiosError {
   return new AxiosError('bad', 'ERR_BAD_REQUEST', undefined, undefined, {
@@ -28,5 +28,32 @@ describe('getFieldErrors', () => {
     expect(getFieldErrors(failure(undefined))).toEqual([])
     expect(getFieldErrors(failure({ fields: [null, { path: 1 }, 'x'] }))).toEqual([])
     expect(getFieldErrors(new Error('x'))).toEqual([])
+  })
+})
+
+function rateLimited(details: Record<string, unknown> | undefined, headers = {}): AxiosError {
+  return new AxiosError('limited', 'ERR_BAD_REQUEST', undefined, undefined, {
+    status: 429,
+    statusText: 'Too Many Requests',
+    headers,
+    config: { headers: new AxiosHeaders() },
+    data: { error: { code: 'verification_rate_limited', message: 'rate limited', details } },
+  })
+}
+
+describe('getRetryAfterSeconds', () => {
+  it('reads the countdown from the body', () => {
+    expect(getRetryAfterSeconds(rateLimited({ retry_after_seconds: 17 }))).toBe(17)
+  })
+
+  it('falls back to the Retry-After header', () => {
+    expect(getRetryAfterSeconds(rateLimited(undefined, { 'retry-after': '9' }))).toBe(9)
+  })
+
+  it('is undefined for other statuses, missing values and non-axios errors', () => {
+    expect(getRetryAfterSeconds(failure({ retry_after_seconds: 5 }))).toBeUndefined()
+    expect(getRetryAfterSeconds(rateLimited(undefined))).toBeUndefined()
+    expect(getRetryAfterSeconds(rateLimited({ retry_after_seconds: 0 }))).toBeUndefined()
+    expect(getRetryAfterSeconds(new Error('x'))).toBeUndefined()
   })
 })

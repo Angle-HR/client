@@ -64,5 +64,18 @@ function applyApiError<T extends FieldValues>(
   return apiError.message || fallbackMessage
 }
 
-export { applyApiError, getApiError, getApiErrorDetails, getFieldErrors }
+/**
+ * Seconds to wait before retrying, from a 429's `details.retry_after_seconds`
+ * or its Retry-After header. Undefined when the error is not a rate limit or
+ * carries no usable value.
+ */
+function getRetryAfterSeconds(error: unknown): number | undefined {
+  if (!axios.isAxiosError(error) || error.response?.status !== 429) return undefined
+  const fromBody = getApiErrorDetails(error)?.retry_after_seconds
+  const header = error.response.headers?.['retry-after']
+  const raw = typeof fromBody === 'number' ? fromBody : Number(header)
+  return Number.isFinite(raw) && raw > 0 ? Math.ceil(raw) : undefined
+}
+
+export { applyApiError, getApiError, getApiErrorDetails, getFieldErrors, getRetryAfterSeconds }
 export type { ApiFieldError, FieldErrorMap }

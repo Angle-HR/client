@@ -5,10 +5,11 @@ import { useEffect } from 'react'
 
 import { LoginLegalFooter, LoginShell } from '@/components/auth/login-shell'
 import { StepLoginVerify } from '@/components/auth/steps/step-login-verify'
-import { applyApiError } from '@/lib/api-error'
+import { applyApiError, getRetryAfterSeconds } from '@/lib/api-error'
 import {
   getLoginOtpCodeExpiresAt,
   getLoginOtpEmail,
+  getLoginOtpResendAvailableAt,
   getLoginOtpSessionId,
   landAfterLogin,
   setLoginOtpSession,
@@ -20,6 +21,13 @@ function secondsUntilExpiry(): number {
   const expiresAt = getLoginOtpCodeExpiresAt()
   if (expiresAt === null) return 0
   return Math.max(0, Math.round((expiresAt - Date.now()) / 1000))
+}
+
+/** Seconds until a new code may be requested, from the stored cooldown. */
+function secondsUntilResend(): number {
+  const availableAt = getLoginOtpResendAvailableAt()
+  if (availableAt === null) return 0
+  return Math.max(0, Math.ceil((availableAt - Date.now()) / 1000))
 }
 
 function LoginVerifyPage() {
@@ -50,10 +58,20 @@ function LoginVerifyPage() {
     }
   }
 
-  async function handleResend(): Promise<number> {
-    const session = await requestLoginOtp.mutateAsync({ email })
-    setLoginOtpSession(session)
-    return session.code_expires_in_seconds
+  async function handleResend() {
+    try {
+      const session = await requestLoginOtp.mutateAsync({ email })
+      setLoginOtpSession(session)
+      return {
+        expiresIn: session.code_expires_in_seconds,
+        resendIn: session.resend_available_in_seconds,
+      }
+    } catch (err) {
+      // Rate limited: keep the current code and show the server's countdown.
+      const retryAfter = getRetryAfterSeconds(err)
+      if (retryAfter) return { expiresIn: null, resendIn: retryAfter }
+      throw err
+    }
   }
 
   if (!sessionId || !email) {
@@ -65,6 +83,7 @@ function LoginVerifyPage() {
       <StepLoginVerify
         email={email}
         ttlSeconds={secondsUntilExpiry()}
+        resendInSeconds={secondsUntilResend()}
         onVerify={handleVerify}
         onResend={handleResend}
         onBack={() => router.push('/login/password')}

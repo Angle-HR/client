@@ -13,19 +13,34 @@ interface StepLoginVerifyProps {
   ttlSeconds: number
   /** Submit a code. Resolves to a message to show, or undefined when accepted. */
   onVerify: (code: string) => Promise<string | undefined>
-  /** Ask for a fresh code. Resolves to the new code's lifetime in seconds. */
-  onResend: () => Promise<number>
+  /** Seconds until a new code may be requested. */
+  resendInSeconds?: number
+  /**
+   * Ask for a fresh code. `expiresIn` is the new code's lifetime (null when
+   * none was sent, as when rate limited); `resendIn` is the cooldown to show.
+   */
+  onResend: () => Promise<{ expiresIn: number | null; resendIn: number }>
   onBack: () => void
 }
 
-function StepLoginVerify({ email, ttlSeconds, onVerify, onResend, onBack }: StepLoginVerifyProps) {
+function StepLoginVerify({
+  email,
+  ttlSeconds,
+  resendInSeconds = 0,
+  onVerify,
+  onResend,
+  onBack,
+}: StepLoginVerifyProps) {
   const [code, setCode] = useState('')
   const [secondsLeft, setSecondsLeft] = useState(ttlSeconds)
   const [otpState, setOtpState] = useState<OTPInputState>('rest')
   const [errorText, setErrorText] = useState<string>()
   const [resendBanner, setResendBanner] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [resendCooldown, setResendCooldown] = useState(resendInSeconds)
+  const [resending, setResending] = useState(false)
 
+  const canResend = resendCooldown <= 0 && !resending
   const expired = secondsLeft <= 0
 
   useEffect(() => {
@@ -36,16 +51,35 @@ function StepLoginVerify({ email, ttlSeconds, onVerify, onResend, onBack }: Step
     return () => window.clearTimeout(id)
   }, [secondsLeft])
 
+  useEffect(() => {
+    if (resendCooldown <= 0) return
+    const id = window.setTimeout(() => {
+      setResendCooldown((prev) => Math.max(0, prev - 1))
+    }, 1000)
+    return () => window.clearTimeout(id)
+  }, [resendCooldown])
+
   async function handleResend() {
-    setCode('')
+    if (!canResend) return
+    setResending(true)
     setOtpState('rest')
     setErrorText(undefined)
     try {
-      setSecondsLeft(await onResend())
-      setResendBanner(true)
+      const result = await onResend()
+      setResendCooldown(result.resendIn)
+      if (result.expiresIn !== null) {
+        setCode('')
+        setSecondsLeft(result.expiresIn)
+        setResendBanner(true)
+      } else {
+        setErrorText(`Please wait ${result.resendIn}s before requesting another code.`)
+        setOtpState('error')
+      }
     } catch {
       setOtpState('error')
       setErrorText('Could not send a new code. Please try again.')
+    } finally {
+      setResending(false)
     }
   }
 
@@ -125,9 +159,10 @@ function StepLoginVerify({ email, ttlSeconds, onVerify, onResend, onBack }: Step
             size="md"
             bold
             className="text-text-primary hover:text-text-primary"
+            disabled={!canResend}
             onClick={() => void handleResend()}
           >
-            Request a new code →
+            {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Request a new code →'}
           </TextButton>
         </p>
 
