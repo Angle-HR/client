@@ -144,10 +144,20 @@ async function allJobRows(query: JobListQuery): Promise<ApiJobListItem[]> {
   return rows
 }
 
-/** user id → name, for the ids a job or template carries. */
+/**
+ * user id → name, for the ids a job or template carries. The names are only
+ * labels: `GET /hiring/people` needs the permission to add people to jobs,
+ * which a person who may view jobs (a line manager, say) does not have, and
+ * that 403 must not take the jobs list down with it. Without the lookup,
+ * creators show as "Unknown".
+ */
 async function peopleById(): Promise<Map<string, string>> {
-  const { data } = await axiosInstance.get<ApiResponse<ApiPerson[]>>(ENDPOINTS.hiring.people())
-  return new Map((data.data ?? []).map((person) => [person.user_id ?? '', person.name ?? '']))
+  try {
+    const { data } = await axiosInstance.get<ApiResponse<ApiPerson[]>>(ENDPOINTS.hiring.people())
+    return new Map((data.data ?? []).map((person) => [person.user_id ?? '', person.name ?? '']))
+  } catch {
+    return new Map()
+  }
 }
 
 /** The list endpoints page with a cursor carried in the envelope's meta. */

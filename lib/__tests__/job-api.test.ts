@@ -318,6 +318,19 @@ describe('hiring requests', () => {
     })
   })
 
+  it('still lists jobs when the people lookup is forbidden', async () => {
+    vi.spyOn(axiosInstance, 'get').mockImplementation(async (url) => {
+      if (url === '/hiring/people') {
+        throw Object.assign(new Error('forbidden'), { response: { status: 403 } })
+      }
+      return { data: { data: [{ id: 'job_1', status: 'published', created_by: 'u_9' }] } }
+    })
+    const jobs = await requests.getJobs()
+
+    expect(jobs).toHaveLength(1)
+    expect(jobs[0]).toMatchObject({ id: 'job_1', createdBy: { name: 'Unknown' } })
+  })
+
   it('sends the revision it loaded when it changes a job', async () => {
     const post = vi.spyOn(axiosInstance, 'post').mockResolvedValue({ data: {} })
     await requests.transitionJob('job_1', 'pause', 7)
