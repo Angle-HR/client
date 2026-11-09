@@ -59,6 +59,15 @@ interface StepIdentificationAddressProps {
   onBack: () => void
 }
 
+/** "Registration Number" -> "registration number"; acronyms such as "TIN" are kept. */
+function fieldNoun(label: string): string {
+  return label
+    .trim()
+    .split(/\s+/)
+    .map((word) => (/[A-Z]{2,}/.test(word) ? word : word.toLowerCase()))
+    .join(' ')
+}
+
 /** Always built from the individual fields — used when the person typed them. */
 function composeAddress(parts: AddressParts): string {
   return [parts.line_1, parts.line_2, parts.state_or_county, parts.city, parts.post_code]
@@ -111,7 +120,7 @@ function StepIdentificationAddress({
       const stripped = trimmed.replace(/\s/g, '')
 
       if (field.required && !stripped) {
-        next[field.key] = `Enter a valid ${field.label}`
+        next[field.key] = `Enter a valid ${fieldNoun(field.label)}.`
         continue
       }
       if (!stripped || !field.pattern) continue
@@ -131,9 +140,8 @@ function StepIdentificationAddress({
       }
 
       if (!matches) {
-        next[field.key] = field.format_hint
-          ? `Enter a valid ${field.label} — ${field.format_hint}`
-          : `Enter a valid ${field.label}`
+        // The format hint is already shown as helper text; the error stays short.
+        next[field.key] = `Enter a valid ${fieldNoun(field.label)}.`
       }
     }
     setIdentificationErrors(next)
@@ -274,8 +282,8 @@ function StepIdentificationAddress({
                   }))
                 }
               />
-              <div className="flex gap-12">
-                <div className="flex-1">
+              <div className="grid grid-cols-2 items-start gap-12">
+                <div className="min-w-0">
                   <TextInput
                     label="City"
                     size="md"
@@ -285,7 +293,7 @@ function StepIdentificationAddress({
                     }
                   />
                 </div>
-                <div className="flex-1">
+                <div className="min-w-0">
                   <TextInput
                     label="Post/Zip Code"
                     size="md"
