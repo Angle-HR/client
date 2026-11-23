@@ -1,6 +1,7 @@
 'use client'
 
 import { useQueryClient } from '@tanstack/react-query'
+import { isAxiosError } from 'axios'
 import { useRouter } from 'next/navigation'
 import QRCode from 'qrcode'
 import { useEffect, useState, type FormEvent, type ReactElement } from 'react'
@@ -13,6 +14,14 @@ import { useMe } from '@/lib/queries'
 import { queryKeys } from '@/lib/query-keys'
 
 const CODE_PATTERN = /^\d{6}$/
+
+/** The shared wrong-code line talks about email; here the code comes from an app. */
+function authenticatorCodeError(error: unknown): string {
+  if (getApiError(error)?.code === 'invalid_verification_code') {
+    return 'Incorrect code. Check your authenticator app and try again.'
+  }
+  return verificationCodeError(error)
+}
 
 /** A QR code for the otpauth link, drawn in the browser so the secret goes nowhere else. */
 function OtpQr({ url }: { url: string }): ReactElement {
@@ -68,7 +77,7 @@ function EnrollPanel({ onDone }: { onDone: () => void }): ReactElement {
     setError('')
     confirm.mutate(
       { code },
-      { onSuccess: onDone, onError: (e) => setError(verificationCodeError(e)) },
+      { onSuccess: onDone, onError: (e) => setError(authenticatorCodeError(e)) },
     )
   }
 
@@ -173,7 +182,13 @@ function DisablePanel(): ReactElement {
           queryClient.clear()
           router.replace('/login')
         },
-        onError: (e) => setError(verificationCodeError(e)),
+        // The server answers 401 for a wrong password.
+        onError: (e) =>
+          setError(
+            isAxiosError(e) && e.response?.status === 401
+              ? 'Incorrect password.'
+              : authenticatorCodeError(e),
+          ),
       },
     )
   }

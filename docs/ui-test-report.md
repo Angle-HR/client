@@ -49,20 +49,52 @@ Fixes in this pass:
   /dashboard/verification).
 - Removed the hard-coded Inbox "12" badge and Schedule dot (both pages do not exist).
 
+## Third pass (gaps branch, own stack openhr-client-gaps, client on 127.0.0.1:3100)
+Driven in the Orca browser against a fresh stack (company, KYB approval, published job created with the server's
+`scripts/e2e-apply.sh`), then fixed:
+
+- Public job page: Pay (API amounts are minor units, shown as "GBP 50,000 - 80,000 per year"), Seniority, Experience
+  and Skills rows added under the design's four rows (the Figma frame 9346:561642 has none of them, so they follow the
+  same row style). Seniority and experience come back from the API as labels; not set on the test job, covered by unit tests.
+- Apply form: a missing required file question (CV) now says "Attach a file for ...". Not driven live (uploads answer 503
+  locally); unit-level only.
+- Team modal and sidebar: Organization / workspace name is the company name from `/hiring/me`, not the user's name.
+- Nav: Inbox, Schedule and every other entry whose page does not exist (Candidates, Workflow, Interview, Onboarding,
+  Employees, Documents, Compliance, Analytics, Help) are hidden unless `NEXT_PUBLIC_SHOW_UNBUILT_NAV=true` (build time).
+  Only Jobs shows. Verified in the browser.
+- Secrets out of URLs: `/verify` no longer carries the email (kept in sessionStorage; reload keeps working). The reset
+  token is read once from the address bar and the URL is cleaned with history.replaceState straight away; the invite token
+  too (and "Back" from /invite/join, which used to say the token was missing, now works). `Referrer-Policy: no-referrer` on
+  /reset-password, /verify, /invite, /invite/join (checked with curl -I). Reset driven end to end: mail link -> new password -> login.
+- TOTP (new page Account settings, `/dashboard/settings/account`, opened from the sidebar menu): enrol (QR drawn in the
+  browser, setup key, otpauth link), wrong code message, confirm with code, then disable with password and code (wrong
+  password gives "Incorrect password."; success ends every session, as the server does, and returns to /login). The login
+  step (/login/2fa) was driven too: wrong code message, right code lands on the dashboard. `/auth/totp/disable` was added to the
+  endpoints whose 401 does not end the session. Recovery codes are NOT shown: the server has no recovery-code endpoint.
+- Invite: invited a teammate by API, opened the link, accepted at /invite/join (weak password hint, then success -> dashboard).
+- Individual onboarding path driven: signup -> verify (no email in URL) -> Individual -> profile -> compliance -> dashboard
+  ("Verification in progress"). The compliance step asks business questions (business type, industry, employee count) even for an individual.
+- Published job: the details step and the application form step now show a notice and disable saving when the job is not a
+  draft (the API answers 409 "only draft jobs can be changed here" for both).
+- Pay amounts were sent as typed (39,000 became 390.00 on the server); now converted to and from minor units.
+- Lawful basis: new "Data protection" section on the details step, a select (Contract, Legitimate interests, Consent,
+  Legal obligation) defaulting to Contract with a one-line hint per option, sent on every save, validation message when
+  missing or unknown. Legitimate interests adds a required "assessment reference" field (the server blocks publishing with
+  `lia_reference_missing` otherwise; max 500 bytes). Live check against the server: all four values accepted on create
+  (consent returns the `lawful_basis_consent` warning), an unknown value is refused with a field error, and publish-check
+  still reports `lawful_basis_missing` / `lia_reference_missing` / no blocker for LI with a reference.
+  LEGAL REVIEW NEEDED: the per-option hint wording (lib/jobs/draft.ts, LAWFUL_BASIS_OPTIONS) is neutral and minimal but is
+  legal copy for the owner to approve. No read-only mode was needed: a published job's details are locked as a whole.
+
 ## Remaining gaps (client)
 - Medium: "Anywhere" jobs cannot receive applications (backend, see below); the client has no country picker for them.
-- Medium: the public job page shows only workplace, employment type and team; pay, skills, seniority and experience
-  that the API returns are not shown.
-- Low: the apply form marks a missing CV only with a red dashed border, no message; a required CV cannot be tested
-  locally (no malware scanner, upload answers 503).
-- Low: the team modal's "Organization" field shows the user's legal full name, not the company name (/auth/me has no
-  company name).
-- Low: editing the application form of a published job is offered but refused (409 "only draft jobs can be changed
-  here", shown as a toast).
-- Low: the lawful basis, the DPA and the "applicant notice" gate are only reachable by leaving the job flow.
-- Low: reset-password token stays in the URL; the verify page keeps the email in the query.
-- Low: the "Inbox" and "Schedule" nav entries link to pages that 404.
-- Not driven: TOTP enrol/disable (no UI found under settings), invite flows, onboarding "Individual" path.
+- Low: no recovery codes in the TOTP UI (no server support).
+- Low: individual accounts have no organization on the server (`/hiring/me` is 404 "no organization for this account"),
+  so the hiring screens cannot work for them; product decision needed.
+- Low: the lawful basis, the DPA and the "applicant notice" gate are only reachable by leaving the job flow (the lawful
+  basis itself is now in the job form; its publish blocker has no "Fix this" link yet).
+- Low: wrong-code wording ("Check the email") is shared by email code screens; TOTP screens use their own line.
+- Not driven live: the CV-required error (no scanner locally), team modal name (code change only).
 
 ## Backend issues
 - web-bff missing ALLOWED_ORIGINS (above).

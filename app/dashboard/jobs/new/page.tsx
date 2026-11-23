@@ -10,7 +10,7 @@ import { JobFlowHeader } from '@/components/jobs/create/job-flow-header'
 import { SaveTemplateModal } from '@/components/jobs/create/save-template-modal'
 import { ChooseTemplateModal } from '@/components/jobs/create/start-modals'
 import { JobToast } from '@/components/jobs/job-toast'
-import { Button, Divider, ListItemToggle, TextButton } from '@/components/ui'
+import { BannerSmall, Button, Divider, ListItemToggle, TextButton } from '@/components/ui'
 import { apiMessage } from '@/lib/jobs/api'
 import { EMPTY_DRAFT, validateDraft } from '@/lib/jobs/draft'
 import { draftErrorsFrom, draftFromView, draftToBody } from '@/lib/jobs/draft-api'
@@ -135,7 +135,7 @@ function NewJobPage() {
   }
 
   async function save(requireComplete: boolean) {
-    if (saving) return
+    if (saving || locked) return
     const found = validateDraft(draft, new Date())
     // A draft only needs a usable title; moving on needs everything valid.
     const blocking: DraftErrors = requireComplete ? found : { title: found.title }
@@ -220,11 +220,19 @@ function NewJobPage() {
     }
   }
 
+  // The API only lets a draft's details change; anything past draft answers 409.
+  const locked = mode !== 'edit-template' && Boolean(job && job.status !== 'draft')
+
   const backHref = mode === 'edit-template' ? '/dashboard/jobs?tab=templates' : '/dashboard/jobs'
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
-      <JobFlowHeader current="Job details" mode={mode} onSave={() => void save(false)} />
+      <JobFlowHeader
+        current="Job details"
+        mode={mode}
+        onSave={() => void save(false)}
+        saveDisabled={locked}
+      />
 
       <div className="min-h-0 flex-1 overflow-y-auto">
         <form
@@ -235,6 +243,12 @@ function NewJobPage() {
           }}
           className="flex w-[693px] max-w-full flex-col gap-[40px] p-[40px]"
         >
+          {locked ? (
+            <BannerSmall state="info" outline={false} showCloseButton={false}>
+              This job has been published, so its details can no longer be changed here. Only a
+              draft can be edited.
+            </BannerSmall>
+          ) : null}
           <div className="flex h-[24px] items-center justify-between">
             <TextButton
               size="md"
@@ -337,6 +351,7 @@ function NewJobPage() {
                 variant="primary"
                 accent="blue"
                 size="md"
+                disabled={locked}
                 iconSuffix={<DashboardIcon name="check-circle-solid" size={14} />}
               >
                 {mode === 'create' ? 'Save & continue' : 'Save Changes'}
