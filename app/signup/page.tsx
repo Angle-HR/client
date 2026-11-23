@@ -4,12 +4,12 @@ import { useRouter } from 'next/navigation'
 
 import { AuthShell } from '@/components/auth/auth-shell'
 import { setSignupEmail } from '@/components/auth/flow-storage'
-import { useSignupEmail } from '@/components/auth/use-flow-storage'
 import {
   CredentialsFooter,
   StepCredentials,
   type SignupFormValues,
 } from '@/components/auth/steps/step-credentials'
+import { useSignupEmail } from '@/components/auth/use-flow-storage'
 
 import type { AuthSignupData } from '@/lib/types'
 

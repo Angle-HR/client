@@ -43,12 +43,11 @@ function StepVerify({ email, onEditEmail, onVerified }: StepVerifyProps) {
   const resendVerification = useResendVerification()
 
   const [code, setCode] = useState('')
-  const [secondsLeft, setSecondsLeft] = useState(() =>
-    secondsUntil(getCodeExpiresAt(), DEFAULT_TTL_SECONDS),
-  )
-  const [resendCooldown, setResendCooldown] = useState(() =>
-    secondsUntil(getResendAvailableAt(), 0),
-  )
+  // Seeded with fixed values and synced from storage after mount: the stored
+  // deadlines depend on the clock, so reading them during render would differ
+  // between the server HTML and the first client render (a hydration mismatch).
+  const [secondsLeft, setSecondsLeft] = useState(DEFAULT_TTL_SECONDS)
+  const [resendCooldown, setResendCooldown] = useState(0)
   const [otpState, setOtpState] = useState<OTPInputState>('rest')
   const [errorText, setErrorText] = useState<string>()
   const [fallbackError, setFallbackError] = useState<string>()
@@ -56,6 +55,13 @@ function StepVerify({ email, onEditEmail, onVerified }: StepVerifyProps) {
 
   const expired = secondsLeft <= 0
   const canResend = resendCooldown <= 0 && !resendVerification.isPending
+
+  useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- one-time sync from storage after hydration */
+    setSecondsLeft(secondsUntil(getCodeExpiresAt(), DEFAULT_TTL_SECONDS))
+    setResendCooldown(secondsUntil(getResendAvailableAt(), 0))
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [])
 
   useEffect(() => {
     if (secondsLeft <= 0) return

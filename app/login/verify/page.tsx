@@ -5,7 +5,7 @@ import { useEffect } from 'react'
 
 import { LoginLegalFooter, LoginShell } from '@/components/auth/login-shell'
 import { StepLoginVerify } from '@/components/auth/steps/step-login-verify'
-import { applyApiError, getRetryAfterSeconds, verificationCodeError } from '@/lib/api-error'
+import { getRetryAfterSeconds, verificationCodeError } from '@/lib/api-error'
 import {
   getLoginOtpCodeExpiresAt,
   getLoginOtpEmail,
