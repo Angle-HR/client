@@ -12,6 +12,7 @@ import {
 import { DashboardIcon } from '@/components/dashboard/nav-config'
 import { TextButton } from '@/components/ui'
 import { contactFromAnswers, type CandidateLink } from '@/lib/applications/contact'
+import { marketName } from '@/lib/markets'
 
 import type { ApplicantDetail } from '@/lib/applications/api'
 
@@ -141,7 +142,7 @@ function CandidateOverview({ jobId, detail, onError }: CandidateOverviewProps): 
         </Block>
         {detail.country ? (
           <Block title="Location">
-            <ContactRow icon="map-pin-solid">{detail.country}</ContactRow>
+            <ContactRow icon="map-pin-solid">{marketName(detail.country)}</ContactRow>
           </Block>
         ) : null}
         {contact.authorizedToWork ? (

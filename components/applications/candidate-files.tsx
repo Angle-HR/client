@@ -1,6 +1,6 @@
 'use client'
 
-import { type ReactElement } from 'react'
+import { useEffect, useState, type ReactElement } from 'react'
 
 import { DashboardIcon } from '@/components/dashboard/nav-config'
 import { TextButton } from '@/components/ui'
@@ -13,6 +13,32 @@ import type { ApplicantFile } from '@/lib/applications/api'
 async function openApplicationFile(jobId: string, appId: string, fileId: string): Promise<void> {
   const link = await requests.getApplicationFileLink(jobId, appId, fileId)
   if (link.url) window.open(link.url, '_blank', 'noopener')
+}
+
+/**
+ * A local copy of a file for drawing in a frame. The storage link is signed as
+ * an attachment, so a browser would download it instead of showing it.
+ */
+function useObjectUrl(url: string | undefined): string | null {
+  const [objectUrl, setObjectUrl] = useState<string | null>(null)
+  useEffect(() => {
+    if (!url) return
+    let created: string | null = null
+    let cancelled = false
+    void fetch(url)
+      .then((response) => (response.ok ? response.blob() : null))
+      .then((blob) => {
+        if (!blob || cancelled) return
+        created = URL.createObjectURL(blob)
+        setObjectUrl(created)
+      })
+      .catch(() => undefined)
+    return () => {
+      cancelled = true
+      if (created) URL.revokeObjectURL(created)
+    }
+  }, [url])
+  return objectUrl
 }
 
 /** The first PDF the candidate uploaded, taken as their resume. */
@@ -43,6 +69,7 @@ interface ResumeProps {
  */
 function Resume({ jobId, appId, file, onError }: ResumeProps): ReactElement {
   const link = useApplicationFileLink(jobId, appId, file.id)
+  const preview = useObjectUrl(link.data?.url)
   return (
     <section className="flex flex-col gap-[12px]">
       <div className="flex items-center justify-between gap-[12px]">
@@ -66,9 +93,10 @@ function Resume({ jobId, appId, file, onError }: ResumeProps): ReactElement {
           </TextButton>
         </div>
       </div>
-      {link.data?.url ? (
+      {preview ? (
         <iframe
-          src={link.data.url}
+          // The design draws the page alone, without the browser's PDF toolbar and thumbnails.
+          src={`${preview}#toolbar=0&navpanes=0`}
           title={file.filename}
           className="h-[640px] w-full rounded-lg-10 border-0 bg-bg-secondary"
         />

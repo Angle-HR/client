@@ -10,14 +10,10 @@ import { Avatar, Button, IconButton, Tabs, getInitials } from '@/components/ui'
 import { currentRoleFromAnswers } from '@/lib/applications/contact'
 import {
   DESIGN_STAGES,
-  canMoveTo,
-  disqualifyPlan,
-  moveTarget,
   stageLabel,
   stageOfStatus,
   type DesignStage,
 } from '@/lib/applications/stages'
-import { useChangeApplicationStatus, useDisqualifyApplication } from '@/lib/mutations'
 import { useApplication } from '@/lib/queries'
 
 import type { Applicant } from '@/lib/applications/api'
@@ -73,11 +69,6 @@ function CandidatePanel({
 
   const [tab, setTab] = useState<PanelTab>('overview')
   const [moveOpen, setMoveOpen] = useState(false)
-  const disqualify = useDisqualifyApplication(jobId)
-  const change = useChangeApplicationStatus(jobId)
-  const busy = disqualify.isPending || change.isPending
-
-  const plan = status ? disqualifyPlan(status, detail?.canDecide ?? false) : null
   const name = detail?.name || row?.name || row?.email || ''
   const role = detail ? currentRoleFromAnswers(detail.answers) : { role: '', company: '' }
 
@@ -96,20 +87,13 @@ function CandidatePanel({
     return () => document.removeEventListener('keydown', handleKey)
   }, [moveOpen, nextId, previousId, onClose, onOpen])
 
-  function disqualifyCandidate(): void {
-    if (!status) return
-    disqualify.mutate({ appId, status, canDecide: detail?.canDecide ?? false }, { onError })
-  }
-
-  function moveTo(next: DesignStage): void {
-    const target = moveTarget(next)
-    if (target) change.mutate({ appId, status: target }, { onError })
-  }
-
+  // Disqualify and Move to are drawn but not wired yet: both are final on the server (and email the
+  // candidate), and their confirmations are designed in "Move to stage/Disqualify" (11311:249965),
+  // which is the next section to build. The stage rules for them are ready in lib/applications/stages.ts.
   const moveOptions = DESIGN_STAGES.map((option) => ({
     stage: option.key,
     label: option.label,
-    enabled: status ? canMoveTo(option.key, status) : false,
+    enabled: false,
   }))
 
   return (
@@ -207,8 +191,6 @@ function CandidatePanel({
             variant="secondary"
             accent="red"
             size="sm"
-            disabled={!plan || busy}
-            onClick={disqualifyCandidate}
             iconSuffix={<DashboardIcon name="chev-down-solid" size={10} />}
           >
             Disqualify
@@ -217,8 +199,8 @@ function CandidatePanel({
             open={moveOpen}
             onOpenChange={setMoveOpen}
             options={moveOptions}
-            onPick={moveTo}
-            disabled={!status || busy}
+            onPick={() => undefined}
+            disabled={!status}
           />
         </div>
 

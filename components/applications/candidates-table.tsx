@@ -5,6 +5,7 @@ import { type ReactElement } from 'react'
 import { StageChip } from '@/components/applications/stage-chip'
 import { DashboardIcon } from '@/components/dashboard/nav-config'
 import { stageOfStatus } from '@/lib/applications/stages'
+import { marketName } from '@/lib/markets'
 
 import type { Applicant } from '@/lib/applications/api'
 
@@ -22,7 +23,7 @@ const cellText = 'text-body-xs leading-19_2 font-medium text-text-secondary'
  * the list (rows carry no answers), so their cells stay empty.
  */
 const COLUMNS = [
-  { label: 'Candidate', className: 'min-w-0 flex-1' },
+  { label: 'Candidate', className: 'min-w-[200px] flex-1' },
   { label: 'Stage', className: 'w-[140px]' },
   { label: 'Applied on', className: 'w-[110px]' },
   { label: 'Location', className: 'w-[120px]' },
@@ -40,7 +41,7 @@ interface CandidatesTableProps {
 /** The applicants of the job: one row each, and a click on a row opens its overview. */
 function CandidatesTable({ rows, selectedId, onOpen }: CandidatesTableProps): ReactElement {
   return (
-    <div role="table" aria-label="Candidates" className="flex min-w-[860px] flex-col">
+    <div role="table" aria-label="Candidates" className="flex min-w-[960px] flex-col">
       <div role="row" className="flex h-[32px] items-center gap-[2px] px-[16px]">
         {COLUMNS.map((column) => (
           <span
@@ -68,7 +69,7 @@ function CandidatesTable({ rows, selectedId, onOpen }: CandidatesTableProps): Re
             }}
             className={`group flex h-[40px] shrink-0 cursor-pointer items-center gap-[2px] px-[16px] transition-colors ${selected ? 'bg-bg-transparent-light' : 'hover:bg-bg-transparent-lighter'}`}
           >
-            <div role="cell" className="flex min-w-0 flex-1 items-center px-[12px]">
+            <div role="cell" className="flex min-w-[200px] flex-1 items-center px-[12px]">
               <button
                 type="button"
                 onClick={() => onOpen(row.id)}
@@ -84,7 +85,7 @@ function CandidatesTable({ rows, selectedId, onOpen }: CandidatesTableProps): Re
               {formatDate(row.submittedAt)}
             </div>
             <div role="cell" className={`w-[120px] shrink-0 truncate px-[12px] ${cellText}`}>
-              {row.country}
+              {row.country ? marketName(row.country) : null}
             </div>
             <div role="cell" className={`w-[100px] shrink-0 px-[12px] ${cellText}`} />
             <div role="cell" className={`w-[120px] shrink-0 px-[12px] ${cellText}`} />
