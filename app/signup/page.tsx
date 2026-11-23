@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 
 import { AuthShell } from '@/components/auth/auth-shell'
 import { setSignupEmail } from '@/components/auth/flow-storage'
+import { useSignupEmail } from '@/components/auth/use-flow-storage'
 import {
   CredentialsFooter,
   StepCredentials,
@@ -14,6 +15,8 @@ import type { AuthSignupData } from '@/lib/types'
 
 function SignupPage() {
   const router = useRouter()
+  // Coming back from "Edit email" on the verify step keeps the address to correct.
+  const savedEmail = useSignupEmail()
 
   function handleContinue(result: AuthSignupData, values: SignupFormValues) {
     setSignupEmail(values.email)
@@ -22,7 +25,7 @@ function SignupPage() {
 
   return (
     <AuthShell footer={<CredentialsFooter />}>
-      <StepCredentials onContinue={handleContinue} />
+      <StepCredentials key={savedEmail} defaultEmail={savedEmail} onContinue={handleContinue} />
     </AuthShell>
   )
 }
