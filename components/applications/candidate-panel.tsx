@@ -5,6 +5,7 @@ import { useEffect, useState, type ReactElement } from 'react'
 import { CandidateOverview, formatDateTime } from '@/components/applications/candidate-overview'
 import { DisqualifyPopover } from '@/components/applications/disqualify-popover'
 import { MoveToMenu } from '@/components/applications/move-to-menu'
+import { ShortcutsDialog } from '@/components/applications/shortcuts-dialog'
 import { StageChip } from '@/components/applications/stage-chip'
 import { DashboardIcon } from '@/components/dashboard/nav-config'
 import { Avatar, Button, IconButton, Tabs, getInitials } from '@/components/ui'
@@ -49,6 +50,8 @@ interface CandidatePanelProps {
   sendEmails: boolean | undefined
   /** A stage or disqualification is being saved. */
   pending: boolean
+  /** Whether the signed-in person may move or disqualify this job's applications. */
+  canDecide: boolean
   onPick: (target: CandidateTarget, stage: DesignStage) => void
   onDisqualify: (target: CandidateTarget, note: string) => void
 }
@@ -67,6 +70,7 @@ function CandidatePanel({
   onError,
   sendEmails,
   pending,
+  canDecide,
   onPick,
   onDisqualify,
 }: CandidatePanelProps): ReactElement {
@@ -83,6 +87,7 @@ function CandidatePanel({
   const [tab, setTab] = useState<PanelTab>('overview')
   const [moveOpen, setMoveOpen] = useState(false)
   const [disqualifyOpen, setDisqualifyOpen] = useState(false)
+  const [shortcutsOpen, setShortcutsOpen] = useState(false)
   const name = detail?.name || row?.name || row?.email || ''
   const role = detail ? currentRoleFromAnswers(detail.answers) : { role: '', company: '' }
   // The decision is made for this candidate; canDecide is only known once the detail loads.
@@ -90,24 +95,61 @@ function CandidatePanel({
     ? { id: appId, name, status, canDecide: detail?.canDecide ?? false }
     : null
 
+  const moveOptions = target ? moveOptionsFor(target.status, target.canDecide) : []
+  const canDisqualify = target ? disqualifyPlan(target.status, target.canDecide) !== null : false
+  // D opens the Disqualify popover only where the button would be enabled (01, 03).
+  const canOpenDisqualify = canDecide && canDisqualify
+
   useEffect(() => {
     function handleKey(event: KeyboardEvent): void {
-      // A control that used the key (the tab bar, for one) keeps it.
-      if (event.defaultPrevented || isTyping(event.target)) return
+      if (event.defaultPrevented) return
+      const typing = isTyping(event.target)
+      // Ctrl/⌘ + / toggles the shortcuts dialog, typing or not (03).
+      if ((event.ctrlKey || event.metaKey) && event.key === '/') {
+        event.preventDefault()
+        setShortcutsOpen((open) => !open)
+        return
+      }
+      // The dialog takes the keys while it is open; the Modal handles its own Escape.
+      if (shortcutsOpen || event.ctrlKey || event.metaKey) return
+      // A field being typed in keeps its keys, except Alt/⌥ combinations.
+      if (typing && !event.altKey) return
+
+      if (event.altKey) {
+        // ⌥ changes the character, so the physical key is read.
+        const letter = event.code.replace('Key', '').toLowerCase()
+        if (letter === 'j' && nextId) onOpen(nextId)
+        else if (letter === 'k' && previousId) onOpen(previousId)
+        return
+      }
+
       if (event.key === 'Escape') {
         // The first Escape closes a menu, the next closes the panel.
         if (moveOpen) setMoveOpen(false)
         else if (disqualifyOpen) setDisqualifyOpen(false)
         else onClose()
-      } else if (event.key === 'ArrowLeft' && previousId) onOpen(previousId)
-      else if (event.key === 'ArrowRight' && nextId) onOpen(nextId)
+        return
+      }
+      const key = event.key.toLowerCase()
+      if ((key === 'j' || event.key === 'ArrowRight') && nextId) onOpen(nextId)
+      else if ((key === 'k' || event.key === 'ArrowLeft') && previousId) onOpen(previousId)
+      else if (key === 'd' && canOpenDisqualify) {
+        setMoveOpen(false)
+        setDisqualifyOpen(true)
+      }
     }
     document.addEventListener('keydown', handleKey)
     return () => document.removeEventListener('keydown', handleKey)
-  }, [moveOpen, disqualifyOpen, nextId, previousId, onClose, onOpen])
-
-  const moveOptions = target ? moveOptionsFor(target.status, target.canDecide) : []
-  const canDisqualify = target ? disqualifyPlan(target.status, target.canDecide) !== null : false
+  }, [
+    moveOpen,
+    disqualifyOpen,
+    shortcutsOpen,
+    canOpenDisqualify,
+    nextId,
+    previousId,
+    onClose,
+    onOpen,
+  ])
 
   return (
     <>
@@ -132,7 +174,13 @@ function CandidatePanel({
             ) : null}
           </p>
           <div className="flex items-center gap-[8px]">
-            <span className="text-caption-m text-text-tertiary">⌘ Shortcuts</span>
+            <button
+              type="button"
+              onClick={() => setShortcutsOpen(true)}
+              className="text-caption-m text-text-tertiary transition-colors hover:text-text-primary"
+            >
+              ⌘ Shortcuts
+            </button>
             <IconButton
               variant="tertiary"
               size="sm"
@@ -216,7 +264,7 @@ function CandidatePanel({
               <DisqualifyPopover
                 open={disqualifyOpen}
                 onOpenChange={setDisqualifyOpen}
-                disabled={!target || !canDisqualify}
+                disabled={!target || !canDisqualify || !canDecide}
                 sendEmails={sendEmails}
                 pending={pending}
                 onConfirm={(note) => {
@@ -231,7 +279,7 @@ function CandidatePanel({
                 onPick={(picked) => {
                   if (target) onPick(target, picked)
                 }}
-                disabled={!target || pending}
+                disabled={!target || pending || !canDecide}
               />
             </>
           )}
@@ -285,6 +333,7 @@ function CandidatePanel({
           </div>
         </div>
       </aside>
+      <ShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
     </>
   )
 }

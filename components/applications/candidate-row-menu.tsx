@@ -55,6 +55,8 @@ interface CandidateRowMenuProps {
   /** Picks a stage from the submenu. Disqualified opens the dialog; Hired moves at once. */
   onPick: (stage: DesignStage) => void
   onDownloadCv: () => void
+  /** Whether the signed-in person may move or disqualify this job's applications. */
+  canDecide: boolean
 }
 
 /**
@@ -67,6 +69,7 @@ function CandidateRowMenu({
   onView,
   onPick,
   onDownloadCv,
+  canDecide,
 }: CandidateRowMenuProps): ReactElement {
   const [open, setOpen] = useState(false)
   const [submenu, setSubmenu] = useState(false)
@@ -119,7 +122,11 @@ function CandidateRowMenu({
 
   // The list does not say who opened a flagged application, so Disqualify is offered; the
   // server refuses it for anyone but the last opener, and that refusal shows as an error.
-  const options = moveOptionsFor(row.status, true)
+  // Move to and Disqualify need a decider on the job; the design draws them disabled otherwise (01).
+  const options = moveOptionsFor(row.status, true).map((option) => ({
+    ...option,
+    enabled: option.enabled && canDecide,
+  }))
 
   return (
     <>
@@ -198,6 +205,7 @@ function CandidateRowMenu({
                   />
                   <RowMenuItem
                     label="Move to stage"
+                    disabled={!canDecide}
                     suffix="chev-right-solid"
                     onClick={() => setSubmenu(true)}
                   />

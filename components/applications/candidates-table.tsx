@@ -39,6 +39,8 @@ interface CandidatesTableProps {
   /** A stage picked from a row's menu. */
   onPick: (row: Applicant, stage: DesignStage) => void
   onDownloadCv: (row: Applicant) => void
+  /** Whether the signed-in person may move or disqualify this job's applications. */
+  canDecide: boolean
 }
 
 /** The applicants of the job: one row each, and a click on a row opens its overview. */
@@ -48,6 +50,7 @@ function CandidatesTable({
   onOpen,
   onPick,
   onDownloadCv,
+  canDecide,
 }: CandidatesTableProps): ReactElement {
   return (
     <div role="table" aria-label="Candidates" className="flex min-w-[960px] flex-col">
@@ -105,6 +108,7 @@ function CandidatesTable({
                 onView={() => onOpen(row.id)}
                 onPick={(stage) => onPick(row, stage)}
                 onDownloadCv={() => onDownloadCv(row)}
+                canDecide={canDecide}
               />
             </div>
           </div>

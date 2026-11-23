@@ -16,6 +16,7 @@ import { CandidatesToolbar } from '@/components/applications/candidates-toolbar'
 import { DisqualifyDialog } from '@/components/applications/disqualify-dialog'
 import { JobToast, type JobToastState } from '@/components/jobs/job-toast'
 import { Button, type AvatarColour } from '@/components/ui'
+import { canDecideApplications } from '@/lib/applications/access'
 import {
   firstName,
   statusesForTab,
@@ -29,6 +30,7 @@ import { useChangeApplicationStatus, useDisqualifyApplication } from '@/lib/muta
 import {
   useApplicantSettings,
   useApplications,
+  useHiringMe,
   useJob,
   useJobMembers,
   usePeople,
@@ -67,6 +69,7 @@ function ApplicationsView({ jobId }: ApplicationsViewProps): ReactElement {
   const job = useJob(jobId)
   const members = useJobMembers(jobId)
   const people = usePeople()
+  const me = useHiringMe()
 
   // The job-wide counts come from the unfiltered list, so the tabs keep their
   // numbers while a stage without a status is open.
@@ -108,6 +111,7 @@ function ApplicationsView({ jobId }: ApplicationsViewProps): ReactElement {
 
   /** A Move to pick: Hired moves at once; Disqualified opens the dialog (02, 04). */
   function pickStage(target: CandidateTarget, stage: DesignStage): void {
+    if (!canDecide) return
     if (stage === 'disqualified') {
       setDisqualifyTarget(target)
       return
@@ -160,6 +164,13 @@ function ApplicationsView({ jobId }: ApplicationsViewProps): ReactElement {
   }
 
   const view = job.data
+  // The server lets only the creator, a hiring manager or recruiter, or job.manage_any change a status.
+  const canDecide = canDecideApplications({
+    meUserId: me.data?.user_id,
+    creatorId: view?.created_by,
+    members: members.data ?? [],
+    permissions: me.data?.permissions,
+  })
   const preview = view ? previewJobFrom(view, '') : null
   const details = view
     ? [view.job_code, preview?.team, preview?.workplace, preview?.location]
@@ -217,6 +228,7 @@ function ApplicationsView({ jobId }: ApplicationsViewProps): ReactElement {
               onOpen={openCandidate}
               onPick={(row, stage) => pickStage(targetOfRow(row), stage)}
               onDownloadCv={(row) => downloadCv(row.id)}
+              canDecide={canDecide}
             />
           </div>
         )}
@@ -246,6 +258,7 @@ function ApplicationsView({ jobId }: ApplicationsViewProps): ReactElement {
           onError={reportError}
           sendEmails={sendEmails}
           pending={saving}
+          canDecide={canDecide}
           onPick={pickStage}
           onDisqualify={disqualifyCandidate}
         />
