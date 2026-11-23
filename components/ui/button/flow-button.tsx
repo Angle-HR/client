@@ -23,14 +23,17 @@ interface FlowButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   'aria-label'?: string
 }
 
-// Height / padding / gap / font scale per size (from Figma bounding boxes).
+// Height / padding / gap / font scale per size (from Figma). Figma's 8/10/12px
+// padding is measured from the outer edge (its stroke sits inside), so each
+// value here is 1px less to make room for the 1px border.
 const sizeMap: Record<FlowButtonSize, string> = {
-  xs: 'h-[25px] px-[8px] gap-[4px] text-body-s',
-  sm: 'h-[32px] px-[10px] gap-[8px] text-body-l',
-  md: 'h-[40px] px-[12px] gap-[8px] text-body-l',
+  xs: 'h-[25px] px-[7px] gap-[4px] text-body-s',
+  sm: 'h-[32px] px-[9px] gap-[8px] text-body-l',
+  md: 'h-[40px] px-[11px] gap-[8px] text-body-l',
 }
 
-// Default border-radius is size-aware: xs=7px, sm/md=10px.
+// Figma radius: xs=7px, sm/md=10px, except a standalone sm primary, which is 7px.
+// Attached (position="right") buttons are always 10px on the right at sm.
 const radiusMap: Record<FlowButtonSize, string> = {
   xs: 'rounded-sm-7',
   sm: 'rounded-lg-10',
@@ -58,10 +61,15 @@ const motionMap: Record<FlowButtonVariant, string> = {
     'transition-colors duration-100 ease-out hover:duration-[50ms] hover:ease-in active:duration-[50ms]',
 }
 
-function getRadiusClasses(position: FlowButtonPosition, size: FlowButtonSize): string {
+function getRadiusClasses(
+  position: FlowButtonPosition,
+  size: FlowButtonSize,
+  variant: FlowButtonVariant,
+): string {
   // Figma: position="right" keeps the right corners and squares the left ones, so the
   // button joins flush onto the container to its left (e.g. an input).
   if (position === 'right') return `${radiusMap[size]} rounded-l-none`
+  if (variant === 'primary' && size === 'sm') return 'rounded-sm-7'
   return radiusMap[size]
 }
 
@@ -108,7 +116,7 @@ const FlowButton = forwardRef<HTMLButtonElement, FlowButtonProps>(function FlowB
     'disabled:cursor-not-allowed aria-busy:cursor-wait',
     sizeMap[size],
     flowColorMap[variant],
-    getRadiusClasses(position, size),
+    getRadiusClasses(position, size, variant),
     className,
   ].join(' ')
 

@@ -18,7 +18,9 @@ export default function TextButtonIconsAvatar() {
       </TextButton>
       <span className="flex items-center gap-4 text-body-s text-text-secondary">
         Reviewed by
-        <TextButton avatar={<Avatar size={12} text="A" colour="green" />}>Ada Obi</TextButton>
+        <TextButton avatar={<Avatar size={12} circular={false} text="A" colour="green" />}>
+          Ada Obi
+        </TextButton>
       </span>
     </div>
   )

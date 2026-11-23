@@ -127,6 +127,26 @@ describe('FlowButton', () => {
     expect(handler).not.toHaveBeenCalled()
   })
 
+  it('pads 1px less than Figma to make room for the border', () => {
+    render(<FlowButton size="md">Next</FlowButton>)
+    expect(screen.getByRole('button').className).toContain('px-[11px]')
+  })
+
+  it('uses a 7px radius for a standalone sm primary, 10px otherwise', () => {
+    const { rerender } = render(
+      <FlowButton size="sm" variant="primary">
+        Next
+      </FlowButton>,
+    )
+    expect(screen.getByRole('button').className).toContain('rounded-sm-7')
+    rerender(
+      <FlowButton size="sm" variant="secondary">
+        Next
+      </FlowButton>,
+    )
+    expect(screen.getByRole('button').className).toContain('rounded-lg-10')
+  })
+
   it('renders icon prefix (14px) and suffix (15px)', () => {
     render(
       <FlowButton
@@ -240,7 +260,7 @@ describe('TextButton', () => {
     )
     const btn = screen.getByRole('button')
     expect(btn.className).toContain('font-medium')
-    expect(btn.className).toContain('underline')
+    expect(screen.getByText('Styled').className.split(' ')).toContain('underline')
   })
 
   it('is grey at rest and underlines on hover by default', () => {
@@ -248,21 +268,38 @@ describe('TextButton', () => {
     const btn = screen.getByRole('button')
     expect(btn.className).toContain('text-text-primary')
     expect(btn.className).toContain('active:text-text-blue-accent')
-    expect(btn.className).toContain('hover:underline')
-    expect(btn.className.split(' ')).not.toContain('underline')
+    const label = screen.getByText('Link')
+    expect(label.className).toContain('group-hover/text-button:underline')
+    expect(label.className.split(' ')).not.toContain('underline')
   })
 
   it('underline="never" starts secondary and never underlines', () => {
     render(<TextButton underline="never">Link</TextButton>)
     const btn = screen.getByRole('button')
     expect(btn.className).toContain('text-text-secondary')
-    expect(btn.className).not.toContain('underline ')
-    expect(btn.className).not.toContain('hover:underline')
+    expect(screen.getByText('Link').className).not.toMatch(/(^|\s|:)underline(\s|$)/)
   })
 
   it('underline={true} still means always', () => {
     render(<TextButton underline>Link</TextButton>)
-    expect(screen.getByRole('button').className.split(' ')).toContain('underline')
+    expect(screen.getByText('Link').className.split(' ')).toContain('underline')
+  })
+
+  it('wrapped trims the label to its cap height, as in Figma', () => {
+    render(<TextButton wrapped>Link</TextButton>)
+    expect(screen.getByText('Link').className).toContain('leading-[0.727em]')
+  })
+
+  it('puts the avatar after the left icon', () => {
+    render(
+      <TextButton iconLeft={<i data-testid="icon" />} avatar={<i data-testid="avatar" />}>
+        Ada
+      </TextButton>,
+    )
+    const icon = screen.getByTestId('icon')
+    expect(icon.compareDocumentPosition(screen.getByTestId('avatar'))).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    )
   })
 
   it('wrapped adds 6px padding and a hover fill', () => {

@@ -22,7 +22,7 @@ type TextButtonOwnProps = {
   iconLeft?: ReactNode
   /** Icon after the label: 10px (`xs`, `sm`, `md`) or 12px (`lg`). Use the external-link icon for links that leave the app. */
   iconRight?: ReactNode
-  /** Avatar before the label, 12px. Ignored at `xs` and `sm`. */
+  /** Avatar between the left icon and the label, 12px. Ignored at `xs` and `sm`. */
   avatar?: ReactNode
   /** Renders an `<a>` instead of a `<button>`. */
   href?: string
@@ -38,7 +38,7 @@ type TextButtonProps = TextButtonOwnProps &
 
 const sizeClasses: Record<TextButtonSize, string> = {
   xs: 'text-caption-s leading-16 gap-[2px]',
-  sm: 'text-body-xs gap-[2px]',
+  sm: 'text-body-xs leading-[19.2px] gap-[2px]',
   md: 'text-body-s gap-[2px]',
   lg: 'text-body-l gap-[2px]',
 }
@@ -80,15 +80,12 @@ const TextButton = forwardRef<HTMLElement, TextButtonProps>(function TextButton(
     underline === true ? 'always' : underline === false ? 'hover' : underline
 
   const classes = [
-    'inline-flex items-center',
+    'group/text-button inline-flex items-center',
     // Figma: hover and press fade in over 100ms (ease in), out over 100ms (ease out).
     'transition-[color,text-decoration-color,background-color] duration-100 ease-out hover:ease-in',
     // Figma: grey at rest, darker grey on hover, blue accent on press and focus.
     underlineMode === 'never' ? 'text-text-secondary' : 'text-text-primary',
     'hover:text-text-primary active:text-text-blue-accent focus-visible:text-text-blue-accent',
-    'underline-offset-2',
-    underlineMode === 'hover' && 'hover:underline active:underline',
-    underlineMode === 'always' && 'underline',
     'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bg-selection-controls-selected',
     wrapped
       ? 'p-[6px] rounded-xs-4 hover:bg-bg-transparent-light active:bg-transparent'
@@ -114,17 +111,36 @@ const TextButton = forwardRef<HTMLElement, TextButtonProps>(function TextButton(
 
   return (
     <Component {...componentProps}>
-      {showAvatar && (
-        <span className="inline-flex h-[12px] w-[12px] pr-[1px] items-center justify-center shrink-0">
-          {avatar}
-        </span>
-      )}
       {iconLeft && (
         <span className={`inline-flex ${leftIconSize[size]} items-center justify-center shrink-0`}>
           {iconLeft}
         </span>
       )}
-      {children && <span>{children}</span>}
+      {showAvatar && (
+        // Figma: a 12px avatar plus 1px right padding, after the left icon.
+        <span className="inline-flex h-[12px] w-[13px] pr-[1px] items-center justify-center shrink-0">
+          {avatar}
+        </span>
+      )}
+      {children && (
+        // Wrapped: Figma pads the text's cap height, not its line box. A line
+        // height equal to the cap height (0.727em in Inter) keeps the glyphs
+        // centred and gives Figma's 22–24px total height.
+        // The underline goes on the label only, so it never runs under the avatar or icons.
+        <span
+          className={[
+            'underline-offset-2',
+            underlineMode === 'hover' &&
+              'group-hover/text-button:underline group-active/text-button:underline',
+            underlineMode === 'always' && 'underline',
+            wrapped && 'leading-[0.727em]',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+        >
+          {children}
+        </span>
+      )}
       {iconRight && (
         <span className={`inline-flex ${rightIconSize[size]} items-center justify-center shrink-0`}>
           {iconRight}

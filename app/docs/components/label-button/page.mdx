@@ -8,66 +8,59 @@ export const metadata = { title: 'Label Button' }
 
 # Label Button
 
-A small chip that toggles on and off. Use it in groups, for filters, view switchers and quick-select controls. It isn't for one-off actions or submitting forms: use [Button](/docs/components/button) for those.
+A small chip that switches on and off. Use a group of them for filters, view switchers and quick picks. For one-off actions or submitting a form, use [Button](/docs/components/button).
 
-<Example name="label-button/overview" caption="Click a chip to toggle it." />
+<Example name="label-button/overview" caption="Click a chip to switch it." />
 
 ```tsx
 import { LabelButton } from '@/components/ui/button'
 ```
 
-The parent owns the state: pass `selected` and toggle it in `onClick`. Whether one or several chips can be on at once is up to the parent too.
-
-## With icons
-
-Icons go before (`iconLeft`) or after (`iconRight`) the label at 14×14px. Only add them when they make the label quicker to scan.
-
-<Example name="label-button/with-icons" />
+The parent keeps the state: pass `selected` and flip it in `onClick`. The parent also decides whether one chip or several can be on at once.
 
 ## Anatomy
 
-| Part      | Details                                                |
-| --------- | ------------------------------------------------------ |
-| Container | 24px high, 7px radius, 8px horizontal padding, 4px gap |
-| Label     | Inter Medium, 13px                                     |
-| Icons     | Optional, 14×14px, same colour as the label            |
+| Part      | Spec                                                          |
+| --------- | ------------------------------------------------------------- |
+| Container | 24px high, 1px border, 7px radius                             |
+| Spacing   | 8px from the outer edge, 4px between icon and label           |
+| Label     | Inter Medium, 13px                                            |
+| Icons     | Optional, 14×14px, before (`iconLeft`) or after (`iconRight`) |
+
+## With icons
+
+Only add an icon when it makes the chip quicker to scan.
+
+<Example name="label-button/with-icons" />
 
 ## States
 
 <LabelButtonStates />
 
-| State    | Background                         | Border                            |
-| -------- | ---------------------------------- | --------------------------------- |
-| Rest     | `bg/btn-default/pri-rest`          | `border/btn-default/pri-rest`     |
-| Hover    | `bg/btn-default/pri-hover`         | `border/btn-default/pri-hover`    |
-| Selected | `bg/Transparent/blue-accent light` | `border/btn-default/pri-focus`    |
-| Focus    | `bg/btn-default/pri-focus`         | `border/btn-blue/pri-focus`       |
-| Disabled | `bg/btn-default/pri-disabled`      | `border/btn-default/pri-disabled` |
+Selected gets a light blue fill and a blue border. Focus gets a blue border too, as in Figma.
 
 ## Usage
 
 <DoDont>
-  <Guideline kind="do">
-    Group related chips so the selected ones stand out against the rest.
-  </Guideline>
+  <Guideline kind="do">Group related chips so the selected ones stand out.</Guideline>
   <Guideline kind="dont">
-    Use a single chip on its own. If there's nothing to choose between, it's the wrong component.
+    Use one chip on its own. With nothing to choose between, it's the wrong component.
   </Guideline>
-  <Guideline kind="do">Use icons that help scanning, such as a location pin.</Guideline>
-  <Guideline kind="dont">Add decorative icons.</Guideline>
+  <Guideline kind="do">Use icons that help scanning, like a location pin.</Guideline>
+  <Guideline kind="dont">Add icons just for decoration.</Guideline>
 </DoDont>
 
 ## Accessibility
 
-- **Toggle state:** `aria-pressed` mirrors `selected`. Wrap the group in an element with `role="group"` and an `aria-label`.
-- **Tabs:** if the group behaves like tabs, use the Tabs component instead.
-- **Focus:** a blue border, as in Figma. The label is always visible, so no `aria-label` is needed.
+- **State:** `aria-pressed` follows `selected`. Wrap the group in `role="group"` with an `aria-label`.
+- **Tabs:** if the group switches between panels, use Tabs instead.
+- **Focus:** a blue border. The label is always visible, so no `aria-label` is needed.
 
 ## Props
 
 <PropsTable of="LabelButton" native="button" />
 
-Label Button forwards `ref` and accepts every native `<button>` attribute.
+Forwards `ref` and passes every native `<button>` attribute through.
 
 ## Figma
 
@@ -78,5 +71,3 @@ Label Button forwards `ref` and accepts every native `<button>` attribute.
   alt="The Label Button component set in Figma: rest, focus, hover, selected and disabled."
   width={134}
 />
-
-The old docs linked to node 387-34316, which no longer exists. The component now lives at "Button/ Label Button" on the Components page.

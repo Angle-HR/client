@@ -8,9 +8,7 @@ export const metadata = { title: 'Text Button' }
 
 # Text Button
 
-The lightest action in the button family: text with no background, border or padding. Use it for links and supplementary actions inside or below body copy, such as "View details" or "Read the policy".
-
-When the action needs weight or a clear hit area, use [Button](/docs/components/button).
+The lightest button: just text, no box. Use it for links and small actions in or under body copy, like "View details" or "Read the policy". If the action needs weight, use a [Button](/docs/components/button).
 
 <Example name="text-button/overview" />
 
@@ -20,49 +18,60 @@ import { TextButton } from '@/components/ui/button'
 
 ## Sizes
 
-Match the size to the text around it.
+Match the text around it.
 
 <Example name="text-button/sizes" />
 
-| Size | Text | Left icon | Right icon | When to use                              |
-| ---- | ---- | --------- | ---------- | ---------------------------------------- |
-| `xs` | 10px | 10px      | 10px       | Fine print, badges, dense metadata       |
-| `sm` | 12px | 10px      | 10px       | Captions, table cells, helper text       |
-| `md` | 13px | 11px      | 10px       | The default: body copy, form helper text |
-| `lg` | 14px | 12px      | 12px       | Large body copy, section descriptions    |
+| Size | Text | Left icon | Right icon | Use it for                    |
+| ---- | ---- | --------- | ---------- | ----------------------------- |
+| `xs` | 10px | 10px      | 10px       | Fine print and dense metadata |
+| `sm` | 12px | 10px      | 10px       | Captions, table cells, hints  |
+| `md` | 13px | 11px      | 10px       | Body copy (default)           |
+| `lg` | 14px | 12px      | 12px       | Larger body copy              |
 
-## Colour, underline and weight
+Icons and label sit 2px apart.
 
-Text Button is dark grey at rest, turns blue on press and focus, and by default is underlined on hover and press. `underline` changes when the underline shows; `bold` uses medium weight.
+## Underline
+
+It's dark grey at rest and turns blue when pressed or focused. By default it underlines on hover, so it never relies on colour alone.
 
 <Example name="text-button/underline-bold" />
 
-| Option               | Use it when                                                                                      |
-| -------------------- | ------------------------------------------------------------------------------------------------ |
-| `underline="hover"`  | The default. Inline links and actions in or near copy.                                           |
-| `underline="always"` | The link stands alone, with no copy around it to show it's interactive.                          |
-| `underline="never"`  | Quiet controls in toolbars and menus. Starts in the lighter secondary grey and darkens on hover. |
-| `bold`               | A standalone link needs a little more prominence. Not in the middle of a sentence.               |
+| Option               | Use it for                                                      |
+| -------------------- | --------------------------------------------------------------- |
+| `underline="hover"`  | Links in or near copy (default)                                 |
+| `underline="always"` | A link standing on its own, with nothing to show it's clickable |
+| `underline="never"`  | Quiet controls in toolbars and menus. Starts a shade lighter.   |
+| `bold`               | A standalone link that needs more weight. Not mid-sentence.     |
 
-`underline` and `underline={false}` still work and mean `"always"` and `"hover"`.
+`underline` on its own still means `"always"`.
 
 ## Wrapped
 
-`wrapped` adds 6px of padding and a faint fill on hover, so a standalone Text Button gets a real click target. Figma pairs it with `underline="never"`.
+`wrapped` puts the button in a padded box with a faint fill on hover, so it works as a target on its own. Use it with `underline="never"`.
 
-<Example name="text-button/wrapped" />
+<Example name="text-button/wrapped" caption="Hover to see the fill." />
+
+| Size | Height                     | Padding | Radius |
+| ---- | -------------------------- | ------- | ------ |
+| `xs` | 22px                       | 6px     | 4px    |
+| `sm` | 22px                       | 6px     | 4px    |
+| `md` | 23px (24px with an avatar) | 6px     | 4px    |
+| `lg` | 24px                       | 6px     | 4px    |
+
+As in Figma, the padding hugs the letters rather than the line height, so the box stays tight.
 
 ## Icons and avatar
 
-The right icon is usually the external-link icon, for links that leave the app. The avatar slot names a person inline, such as "Reviewed by Ada Obi". It's ignored at `xs` and `sm`.
+The order is left icon, avatar, label, right icon. Only the label underlines. Use the external-link icon on the right for links that leave the app. The avatar names a person inline, like "Reviewed by Ada Obi", and is hidden at `xs` and `sm`. Use a square 12px avatar (`circular={false}`), as in Figma.
 
 <Example name="text-button/icons-avatar" />
 
-Icons here are smaller than on other buttons (10–12px, set by `size`). Pass the icon at that size: `<MaskIcon … size={10} />`.
+Pass icons at the size in the table above, for example `<MaskIcon … size={11} />` at `md`.
 
 ## Links
 
-With `href`, Text Button renders an `<a>`. For in-app navigation, pass Next.js `Link` through `as` so the page doesn't reload:
+With `href`, it renders an `<a>`. For pages inside the app, pass Next.js `Link` through `as` so the page doesn't reload.
 
 ```tsx
 <TextButton as={Link} href="/dashboard/jobs">
@@ -71,40 +80,40 @@ With `href`, Text Button renders an `<a>`. For in-app navigation, pass Next.js `
 ```
 
 - `disabled` doesn't work on links. Use `aria-disabled="true"` and block the click.
-- With `target="_blank"`, always add `rel="noopener noreferrer"` and a visually hidden "(opens in new tab)".
+- With `target="_blank"`, add `rel="noopener noreferrer"` and a hidden "(opens in new tab)".
 
 ## States
 
 <TextButtonStates />
 
-Hover and press fade in over 100ms and out over 100ms. Rows show the default underline mode; `never` starts in secondary grey.
+Colour and underline fade over 100ms.
 
 ## Usage
 
 <DoDont>
-  <Guideline kind="do">Use it for inline links: "Read the full policy", "View details".</Guideline>
-  <Guideline kind="dont">Make it the main or only action in a view. Use Button.</Guideline>
-  <Guideline kind="do">Use the external-link icon only for links that leave the app.</Guideline>
-  <Guideline kind="dont">Use Text Button for destructive actions. It gives no warning.</Guideline>
+  <Guideline kind="do">Use it for links inside copy: "Read the full policy".</Guideline>
+  <Guideline kind="dont">Make it the main action on a page. Use Button.</Guideline>
+  <Guideline kind="do">Save the external-link icon for links that leave the app.</Guideline>
+  <Guideline kind="dont">Use it for destructive actions. It gives no warning.</Guideline>
 </DoDont>
 
 ## Writing labels
 
-- Say where it goes: "View payslip", not "Click here" or "More".
+- Say where it goes: "View payslip", not "Click here".
 - Sentence case, two to five words, no full stop.
 
 ## Accessibility
 
-- **Keyboard:** Tab reaches it. Space or Enter activates a button; Enter follows a link.
-- **Focus:** a 2px blue ring, offset by 2px.
-- **Colour:** the hover underline means it never relies on colour alone (WCAG 1.4.1). With `underline="never"`, only use it where its position makes it obviously interactive, such as a toolbar.
-- **Icons and avatar:** decorative. The label must make sense without them.
+- **Keyboard:** Tab to reach it. Space or Enter presses a button; Enter follows a link.
+- **Focus:** a 2px blue ring, and the text turns blue.
+- **Colour:** the hover underline means it doesn't rely on colour alone. With `underline="never"`, only use it where its position makes it clearly clickable.
+- **Icons and avatar:** decorative. The label has to make sense without them.
 
 ## Props
 
 <PropsTable of="TextButton" native="button" />
 
-Text Button forwards `ref` to the underlying `<button>` or `<a>`.
+Forwards `ref` to the `<button>` or `<a>`.
 
 ## Figma
 

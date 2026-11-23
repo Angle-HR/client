@@ -9,6 +9,8 @@ import { Overlay, Sidebar, SidebarGroupItem, SidebarItem } from '@/components/ui
 import { DOCS_HOME, DOCS_NAV } from '@/docs/nav'
 import { useTheme } from '@/providers/theme'
 
+import { PageToc } from './page-toc'
+
 import type { ThemePreference } from '@/lib/theme'
 
 const THEMES: { key: ThemePreference; label: string; icon: ReactNode }[] = [
@@ -139,10 +141,10 @@ function DocsShell({ children }: { children: ReactNode }) {
         </>
       )}
 
-      <main className="flex min-w-0 flex-1 flex-col p-0 md:py-[5px] md:pr-[5px]">
+      <main className="relative flex min-w-0 flex-1 flex-col p-0 md:py-[5px] md:pr-[5px]">
         <div
           id="docs-scroll"
-          className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-bg-secondary md:rounded-lg-10 md:outline-[0.5px] md:-outline-offset-[0.5px] md:outline-border-transparent-medium"
+          className="relative flex min-h-0 flex-1 flex-col overflow-y-auto bg-bg-secondary md:rounded-lg-10 md:outline-[0.5px] md:-outline-offset-[0.5px] md:outline-border-transparent-medium"
         >
           <header className="sticky top-0 z-10 flex h-[48px] shrink-0 items-center justify-between gap-[8px] border-b-[0.5px] border-border-transparent-medium bg-bg-secondary/80 px-[16px] backdrop-blur md:px-[24px]">
             <div className="flex items-center gap-[8px]">
@@ -160,10 +162,12 @@ function DocsShell({ children }: { children: ReactNode }) {
             </div>
             <ThemeSwitch />
           </header>
-          <article className="docs-prose mx-auto w-full max-w-[880px] px-[16px] pt-[32px] pb-[78px] md:px-[40px]">
+          {/* Fixed column widths per breakpoint (padding included); full width below 1024px. */}
+          <article className="docs-prose mx-auto w-full px-[16px] pt-[32px] pb-[78px] md:px-[40px] lg:w-[680px] xl:w-[760px] 2xl:w-[800px]">
             {children}
           </article>
         </div>
+        <PageToc />
       </main>
     </div>
   )

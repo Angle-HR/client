@@ -8,9 +8,7 @@ export const metadata = { title: 'Icon Button' }
 
 # Icon Button
 
-A square button that runs an action with only an icon and no visible label. Use it in toolbars, table rows and inline controls, where space is tight and the icon is universally understood.
-
-Because there's no visible label, `aria-label` is required. If the icon could mean more than one thing, use [Button](/docs/components/button) with a label instead.
+A square button with just an icon. Use it where space is tight and the icon is obvious: close, search, edit, delete. If people might have to guess, use a [Button](/docs/components/button) with a label.
 
 <Example name="icon-button/overview" />
 
@@ -18,38 +16,38 @@ Because there's no visible label, `aria-label` is required. If the icon could me
 import { IconButton } from '@/components/ui/button'
 ```
 
-## Variants
+There's no visible label, so `aria-label` is required.
 
-Icon Button has no `accent`. Its variants set the hierarchy.
+## Variants
 
 <Example name="icon-button/variants" />
 
-| Variant         | When to use                                                                                      |
-| --------------- | ------------------------------------------------------------------------------------------------ |
-| `primary`       | The most prominent icon action in a view, such as the main toolbar action                        |
-| `secondary`     | Supporting icon actions next to a primary, or secondary toolbar controls                         |
-| `tertiary`      | Low-emphasis actions: inline table controls, auxiliary actions in dense layouts                  |
-| `light`         | The lowest emphasis: a grey icon with no fill in any state, such as a remove control on an image |
-| `light-w-hover` | Like `light`, with a faint fill on hover and press so it reads as a target                       |
-| `error`         | Destructive actions, such as delete. Red icon, light red fill on hover and press                 |
+| Variant         | Use it for                                                       |
+| --------------- | ---------------------------------------------------------------- |
+| `primary`       | The main icon action in a view                                   |
+| `secondary`     | Icon actions beside a primary, or secondary toolbar controls     |
+| `tertiary`      | Quiet actions in table rows and dense layouts                    |
+| `light`         | The quietest: a grey icon that never gets a fill                 |
+| `light-w-hover` | Like `light`, with a faint fill on hover so it reads as a target |
+| `error`         | Destructive actions like delete. Red icon, light red on hover    |
 
 ## Sizes
 
 <Example name="icon-button/sizes" />
 
-| Size | Box     | Icon | Padding           | Radius | When to use                                          |
-| ---- | ------- | ---- | ----------------- | ------ | ---------------------------------------------------- |
-| `xs` | 16×16px | 10px | 5px on every side | 4px    | Tiny inline controls, such as removing a tag or chip |
-| `sm` | 24×24px | 14px | 5px on every side | 7px    | Toolbars, table rows, dense layouts                  |
-| `md` | 32×32px | 14px | Icon centred      | 7px    | The default: page-level and modal actions            |
+| Size | Box     | Icon | Radius | Use it for                                 |
+| ---- | ------- | ---- | ------ | ------------------------------------------ |
+| `xs` | 16×16px | 10px | 4px    | Tiny inline controls, like removing a chip |
+| `sm` | 24×24px | 14px | 7px    | Toolbars and table rows                    |
+| `md` | 32×32px | 14px | 7px    | Everything else (default)                  |
 
-The icon is 14×14px, or 10×10px at `xs`. Pass it with its Figma frame using `MaskIcon`, as on the [Button page](/docs/components/button#with-icons), so the glyph has the same margin as in Figma.
+The icon is centred, with 5px of padding at `xs` and `sm`. Pass it as a `MaskIcon` at the icon size, as on the [Button page](/docs/components/button#with-icons).
 
-Don't mix sizes in the same toolbar. At `xs` the tap target is far below 44px, so keep it for desktop-only, secondary controls.
+Keep to one size within a toolbar. `xs` is far too small to tap, so keep it to desktop-only extras.
 
 ## Counter badge
 
-A 12px blue badge over the top-left corner for a count tied to the action, such as unread notifications. It shows `99+` above 99 and hides at 0. Put the count in the `aria-label` too.
+A small blue badge over the top-left corner, for a count tied to the action. It shows `99+` past 99 and hides at 0. Put the count in the `aria-label` too.
 
 <Example name="icon-button/counter" />
 
@@ -57,48 +55,38 @@ A 12px blue badge over the top-left corner for a count tied to the action, such 
 
 <IconButtonStates />
 
-Hover fades in over 100ms and out over 100ms; press takes 50ms. `light` doesn't change at all on hover or press, as in Figma. Figma has no focus state for `light` and `light-w-hover`, but every variant shows the blue focus ring when reached by keyboard.
+Hover fades in and out over 100ms; a press takes 50ms. `light` doesn't change on hover or press. Figma has no focus state for the two light variants, but every variant gets the blue focus ring for keyboard users.
 
 ## Usage
 
 <DoDont>
-  <Guideline kind="do">
-    Use it when the icon is universally understood: close, search, add, filter, settings.
-  </Guideline>
-  <Guideline kind="dont">
-    Use it when the meaning could be ambiguous. Use a Button with a label.
-  </Guideline>
-  <Guideline kind="do">
-    Name the action in `aria-label`, verb first: "Close dialog", "Filter results".
-  </Guideline>
-  <Guideline kind="dont">Describe the icon: "Magnifying glass", "Bin icon".</Guideline>
-  <Guideline kind="do">
-    Pair toolbar icon buttons with a tooltip that matches the `aria-label`.
-  </Guideline>
-  <Guideline kind="dont">
-    Delete straight away from an `error` icon button. Ask for confirmation first.
-  </Guideline>
+  <Guideline kind="do">Use icons everyone knows: close, search, add, filter, settings.</Guideline>
+  <Guideline kind="dont">Use an icon that could mean two things. Add a label instead.</Guideline>
+  <Guideline kind="do">Name the action in `aria-label`, verb first: "Close dialog".</Guideline>
+  <Guideline kind="dont">Describe the picture: "Magnifying glass".</Guideline>
+  <Guideline kind="do">Add a tooltip in toolbars that matches the `aria-label`.</Guideline>
+  <Guideline kind="dont">Delete straight away from an `error` button. Confirm first.</Guideline>
 </DoDont>
 
 ## In context
 
-- **Toolbar:** `sm`, 8px apart. More than five or six in a row needs a separator.
-- **Table row:** `tertiary`, `sm`. Reveal row actions on hover where you can.
-- **On a phone:** the button can look 24px, but the tap target must be at least 44×44px. Add padding to the parent rather than stretching the button.
+- **Toolbar:** `sm`, 8px apart. Past five or six, add a separator.
+- **Table row:** `tertiary` at `sm`. Show row actions on hover where you can.
+- **Phones:** the button can look 24px, but the tap target needs to be 44px. Pad the parent rather than stretching the button.
 
 ## Accessibility
 
-- **Name:** `aria-label` is required and TypeScript enforces it.
-- **Keyboard:** Tab and Shift+Tab reach it; Space or Enter activates it.
-- **Focus:** a 2px blue ring, offset by 2px, on every variant.
-- **Changing counts:** updating `aria-label` isn't announced by itself. Add a visually hidden `aria-live="polite"` region elsewhere on the page.
-- **Disabled:** to keep it focusable so a tooltip can explain why, use `aria-disabled="true"` and block the click yourself.
+- **Name:** `aria-label` is required, and TypeScript checks it.
+- **Keyboard:** Tab to reach it, Space or Enter to press it.
+- **Focus:** a 2px blue ring on every variant.
+- **Changing counts:** a new `aria-label` isn't announced on its own. Add a hidden `aria-live="polite"` region.
+- **Disabled:** to keep it focusable so a tooltip can explain why, use `aria-disabled="true"` and block the click.
 
 ## Props
 
 <PropsTable of="IconButton" native="button" />
 
-Icon Button forwards `ref` to the underlying `<button>`. It doesn't render `children`.
+Forwards `ref` to the `<button>`. `children` isn't rendered.
 
 ## Figma
 

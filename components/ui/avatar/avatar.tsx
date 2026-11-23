@@ -50,9 +50,9 @@ const sizeClasses: Record<AvatarSize, string> = {
 }
 
 const textSizeClasses: Record<AvatarSize, string> = {
-  12: 'text-[6px]',
+  12: 'text-[9px]',
   14: 'text-caption-s',
-  16: 'text-[8px]',
+  16: 'text-[11px]',
   18: 'text-[9px]',
   20: 'text-[9px]',
   24: 'text-[10px]',
@@ -131,7 +131,8 @@ function Avatar({
         : 'icon'
       : type
 
-  const shapeClass = circular ? 'rounded-full' : 'rounded-xs-4'
+  // Figma: the square 12px avatar has a 3px radius; larger ones have 4px.
+  const shapeClass = circular ? 'rounded-full' : size === 12 ? 'rounded-[3px]' : 'rounded-xs-4'
   const containerClasses = [
     sizeClasses[size],
     'relative inline-flex items-center justify-center shrink-0',
