@@ -73,6 +73,54 @@ const STAGE_TRANSITIONS: Partial<
 
 type DisqualifyPlan = { kind: 'review' } | { kind: 'status'; steps: ApplicationStatus[] }
 
+/** The candidate a stage decision is made for: what the disqualify plan and the toasts need. */
+interface CandidateTarget {
+  id: string
+  name: string
+  status: ApplicationStatus
+  /** Only the person who opened a flagged application can decide it. */
+  canDecide: boolean
+}
+
+interface DisqualifyReason {
+  label: string
+  /** The header the reason sits under in the list; none for the reason at the end. */
+  group?: string
+  /** Choosing it makes the note required. */
+  requiresNote?: boolean
+}
+
+/**
+ * The disqualification reasons drawn in the dialog and the panel popover
+ * (04, 05, 12-14 of the Move to stage/Disqualify captures). The server has no
+ * reason field, so the chosen reason goes into the note. "Location or work
+ * arrangement doe..." is cut off in every capture, so it is not listed.
+ */
+const DISQUALIFY_REASONS: ReadonlyArray<DisqualifyReason> = [
+  { label: "Doesn't meet required qualifications", group: 'Not a match' },
+  { label: 'Not enough relevant experience', group: 'Not a match' },
+  { label: "Skills don't match the role", group: 'Not a match' },
+  { label: "Didn't pass assessment", group: 'Not a match' },
+  { label: "Salary expectations don't align", group: 'Not a match' },
+  { label: 'Not eligible to work in this location', group: 'Not a match' },
+  { label: 'Other (requires a note)', requiresNote: true },
+]
+
+/** The stages the Move to menus list, in the order the stage submenu draws them (02). */
+const MOVE_TO_STAGES: ReadonlyArray<DesignStage> = [
+  'shortlisted',
+  'interview',
+  'offer',
+  'hired',
+  'disqualified',
+]
+
+interface MoveOption {
+  stage: DesignStage
+  label: string
+  enabled: boolean
+}
+
 function stageOfStatus(status: ApplicationStatus): DesignStage | null {
   return STATUS_STAGE[status]
 }
@@ -115,15 +163,55 @@ function disqualifyPlan(status: ApplicationStatus, canDecide: boolean): Disquali
   return null
 }
 
+/** Whether a reason leaves the note required. */
+function reasonNeedsNote(reason: string): boolean {
+  return DISQUALIFY_REASONS.some((item) => item.label === reason && item.requiresNote)
+}
+
+/**
+ * The note the server keeps for a disqualification: the reason, then the
+ * optional note after a dash. The reason alone when there is no note.
+ */
+function disqualifyNote(reason: string, note: string): string {
+  const text = note.trim()
+  return text ? `${reason} — ${text}` : reason
+}
+
+/**
+ * The Move to options for an application at this status. Only Hired (from in
+ * review) and Disqualified (when a plan exists) can be taken; the rest are drawn
+ * disabled because the server has no such stage yet.
+ */
+function moveOptionsFor(status: ApplicationStatus, canDecide: boolean): MoveOption[] {
+  return MOVE_TO_STAGES.map((stage) => ({
+    stage,
+    label: stageLabel(stage),
+    enabled:
+      stage === 'disqualified'
+        ? disqualifyPlan(status, canDecide) !== null
+        : canMoveTo(stage, status),
+  }))
+}
+
+/** The first word of a candidate's name, for the toasts ("Liam Disqualified"). */
+function firstName(name: string): string {
+  return name.trim().split(/\s+/)[0] ?? ''
+}
+
 export {
   DESIGN_STAGES,
+  DISQUALIFY_REASONS,
   STAGE_TABS,
   canMoveTo,
+  disqualifyNote,
   disqualifyPlan,
+  firstName,
+  moveOptionsFor,
   moveTarget,
+  reasonNeedsNote,
   stageLabel,
   stageOfStatus,
   statusesForTab,
   tabCount,
 }
-export type { DesignStage, DisqualifyPlan, StageTab }
+export type { CandidateTarget, DesignStage, DisqualifyPlan, DisqualifyReason, MoveOption, StageTab }

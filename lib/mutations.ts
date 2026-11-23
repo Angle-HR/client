@@ -69,19 +69,27 @@ function useDisqualifyApplication(jobId: string) {
       appId,
       status,
       canDecide,
+      note,
     }: {
       appId: string
       status: ApplicationStatus
       canDecide: boolean
+      /** The reason and note, kept with the final rejection. */
+      note?: string
     }): Promise<void> => {
       const plan = disqualifyPlan(status, canDecide)
       if (!plan) throw new Error('This application cannot be disqualified.')
       if (plan.kind === 'review') {
-        await requests.reviewApplication(jobId, appId, { decision: 'reject' })
+        await requests.reviewApplication(jobId, appId, { decision: 'reject', note })
         return
       }
-      for (const next of plan.steps) {
-        await requests.changeApplicationStatus(jobId, appId, { status: next })
+      const last = plan.steps.length - 1
+      for (const [index, next] of plan.steps.entries()) {
+        await requests.changeApplicationStatus(
+          jobId,
+          appId,
+          index === last ? { status: next, note } : { status: next },
+        )
       }
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.applications(jobId) }),

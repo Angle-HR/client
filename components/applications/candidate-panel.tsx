@@ -3,15 +3,18 @@
 import { useEffect, useState, type ReactElement } from 'react'
 
 import { CandidateOverview, formatDateTime } from '@/components/applications/candidate-overview'
+import { DisqualifyPopover } from '@/components/applications/disqualify-popover'
 import { MoveToMenu } from '@/components/applications/move-to-menu'
 import { StageChip } from '@/components/applications/stage-chip'
 import { DashboardIcon } from '@/components/dashboard/nav-config'
 import { Avatar, Button, IconButton, Tabs, getInitials } from '@/components/ui'
 import { currentRoleFromAnswers } from '@/lib/applications/contact'
 import {
-  DESIGN_STAGES,
+  disqualifyPlan,
+  moveOptionsFor,
   stageLabel,
   stageOfStatus,
+  type CandidateTarget,
   type DesignStage,
 } from '@/lib/applications/stages'
 import { useApplication } from '@/lib/queries'
@@ -42,6 +45,12 @@ interface CandidatePanelProps {
   onOpen: (appId: string) => void
   onClose: () => void
   onError: (cause: unknown) => void
+  /** Whether the company emails rejected candidates (send_status_emails), or unknown. */
+  sendEmails: boolean | undefined
+  /** A stage or disqualification is being saved. */
+  pending: boolean
+  onPick: (target: CandidateTarget, stage: DesignStage) => void
+  onDisqualify: (target: CandidateTarget, note: string) => void
 }
 
 /**
@@ -56,6 +65,10 @@ function CandidatePanel({
   onOpen,
   onClose,
   onError,
+  sendEmails,
+  pending,
+  onPick,
+  onDisqualify,
 }: CandidatePanelProps): ReactElement {
   const application = useApplication(jobId, appId)
   const detail = application.data
@@ -69,32 +82,32 @@ function CandidatePanel({
 
   const [tab, setTab] = useState<PanelTab>('overview')
   const [moveOpen, setMoveOpen] = useState(false)
+  const [disqualifyOpen, setDisqualifyOpen] = useState(false)
   const name = detail?.name || row?.name || row?.email || ''
   const role = detail ? currentRoleFromAnswers(detail.answers) : { role: '', company: '' }
+  // The decision is made for this candidate; canDecide is only known once the detail loads.
+  const target: CandidateTarget | null = status
+    ? { id: appId, name, status, canDecide: detail?.canDecide ?? false }
+    : null
 
   useEffect(() => {
     function handleKey(event: KeyboardEvent): void {
       // A control that used the key (the tab bar, for one) keeps it.
       if (event.defaultPrevented || isTyping(event.target)) return
       if (event.key === 'Escape') {
-        // The first Escape closes the menu, the next closes the panel.
+        // The first Escape closes a menu, the next closes the panel.
         if (moveOpen) setMoveOpen(false)
+        else if (disqualifyOpen) setDisqualifyOpen(false)
         else onClose()
       } else if (event.key === 'ArrowLeft' && previousId) onOpen(previousId)
       else if (event.key === 'ArrowRight' && nextId) onOpen(nextId)
     }
     document.addEventListener('keydown', handleKey)
     return () => document.removeEventListener('keydown', handleKey)
-  }, [moveOpen, nextId, previousId, onClose, onOpen])
+  }, [moveOpen, disqualifyOpen, nextId, previousId, onClose, onOpen])
 
-  // Disqualify and Move to are drawn but not wired yet: both are final on the server (and email the
-  // candidate), and their confirmations are designed in "Move to stage/Disqualify" (11311:249965),
-  // which is the next section to build. The stage rules for them are ready in lib/applications/stages.ts.
-  const moveOptions = DESIGN_STAGES.map((option) => ({
-    stage: option.key,
-    label: option.label,
-    enabled: false,
-  }))
+  const moveOptions = target ? moveOptionsFor(target.status, target.canDecide) : []
+  const canDisqualify = target ? disqualifyPlan(target.status, target.canDecide) !== null : false
 
   return (
     <>
@@ -187,21 +200,41 @@ function CandidatePanel({
               icon={<DashboardIcon name="star-solid" size={12} />}
             />
           </div>
-          <Button
-            variant="secondary"
-            accent="red"
-            size="sm"
-            iconSuffix={<DashboardIcon name="chev-down-solid" size={10} />}
-          >
-            Disqualify
-          </Button>
-          <MoveToMenu
-            open={moveOpen}
-            onOpenChange={setMoveOpen}
-            options={moveOptions}
-            onPick={() => undefined}
-            disabled={!status}
-          />
+          {/* A rejected candidate cannot be re-engaged: the server's status is final (18, 19). */}
+          {status === 'rejected' ? (
+            <Button
+              variant="secondary"
+              accent="default"
+              size="sm"
+              disabled
+              iconSuffix={<DashboardIcon name="chev-down-solid" size={10} />}
+            >
+              Re-engage
+            </Button>
+          ) : (
+            <>
+              <DisqualifyPopover
+                open={disqualifyOpen}
+                onOpenChange={setDisqualifyOpen}
+                disabled={!target || !canDisqualify}
+                sendEmails={sendEmails}
+                pending={pending}
+                onConfirm={(note) => {
+                  setDisqualifyOpen(false)
+                  if (target) onDisqualify(target, note)
+                }}
+              />
+              <MoveToMenu
+                open={moveOpen}
+                onOpenChange={setMoveOpen}
+                options={moveOptions}
+                onPick={(picked) => {
+                  if (target) onPick(target, picked)
+                }}
+                disabled={!target || pending}
+              />
+            </>
+          )}
         </div>
 
         <div className="flex min-h-0 flex-1 flex-col">

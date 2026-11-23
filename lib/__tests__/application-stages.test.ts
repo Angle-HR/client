@@ -2,8 +2,13 @@ import { describe, expect, it } from 'vitest'
 
 import { contactFromAnswers, currentRoleFromAnswers, linkKind } from '../applications/contact'
 import {
+  DISQUALIFY_REASONS,
   canMoveTo,
+  disqualifyNote,
   disqualifyPlan,
+  firstName,
+  moveOptionsFor,
+  reasonNeedsNote,
   stageOfStatus,
   statusesForTab,
   tabCount,
@@ -89,6 +94,87 @@ describe('disqualifyPlan', () => {
     expect(disqualifyPlan('hired', true)).toBeNull()
     expect(disqualifyPlan('rejected', true)).toBeNull()
     expect(disqualifyPlan('withdrawn', true)).toBeNull()
+  })
+})
+
+describe('DISQUALIFY_REASONS', () => {
+  it('lists the reasons the captures draw, grouped under Not a match, with Other last', () => {
+    expect(DISQUALIFY_REASONS.map((reason) => reason.label)).toEqual([
+      "Doesn't meet required qualifications",
+      'Not enough relevant experience',
+      "Skills don't match the role",
+      "Didn't pass assessment",
+      "Salary expectations don't align",
+      'Not eligible to work in this location',
+      'Other (requires a note)',
+    ])
+    expect(DISQUALIFY_REASONS.slice(0, 6).every((reason) => reason.group === 'Not a match')).toBe(
+      true,
+    )
+  })
+
+  it('requires a note only for Other', () => {
+    expect(reasonNeedsNote('Other (requires a note)')).toBe(true)
+    expect(reasonNeedsNote("Didn't pass assessment")).toBe(false)
+    expect(reasonNeedsNote('')).toBe(false)
+  })
+})
+
+describe('disqualifyNote', () => {
+  it('sends the reason alone when there is no note', () => {
+    expect(disqualifyNote("Didn't pass assessment", '  ')).toBe("Didn't pass assessment")
+  })
+
+  it('sends the reason and the trimmed note together', () => {
+    expect(disqualifyNote("Didn't pass assessment", ' Scored 40% ')).toBe(
+      "Didn't pass assessment — Scored 40%",
+    )
+  })
+})
+
+describe('moveOptionsFor', () => {
+  it('enables Hired only from in review, and Disqualified when a plan exists', () => {
+    const inReview = moveOptionsFor('in_review', true)
+    expect(inReview.find((option) => option.stage === 'hired')?.enabled).toBe(true)
+    expect(inReview.find((option) => option.stage === 'disqualified')?.enabled).toBe(true)
+
+    const received = moveOptionsFor('received', false)
+    expect(received.find((option) => option.stage === 'hired')?.enabled).toBe(false)
+    expect(received.find((option) => option.stage === 'disqualified')?.enabled).toBe(true)
+  })
+
+  it('enables Disqualified on a flagged application only for the person who can decide it', () => {
+    expect(
+      moveOptionsFor('flagged', true).find((option) => option.stage === 'disqualified')?.enabled,
+    ).toBe(true)
+    expect(
+      moveOptionsFor('flagged', false).find((option) => option.stage === 'disqualified')?.enabled,
+    ).toBe(false)
+  })
+
+  it('disables every move for a finished application', () => {
+    for (const status of ['rejected', 'hired', 'withdrawn'] as const) {
+      expect(moveOptionsFor(status, true).every((option) => !option.enabled)).toBe(true)
+    }
+  })
+
+  it('lists the stages in the submenu order, with no server status behind the first three', () => {
+    const options = moveOptionsFor('in_review', true)
+    expect(options.map((option) => option.label)).toEqual([
+      'Shortlisted',
+      'Interview',
+      'Offer',
+      'Hired',
+      'Disqualified',
+    ])
+    expect(options.slice(0, 3).every((option) => !option.enabled)).toBe(true)
+  })
+})
+
+describe('firstName', () => {
+  it('takes the first word of a name', () => {
+    expect(firstName('  Liam Chen ')).toBe('Liam')
+    expect(firstName('')).toBe('')
   })
 })
 

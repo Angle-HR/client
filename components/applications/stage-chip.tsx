@@ -32,5 +32,5 @@ function StageChip({ stage }: StageChipProps): ReactElement {
   )
 }
 
-export { StageChip }
+export { STAGE_GLYPH, StageChip }
 export type { StageChipProps }

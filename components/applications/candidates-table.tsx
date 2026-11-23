@@ -2,9 +2,9 @@
 
 import { type ReactElement } from 'react'
 
+import { CandidateRowMenu } from '@/components/applications/candidate-row-menu'
 import { StageChip } from '@/components/applications/stage-chip'
-import { DashboardIcon } from '@/components/dashboard/nav-config'
-import { stageOfStatus } from '@/lib/applications/stages'
+import { stageOfStatus, type DesignStage } from '@/lib/applications/stages'
 import { marketName } from '@/lib/markets'
 
 import type { Applicant } from '@/lib/applications/api'
@@ -36,10 +36,19 @@ interface CandidatesTableProps {
   rows: Applicant[]
   selectedId: string | null
   onOpen: (id: string) => void
+  /** A stage picked from a row's menu. */
+  onPick: (row: Applicant, stage: DesignStage) => void
+  onDownloadCv: (row: Applicant) => void
 }
 
 /** The applicants of the job: one row each, and a click on a row opens its overview. */
-function CandidatesTable({ rows, selectedId, onOpen }: CandidatesTableProps): ReactElement {
+function CandidatesTable({
+  rows,
+  selectedId,
+  onOpen,
+  onPick,
+  onDownloadCv,
+}: CandidatesTableProps): ReactElement {
   return (
     <div role="table" aria-label="Candidates" className="flex min-w-[960px] flex-col">
       <div role="row" className="flex h-[32px] items-center gap-[2px] px-[16px]">
@@ -91,14 +100,12 @@ function CandidatesTable({ rows, selectedId, onOpen }: CandidatesTableProps): Re
             <div role="cell" className={`w-[120px] shrink-0 px-[12px] ${cellText}`} />
             <div role="cell" className={`w-[140px] shrink-0 px-[12px] ${cellText}`} />
             <div role="cell" className="flex w-[32px] shrink-0 items-center justify-center">
-              {/* Drawn with no menu behind it yet. */}
-              <button
-                type="button"
-                aria-label={`More actions for ${row.name || row.email}`}
-                className="inline-flex items-center justify-center rounded-xs-4 p-[6px] text-text-secondary transition-colors hover:bg-bg-transparent-light hover:text-text-primary"
-              >
-                <DashboardIcon name="ellipsis-horizontal-solid" size={11} />
-              </button>
+              <CandidateRowMenu
+                row={row}
+                onView={() => onOpen(row.id)}
+                onPick={(stage) => onPick(row, stage)}
+                onDownloadCv={() => onDownloadCv(row)}
+              />
             </div>
           </div>
         )
