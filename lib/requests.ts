@@ -73,17 +73,14 @@ import type {
   AuthLoginOtpVerifyPayload,
   AuthLoginPayload,
   AuthLoginResult,
-  AuthLogoutPayload,
   AuthMeData,
-  AuthRefreshData,
-  AuthRefreshPayload,
   AuthResendVerificationPayload,
   AuthResetPasswordData,
   AuthResetPasswordPayload,
   AuthSignupData,
   AuthSignupPatchPayload,
   AuthSignupPayload,
-  AuthTokenData,
+  AuthSessionData,
   AuthTotpConfirmPayload,
   AuthTotpDisablePayload,
   AuthTotpEnrollData,
@@ -245,8 +242,8 @@ const requests = {
     return data.data
   },
 
-  verifyEmail: async (payload: AuthVerifyEmailPayload): Promise<AuthTokenData> => {
-    const { data } = await axiosInstance.post<ApiResponse<AuthTokenData>>(
+  verifyEmail: async (payload: AuthVerifyEmailPayload): Promise<AuthSessionData> => {
+    const { data } = await axiosInstance.post<ApiResponse<AuthSessionData>>(
       ENDPOINTS.auth.verifyEmail(),
       payload,
     )
@@ -285,16 +282,16 @@ const requests = {
     return data.data
   },
 
-  verifyLoginTotp: async (payload: AuthTotpLoginPayload): Promise<AuthTokenData> => {
-    const { data } = await axiosInstance.post<ApiResponse<AuthTokenData>>(
+  verifyLoginTotp: async (payload: AuthTotpLoginPayload): Promise<AuthSessionData> => {
+    const { data } = await axiosInstance.post<ApiResponse<AuthSessionData>>(
       ENDPOINTS.auth.loginTotp(),
       payload,
     )
     return data.data
   },
 
-  logout: async (payload: AuthLogoutPayload): Promise<void> => {
-    await axiosInstance.post(ENDPOINTS.auth.logout(), payload)
+  logout: async (): Promise<void> => {
+    await axiosInstance.post(ENDPOINTS.auth.logout())
   },
 
   forgotPassword: async (payload: AuthForgotPasswordPayload): Promise<AuthForgotPasswordData> => {
@@ -933,8 +930,8 @@ const requests = {
     return data.data
   },
 
-  acceptInvite: async (payload: AuthAcceptInvitePayload): Promise<AuthTokenData> => {
-    const { data } = await axiosInstance.post<ApiResponse<AuthTokenData>>(
+  acceptInvite: async (payload: AuthAcceptInvitePayload): Promise<AuthSessionData> => {
+    const { data } = await axiosInstance.post<ApiResponse<AuthSessionData>>(
       ENDPOINTS.auth.acceptInvite(),
       payload,
     )
@@ -959,14 +956,6 @@ const requests = {
   inviteTeammate: async (payload: OrganizationInvitePayload): Promise<OrganizationInviteData> => {
     const { data } = await axiosInstance.post<ApiResponse<OrganizationInviteData>>(
       ENDPOINTS.organizations.invites(),
-      payload,
-    )
-    return data.data
-  },
-
-  refreshToken: async (payload: AuthRefreshPayload): Promise<AuthRefreshData> => {
-    const { data } = await axiosInstance.post<ApiResponse<AuthRefreshData>>(
-      ENDPOINTS.auth.refresh(),
       payload,
     )
     return data.data

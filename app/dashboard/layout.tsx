@@ -1,11 +1,13 @@
 'use client'
 
+import { useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar'
 import { DashboardSettingUpState } from '@/components/dashboard/dashboard-states'
-import { clearSession, getAccessToken, getRefreshToken } from '@/lib/auth-session'
+import { isUnauthorized } from '@/lib/api-error'
+import { clearSession } from '@/lib/auth-session'
 import { useKyb, useMe } from '@/lib/queries'
 import { requests } from '@/lib/requests'
 
@@ -13,24 +15,26 @@ import type { ReactNode } from 'react'
 
 function DashboardLayout({ children }: { children: ReactNode }) {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const me = useMe()
   const [collapsed, setCollapsed] = useState(false)
 
-  // Nothing signed in. Checked on arrival, and again whenever the account
-  // request fails: by then the 401 interceptor has given the refresh token its
-  // one chance and, if that failed too, cleared the session.
+  // Nothing signed in: the API answers the account request with a 401 when the
+  // session cookie is missing or expired.
   useEffect(() => {
-    if (!getAccessToken()) router.replace('/login')
-  }, [router, me.isError])
+    if (isUnauthorized(me.error)) router.replace('/login')
+  }, [router, me.error])
 
   async function handleSignOut() {
-    const refreshToken = getRefreshToken()
     try {
       // Revoking is best-effort: the API treats logout as idempotent, and the
       // local session has to end either way.
-      if (refreshToken) await requests.logout({ refresh_token: refreshToken })
+      await requests.logout()
+    } catch {
+      // Ignored: see above.
     } finally {
       clearSession()
+      queryClient.clear()
       router.replace('/login')
     }
   }

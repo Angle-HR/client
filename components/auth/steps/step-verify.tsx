@@ -18,12 +18,11 @@ import {
   getCodeExpiresAt,
   getResendAvailableAt,
   getVerificationSessionId,
-  setAuthTokens,
   setVerificationSession,
 } from '@/lib/auth-session'
 import { useResendVerification, useVerifyEmail } from '@/lib/mutations'
 
-import type { AuthTokenData } from '@/lib/types'
+import type { AuthSessionData } from '@/lib/types'
 
 const OTP_LENGTH = 6
 const DEFAULT_TTL_SECONDS = 300
@@ -31,7 +30,7 @@ const DEFAULT_TTL_SECONDS = 300
 interface StepVerifyProps {
   email: string
   onEditEmail: () => void
-  onVerified: (tokens: AuthTokenData) => void
+  onVerified: (session: AuthSessionData) => void
 }
 
 function secondsUntil(timestamp: number | null, fallbackSeconds: number) {
@@ -128,15 +127,14 @@ function StepVerify({ email, onEditEmail, onVerified }: StepVerifyProps) {
     }
 
     try {
-      const tokens = await verifyEmail.mutateAsync({
+      const session = await verifyEmail.mutateAsync({
         code: value,
         verification_session_id: sessionId,
       })
-      setAuthTokens(tokens)
       clearVerificationSession()
       setOtpState('success')
       setErrorText(undefined)
-      onVerified(tokens)
+      onVerified(session)
     } catch (err) {
       setOtpState('error')
       setErrorText(

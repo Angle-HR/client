@@ -129,19 +129,6 @@ export interface AuthLoginPayload {
   password: string
 }
 
-export interface AuthRefreshPayload {
-  refresh_token: string
-}
-
-export interface AuthRefreshData {
-  access_token: string
-  expires_in: number
-}
-
-export interface AuthLogoutPayload {
-  refresh_token: string
-}
-
 /** Passwordless login — POST /auth/login/otp/request, /auth/login/otp/verify. */
 export interface AuthLoginOtpRequestPayload {
   email: string
@@ -154,19 +141,17 @@ export interface AuthLoginOtpVerifyPayload {
 
 /**
  * Returned by password login and OTP verify when the account has TOTP enabled:
- * no tokens yet, just a short-lived token to exchange on /auth/login/totp.
+ * no session yet, just a short-lived pre-auth cookie that /auth/login/totp redeems.
  */
 export interface AuthMfaRequiredData {
   totp_required: true
-  mfa_token: string
   expires_in: number
 }
 
-/** Login can land on either full tokens or an MFA challenge — branch on `totp_required`. */
-export type AuthLoginResult = AuthTokenData | AuthMfaRequiredData
+/** Login can land on either a full session or an MFA challenge — branch on `totp_required`. */
+export type AuthLoginResult = AuthSessionData | AuthMfaRequiredData
 
 export interface AuthTotpLoginPayload {
-  mfa_token: string
   code: string
 }
 
@@ -200,6 +185,7 @@ export interface AuthMeData {
   region?: string
   totp_enabled: boolean
   onboarding?: OnboardingProgressSummary
+  csrf_token?: string
 }
 
 /** Product invite — GET /auth/invite/{token}, POST /auth/accept-invite. */
@@ -248,11 +234,14 @@ export interface OnboardingProgressSummary {
   completed_steps?: string[]
 }
 
-export interface AuthTokenData {
-  access_token: string
-  refresh_token: string
-  expires_in: number
+/**
+ * What every step that starts or advances a session answers. The session itself
+ * is an HttpOnly cookie; `csrf_token` is the only credential JS holds, in memory.
+ */
+export interface AuthSessionData {
   onboarding?: OnboardingProgressSummary
+  user?: AuthMeData
+  csrf_token: string
 }
 
 export type AccountTypeApi = 'individual' | 'business'
@@ -272,8 +261,6 @@ export interface ProductProfilePayload {
 export interface ProductProfileData extends ProductProfilePayload {
   region?: string
   onboarding: OnboardingProgressSummary
-  /** Returned when this step moves the account from the global holding region. */
-  tokens?: AuthTokenData
 }
 
 /** Identification keys vary by country, so this is a map, not fixed fields. */
@@ -296,8 +283,6 @@ export interface ProductAddressPayload {
 export interface ProductAddressData extends ProductAddressPayload {
   verification_status?: AddressVerificationStatus
   onboarding: OnboardingProgressSummary
-  /** Returned when this step moves the account from the global holding region. */
-  tokens?: AuthTokenData
 }
 
 /**

@@ -1,16 +1,13 @@
+import { clearCsrfToken } from './csrf'
+
 import type {
   AuthLoginResult,
   AuthMfaRequiredData,
   AuthSignupData,
-  AuthTokenData,
   OnboardingProgressSummary,
 } from './types'
 
 const KEYS = {
-  accessToken: 'openhr.auth.access_token',
-  refreshToken: 'openhr.auth.refresh_token',
-  expiresAt: 'openhr.auth.expires_at',
-  onboarding: 'openhr.auth.onboarding',
   verificationSessionId: 'openhr.signup.verification_session_id',
   verificationEmail: 'openhr.signup.verification_email',
   codeExpiresAt: 'openhr.signup.code_expires_at',
@@ -21,7 +18,6 @@ const KEYS = {
   loginOtpEmail: 'openhr.login.otp_email',
   loginOtpCodeExpiresAt: 'openhr.login.otp_code_expires_at',
   loginOtpResendAvailableAt: 'openhr.login.otp_resend_available_at',
-  mfaToken: 'openhr.login.mfa_token',
   mfaExpiresAt: 'openhr.login.mfa_expires_at',
 } as const
 
@@ -42,64 +38,6 @@ function getItem(key: string): string | null {
 function removeItem(key: string) {
   if (!canUseStorage()) return
   window.sessionStorage.removeItem(key)
-}
-
-function setAuthTokens(data: AuthTokenData) {
-  setItem(KEYS.accessToken, data.access_token)
-  setItem(KEYS.refreshToken, data.refresh_token)
-  setItem(KEYS.expiresAt, String(Date.now() + data.expires_in * 1000))
-  if (data.onboarding) {
-    setItem(KEYS.onboarding, JSON.stringify(data.onboarding))
-  }
-}
-
-/** Replace just the access token after a refresh; the refresh token is unchanged. */
-function setAccessToken(token: string, expiresInSeconds: number) {
-  setItem(KEYS.accessToken, token)
-  setItem(KEYS.expiresAt, String(Date.now() + expiresInSeconds * 1000))
-}
-
-/** Keep the stored onboarding summary in step with what the API last reported. */
-function setStoredOnboarding(onboarding?: OnboardingProgressSummary | null) {
-  if (!onboarding) return
-  setItem(KEYS.onboarding, JSON.stringify(onboarding))
-}
-
-/** Persist progress and atomically adopt the regional token pair returned by a migrating step. */
-function reconcileOnboardingStep(result: {
-  onboarding: OnboardingProgressSummary
-  tokens?: AuthTokenData
-}): void {
-  if (result.tokens) {
-    setAuthTokens({ ...result.tokens, onboarding: result.onboarding })
-    return
-  }
-  setStoredOnboarding(result.onboarding)
-}
-
-function clearAuthTokens() {
-  removeItem(KEYS.accessToken)
-  removeItem(KEYS.refreshToken)
-  removeItem(KEYS.expiresAt)
-  removeItem(KEYS.onboarding)
-}
-
-function getAccessToken(): string | null {
-  return getItem(KEYS.accessToken)
-}
-
-function getRefreshToken(): string | null {
-  return getItem(KEYS.refreshToken)
-}
-
-function getStoredOnboarding(): OnboardingProgressSummary | undefined {
-  const raw = getItem(KEYS.onboarding)
-  if (!raw) return undefined
-  try {
-    return JSON.parse(raw) as OnboardingProgressSummary
-  } catch {
-    return undefined
-  }
 }
 
 function setVerificationSession(data: AuthSignupData) {
@@ -173,44 +111,44 @@ function getLoginOtpResendAvailableAt(): number | null {
 }
 
 /**
- * Held between a login that answered `totp_required` and the authenticator
- * screen that redeems it. Short-lived by design — the API expires it too.
+ * Remembers that a login answered `totp_required`, so the authenticator screen
+ * knows a challenge is in flight. The credential itself is a pre-auth cookie JS
+ * cannot see; only the expiry is kept, and the API enforces it too.
  */
 function setMfaChallenge(data: AuthMfaRequiredData) {
-  setItem(KEYS.mfaToken, data.mfa_token)
   setItem(KEYS.mfaExpiresAt, String(Date.now() + data.expires_in * 1000))
 }
 
 function clearMfaChallenge() {
-  removeItem(KEYS.mfaToken)
   removeItem(KEYS.mfaExpiresAt)
 }
 
-function getMfaToken(): string | null {
+function hasMfaChallenge(): boolean {
   const expiresAt = readTimestamp(KEYS.mfaExpiresAt)
-  if (expiresAt !== null && Date.now() > expiresAt) {
+  if (expiresAt === null) return false
+  if (Date.now() > expiresAt) {
     clearMfaChallenge()
-    return null
+    return false
   }
-  return getItem(KEYS.mfaToken)
+  return true
 }
 
 /** Everything a signed-out user should not be carrying around. */
 function clearSession() {
-  clearAuthTokens()
+  clearCsrfToken()
   clearVerificationSession()
   clearLoginOtpSession()
   clearMfaChallenge()
 }
 
-/** A login answered with an MFA challenge rather than tokens. */
+/** A login answered with an MFA challenge rather than a session. */
 function isMfaRequired(result: AuthLoginResult): result is AuthMfaRequiredData {
   return 'totp_required' in result && result.totp_required
 }
 
 /**
  * Take whatever a login attempt returned — password, passwordless OTP, TOTP or
- * accepted invite — persist it, and answer with the route the user belongs on.
+ * accepted invite — note it, and answer with the route the user belongs on.
  * Every entry point lands the same way, so the branching lives here once.
  */
 function landAfterLogin(result: AuthLoginResult): string {
@@ -219,7 +157,6 @@ function landAfterLogin(result: AuthLoginResult): string {
     return '/login/2fa'
   }
 
-  setAuthTokens(result)
   clearMfaChallenge()
   clearLoginOtpSession()
   clearVerificationSession()
@@ -253,29 +190,22 @@ function routeForOnboarding(onboarding?: OnboardingProgressSummary | null): stri
 }
 
 export {
-  clearAuthTokens,
   clearLoginOtpSession,
   clearMfaChallenge,
   clearSession,
   clearVerificationSession,
-  getAccessToken,
   getCodeExpiresAt,
   getLoginOtpCodeExpiresAt,
   getLoginOtpEmail,
   getLoginOtpResendAvailableAt,
   getLoginOtpSessionId,
-  getMfaToken,
-  getRefreshToken,
   isMfaRequired,
   landAfterLogin,
   getResendAvailableAt,
-  getStoredOnboarding,
+  hasMfaChallenge,
   getVerificationEmail,
   getVerificationSessionId,
-  reconcileOnboardingStep,
   routeForOnboarding,
-  setAccessToken,
-  setAuthTokens,
   setLoginOtpSession,
   setMfaChallenge,
   setVerificationSession,

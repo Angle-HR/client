@@ -42,7 +42,7 @@ function LoginPasswordPage() {
     setFormError(undefined)
 
     try {
-      // Either tokens or a TOTP challenge; landAfterLogin persists whichever
+      // Either a session or a TOTP challenge; landAfterLogin notes whichever
       // came back and answers with the next route.
       const result = await login.mutateAsync({
         email: values.email,

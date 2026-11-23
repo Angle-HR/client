@@ -15,7 +15,6 @@ const ENDPOINTS = {
     loginOtpRequest: () => '/auth/login/otp/request',
     loginOtpVerify: () => '/auth/login/otp/verify',
     loginTotp: () => '/auth/login/totp',
-    refresh: () => '/auth/refresh',
     logout: () => '/auth/logout',
     verifyEmail: () => '/auth/verify-email',
     resendVerification: () => '/auth/resend-verification',

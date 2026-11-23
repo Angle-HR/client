@@ -16,6 +16,11 @@ function getApiError(error: unknown): ApiErrorBody['error'] | undefined {
   return undefined
 }
 
+/** Whether the API answered 401: no session, or one that has expired. */
+function isUnauthorized(error: unknown): boolean {
+  return axios.isAxiosError(error) && error.response?.status === 401
+}
+
 function getApiErrorDetails(error: unknown): Record<string, unknown> | undefined {
   return getApiError(error)?.details
 }
@@ -77,5 +82,12 @@ function getRetryAfterSeconds(error: unknown): number | undefined {
   return Number.isFinite(raw) && raw > 0 ? Math.ceil(raw) : undefined
 }
 
-export { applyApiError, getApiError, getApiErrorDetails, getFieldErrors, getRetryAfterSeconds }
+export {
+  applyApiError,
+  getApiError,
+  getApiErrorDetails,
+  getFieldErrors,
+  getRetryAfterSeconds,
+  isUnauthorized,
+}
 export type { ApiFieldError, FieldErrorMap }
