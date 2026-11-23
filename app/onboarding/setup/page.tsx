@@ -1,5 +1,6 @@
 'use client'
 
+import axios from 'axios'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
@@ -21,25 +22,24 @@ function OnboardingSetupPage() {
     if (startedRef.current) return
     startedRef.current = true
 
-    let cancelled = false
-
     async function finalize() {
       try {
         const result = await requests.completeOnboarding()
-        if (cancelled) return
         clearOnboardingDraft()
         redirectRef.current = result.redirect_url || '/dashboard'
         setReadyToAnimate(true)
       } catch (err) {
-        if (cancelled) return
+        // 409: onboarding was already completed (a reload of this page, or a second
+        // tab). Nothing to report; carry on to the dashboard.
+        if (axios.isAxiosError(err) && err.response?.status === 409) {
+          setReadyToAnimate(true)
+          return
+        }
         setFallbackError(applyApiError(err))
       }
     }
 
     void finalize()
-    return () => {
-      cancelled = true
-    }
   }, [router])
 
   return (
