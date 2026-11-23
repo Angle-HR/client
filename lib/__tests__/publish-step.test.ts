@@ -24,6 +24,7 @@ describe('publish compliance view', () => {
     expect(view).toEqual({
       state: 'unverified',
       bullets: ['Unverified account can’t post job'],
+      links: ['/dashboard/verification'],
     })
     expect(canPublish(view)).toBe(false)
   })
@@ -38,6 +39,21 @@ describe('publish compliance view', () => {
       bullets: ['Add a lawful basis.', 'Salary range missing.'],
     })
     expect(canPublish(view)).toBe(true)
+  })
+
+  it('links the blockers the company settles in its settings', () => {
+    const view = complianceView({
+      blocking: [
+        { code: 'dpa_not_accepted', message: 'Accept the DPA.' },
+        { code: 'lawful_basis_missing', message: 'Add a lawful basis.' },
+        { code: 'privacy_contact_missing', message: 'Add a privacy contact.' },
+      ],
+    })
+    expect(view?.links).toEqual([
+      '/dashboard/settings/company',
+      undefined,
+      '/dashboard/settings/company',
+    ])
   })
 
   it('falls back to the code when an issue has no message', () => {

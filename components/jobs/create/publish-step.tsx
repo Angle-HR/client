@@ -78,7 +78,9 @@ function PublishStep({
             read.
           </p>
         </div>
-        {view ? <ComplianceStatus state={view.state} bullets={view.bullets} /> : null}
+        {view ? (
+          <ComplianceStatus state={view.state} bullets={view.bullets} links={view.links} />
+        ) : null}
         {gates}
       </section>
 

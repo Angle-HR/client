@@ -63,13 +63,12 @@ interface NavGroup {
 
 /** Sits above the groups, with no title of its own. */
 const TOP_LINKS: NavLink[] = [
-  { key: 'inbox', label: 'Inbox', href: '/dashboard/inbox', icon: 'inbox', notificationCount: 12 },
+  { key: 'inbox', label: 'Inbox', href: '/dashboard/inbox', icon: 'inbox' },
   {
     key: 'schedule',
     label: 'Schedule',
     href: '/dashboard/schedule',
     icon: 'calendar',
-    unread: true,
   },
 ]
 
