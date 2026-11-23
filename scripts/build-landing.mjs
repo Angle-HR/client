@@ -6,7 +6,8 @@
 //
 //   node scripts/build-landing.mjs        ->  out-landing/  (sync this to the landing bucket)
 //
-// The root `/` of the real app redirects to /dashboard, so here `/` is a copy of the /waitlist page.
+// The marketing landing/waitlist pages are gone: the static site now only holds the legal pages (/terms,
+// /privacy-policy). The root `/` of the real app redirects to /dashboard, so here `/` is a copy of the terms page.
 import { spawnSync } from 'node:child_process'
 import {
   appendFileSync,
@@ -71,10 +72,10 @@ const build = spawnSync('npx', ['next', 'build'], {
 if (build.status !== 0) process.exit(build.status ?? 1)
 
 cpSync(join(work, 'out'), output, { recursive: true })
-if (!existsSync(join(output, 'waitlist', 'index.html'))) {
-  console.error('expected out-landing/waitlist/index.html')
+if (!existsSync(join(output, 'terms', 'index.html'))) {
+  console.error('expected out-landing/terms/index.html')
   process.exit(1)
 }
-cpSync(join(output, 'waitlist', 'index.html'), join(output, 'index.html'))
+cpSync(join(output, 'terms', 'index.html'), join(output, 'index.html'))
 rmSync(work, { recursive: true, force: true })
 console.log('landing site built in out-landing/')

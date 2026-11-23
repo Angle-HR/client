@@ -1,5 +1,5 @@
 import { AppPreviewPanel } from '@/components/auth/app-preview-panel'
-import { WaitlistLogo } from '@/components/waitlist/waitlist-logo'
+import { BrandLogo } from '@/components/brand/brand-logo'
 
 import type { ReactNode } from 'react'
 
@@ -21,7 +21,7 @@ function AuthShell({ children, footer, variant = 'split', previewName }: AuthShe
     return (
       <div className="flex min-h-dvh flex-col bg-bg-secondary px-[24px] pb-[24px] pt-[32px]">
         <header className="flex shrink-0 justify-center">
-          <WaitlistLogo />
+          <BrandLogo />
         </header>
         <main className="flex flex-1 flex-col items-center justify-center">{children}</main>
       </div>
@@ -32,7 +32,7 @@ function AuthShell({ children, footer, variant = 'split', previewName }: AuthShe
     <div className="flex min-h-dvh w-full bg-bg-secondary">
       <div className="flex min-h-dvh min-w-0 w-full flex-col px-[24px] pb-[24px] pt-[32px] md:px-[64px] lg:w-[calc(726/1440*100%)]">
         <header className="shrink-0">
-          <WaitlistLogo />
+          <BrandLogo />
         </header>
 
         <main className="flex flex-1 flex-col justify-center py-[48px] lg:justify-start lg:pt-[168px] lg:pb-[80px]">

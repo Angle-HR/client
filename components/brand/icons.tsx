@@ -1,4 +1,4 @@
-// Inline icons for the waitlist. Sized to fill their host wrapper (our UI
+// Inline icons for the auth pages. Sized to fill their host wrapper (our UI
 // components place icons in fixed boxes); coloured via currentColor so the
 // design-system token on the parent drives the colour.
 import type { SVGProps } from 'react'

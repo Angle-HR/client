@@ -1,28 +1,23 @@
 'use client'
 
-import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import { Button } from '@/components/ui/button/button'
 
-import { GetEarlyAccessButton } from './get-early-access-button'
 import { Logo } from './logo'
-import { NavLinks } from './nav-links'
-import { useGoToHeroForm } from './scroll-to-hero-form'
 
 interface StickyNavProps {
   // The element whose scroll position triggers reveal — defaults to the
   // landing page's own product screenshot section. Pages without that
   // section (Privacy Policy, Terms & Conditions) pass their own sentinel.
   sentinelId?: string
-  // Forwarded to NavLinks — see its own doc comment. Unset on the landing
-  // page itself, "/waitlist" everywhere else.
-  basePath?: string
 }
 
-function StickyNav({ sentinelId = 'product-preview', basePath }: StickyNavProps) {
+function StickyNav({ sentinelId = 'legal-nav-sentinel' }: StickyNavProps) {
   const [visible, setVisible] = useState(false)
-  const goToHeroForm = useGoToHeroForm()
+  const router = useRouter()
+  const goSignup = () => router.push('/signup')
 
   useEffect(() => {
     const sentinel = document.getElementById(sentinelId)
@@ -67,7 +62,15 @@ function StickyNav({ sentinelId = 'product-preview', basePath }: StickyNavProps)
             <Logo tabIndex={tabIndex} />
           </div>
           <div className="absolute top-1/2 right-0 -translate-y-1/2">
-            <GetEarlyAccessButton size="sm" tabIndex={tabIndex} />
+            <Button
+              variant="primary"
+              accent="default"
+              size="sm"
+              tabIndex={tabIndex}
+              onClick={goSignup}
+            >
+              Sign up
+            </Button>
           </div>
         </div>
 
@@ -78,24 +81,16 @@ function StickyNav({ sentinelId = 'product-preview', basePath }: StickyNavProps)
           <div className="flex flex-1 items-center justify-start">
             <Logo tabIndex={tabIndex} />
           </div>
-          <nav aria-label="Sticky" className="flex flex-1 items-center justify-center gap-[10px]">
-            <NavLinks tabIndex={tabIndex} basePath={basePath} />
-          </nav>
+          <div className="flex-1" />
           <div className="flex flex-1 items-center justify-end">
-            {/* Unlike the mobile CTA (and the hero/footer CTAs), Figma's
-                desktop sticky nav uses the plain default Button, not the
-                blue Flow Button — confirmed against node 6554-104894. */}
             <Button
               variant="primary"
               accent="default"
               size="md"
               tabIndex={tabIndex}
-              onClick={goToHeroForm}
-              iconSuffix={
-                <Image src="/open-hr/icon-arrow-right.svg" alt="" width={11} height={9} />
-              }
+              onClick={goSignup}
             >
-              Get early access
+              Sign up
             </Button>
           </div>
         </div>

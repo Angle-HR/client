@@ -1,7 +1,6 @@
 import { type ReactNode } from 'react'
 
 import { FooterBottom } from '../footer-bottom'
-import { FooterCta } from '../footer-cta'
 import { Header } from '../header'
 import { StickyNav } from '../sticky-nav'
 
@@ -70,8 +69,8 @@ function LegalBlockView({ block }: { block: LegalBlock }) {
 function LegalPage({ title, meta, sections }: LegalPageProps) {
   return (
     <>
-      <StickyNav sentinelId="legal-nav-sentinel" basePath="/waitlist" />
-      <Header basePath="/waitlist" />
+      <StickyNav sentinelId="legal-nav-sentinel" />
+      <Header />
       <main className="flex flex-1 flex-col">
         <section className="relative flex justify-center px-[20px] py-[80px] md:px-[32px]">
           {/* Sticky nav's reveal sentinel. StickyNav's observer uses a
@@ -110,7 +109,6 @@ function LegalPage({ title, meta, sections }: LegalPageProps) {
             </div>
           </div>
         </section>
-        <FooterCta />
       </main>
       <FooterBottom />
     </>

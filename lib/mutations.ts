@@ -13,14 +13,6 @@ import type { ApiRulesBody } from './compliance/api-types'
 import type { ApiCompanySetup, ApiKybState } from './organization/api-types'
 import type { OnboardingProgressSummary, ProductOnboardingStatusData } from './types'
 
-function useJoinWaitlist() {
-  return useMutation({ mutationFn: requests.joinWaitlist })
-}
-
-function useSubmitOnboarding() {
-  return useMutation({ mutationFn: requests.submitOnboarding })
-}
-
 /** Sends a candidate's application for one job. `source` is the `src` of the link they came from. */
 function useSubmitApplication(job: CareersJob, source?: string) {
   return useMutation({
@@ -310,12 +302,10 @@ export {
   useVerifyLoginOtp,
   useVerifyLoginTotp,
   useCompleteOnboarding,
-  useJoinWaitlist,
   useLogin,
   useResendVerification,
   useSignup,
   useSubmitApplication,
-  useSubmitOnboarding,
   useUpdateSignupEmail,
   useUpsertAddress,
   useUpsertBusiness,
