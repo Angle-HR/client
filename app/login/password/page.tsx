@@ -13,6 +13,7 @@ import {
 import { useLoginEmail } from '@/components/auth/use-flow-storage'
 import {
   applyApiError,
+  formatWait,
   getApiError,
   getApiErrorDetails,
   getRetryAfterSeconds,
@@ -97,7 +98,7 @@ function LoginPasswordPage() {
         return
       }
       if (retryAfter) {
-        setFormError(`Please wait ${retryAfter}s before trying again.`)
+        setFormError(`Please wait ${formatWait(retryAfter)} before trying again.`)
         return
       }
 
@@ -117,7 +118,7 @@ function LoginPasswordPage() {
       const retryAfter = getRetryAfterSeconds(err)
       setFormError(
         retryAfter
-          ? `Please wait ${retryAfter}s before requesting another code.`
+          ? `Please wait ${formatWait(retryAfter)} before requesting another code.`
           : applyApiError(err),
       )
     }

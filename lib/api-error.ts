@@ -87,6 +87,12 @@ function getRetryAfterSeconds(error: unknown): number | undefined {
   return Number.isFinite(raw) && raw > 0 ? Math.ceil(raw) : undefined
 }
 
+/** "45s", "5 min": a wait in seconds as a person would say it. */
+function formatWait(seconds: number): string {
+  if (seconds < 120) return `${seconds}s`
+  return `${Math.ceil(seconds / 60)} min`
+}
+
 const WRONG_CODE_MESSAGE = 'Incorrect code. Check the email and try again.'
 
 /**
@@ -98,11 +104,12 @@ function verificationCodeError(error: unknown): string {
   const apiError = getApiError(error)
   if (apiError?.code === 'invalid_verification_code') return WRONG_CODE_MESSAGE
   const retryAfter = getRetryAfterSeconds(error)
-  if (retryAfter) return `Too many attempts. Try again in ${retryAfter}s.`
+  if (retryAfter) return `Too many attempts. Try again in ${formatWait(retryAfter)}.`
   return applyApiError(error, undefined, {}, 'Invalid verification code. Please try again.') ?? ''
 }
 
 export {
+  formatWait,
   verificationCodeError,
   applyApiError,
   getApiError,

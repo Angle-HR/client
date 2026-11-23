@@ -1,7 +1,12 @@
 import { AxiosError, AxiosHeaders } from 'axios'
 import { describe, expect, it } from 'vitest'
 
-import { getFieldErrors, getRetryAfterSeconds, verificationCodeError } from '../api-error'
+import {
+  formatWait,
+  getFieldErrors,
+  getRetryAfterSeconds,
+  verificationCodeError,
+} from '../api-error'
 
 function failure(details: Record<string, unknown> | undefined): AxiosError {
   return new AxiosError('bad', 'ERR_BAD_REQUEST', undefined, undefined, {
@@ -85,6 +90,15 @@ describe('verificationCodeError', () => {
 
   it('falls back to the server message or a generic line', () => {
     expect(verificationCodeError(withCode(400, 'EXPIRED', 'code expired'))).toBe('Code expired')
-    expect(verificationCodeError(new Error('x'))).toBe('Invalid verification code. Please try again.')
+    expect(verificationCodeError(new Error('x'))).toBe(
+      'Invalid verification code. Please try again.',
+    )
+  })
+})
+
+describe('formatWait', () => {
+  it('uses seconds for short waits and minutes for long ones', () => {
+    expect(formatWait(45)).toBe('45s')
+    expect(formatWait(869)).toBe('15 min')
   })
 })
