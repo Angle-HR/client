@@ -18,6 +18,7 @@ const JOB_TABS: ReadonlyArray<{ key: JobTab; label: string }> = [
 ]
 
 interface PublicJobPageProps {
+  /** The company's careers page; empty when the job was reached by its share link alone. */
   slug: string
   jobId: string
 }
@@ -59,14 +60,16 @@ function PublicJobPage({ slug, jobId }: PublicJobPageProps): ReactElement | null
 
       <div className="flex flex-col gap-[44px]">
         <div className="flex flex-col gap-[28px]">
-          <a
-            href={`/company/${slug}`}
-            className="inline-flex w-fit items-center gap-[2px] px-[6px] py-[6px] text-[12px] leading-[19.2px] text-text-secondary"
-          >
-            {/* The design's icon/arrow-left variant is unverified; the outline arrow is used. */}
-            <DashboardIcon name="arrow-left-outline" size={10} />
-            View all Jobs
-          </a>
+          {slug ? (
+            <a
+              href={`/company/${slug}`}
+              className="inline-flex w-fit items-center gap-[2px] px-[6px] py-[6px] text-[12px] leading-[19.2px] text-text-secondary"
+            >
+              {/* The design's icon/arrow-left variant is unverified; the outline arrow is used. */}
+              <DashboardIcon name="arrow-left-outline" size={10} />
+              View all Jobs
+            </a>
+          ) : null}
           <h1 className="px-[8px] text-[25.3px] leading-[39.7px] font-medium text-text-primary">
             {job.title}
           </h1>

@@ -18,12 +18,12 @@ function useCareersPage(slug: string) {
   })
 }
 
-/** One public job of a company. Skipped until there is a slug and a job id. */
+/** One public job, by its public id. The company slug is only part of the careers URL. */
 function usePublicJob(slug: string, jobId: string) {
   return useQuery({
     queryKey: queryKeys.publicJob(slug, jobId),
     queryFn: () => requests.getPublicJob(slug, jobId),
-    enabled: Boolean(slug) && Boolean(jobId),
+    enabled: Boolean(jobId),
   })
 }
 

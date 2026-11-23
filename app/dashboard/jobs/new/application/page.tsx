@@ -102,6 +102,8 @@ function ApplicationFormPage() {
       await requests.saveApplicationForm(jobId, formToApi(form), job?.revision)
       await queryClient.invalidateQueries({ queryKey: queryKeys.jobs })
       await queryClient.invalidateQueries({ queryKey: queryKeys.applicationForm(jobId) })
+      // The save moved the job's revision on; later steps send it back as If-Match.
+      await queryClient.invalidateQueries({ queryKey: queryKeys.job(jobId) })
       router.push(permissionsHref)
     } catch (error) {
       const placed = declarationIssuesFromServer(form, getFieldErrors(error))
