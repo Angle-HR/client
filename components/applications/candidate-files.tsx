@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ReactElement } from 'react'
 
+import { PdfPages } from '@/components/applications/pdf-pages'
 import { DashboardIcon } from '@/components/dashboard/nav-config'
 import { TextButton } from '@/components/ui'
 import { useApplicationFileLink } from '@/lib/queries'
@@ -16,29 +17,25 @@ async function openApplicationFile(jobId: string, appId: string, fileId: string)
 }
 
 /**
- * A local copy of a file for drawing in a frame. The storage link is signed as
- * an attachment, so a browser would download it instead of showing it.
+ * The file's bytes, for drawing its pages. The storage link is signed as an
+ * attachment, so a browser frame would download it instead of showing it.
  */
-function useObjectUrl(url: string | undefined): string | null {
-  const [objectUrl, setObjectUrl] = useState<string | null>(null)
+function useFileBytes(url: string | undefined): ArrayBuffer | null {
+  const [bytes, setBytes] = useState<ArrayBuffer | null>(null)
   useEffect(() => {
     if (!url) return
-    let created: string | null = null
     let cancelled = false
     void fetch(url)
-      .then((response) => (response.ok ? response.blob() : null))
-      .then((blob) => {
-        if (!blob || cancelled) return
-        created = URL.createObjectURL(blob)
-        setObjectUrl(created)
+      .then((response) => (response.ok ? response.arrayBuffer() : null))
+      .then((buffer) => {
+        if (buffer && !cancelled) setBytes(buffer)
       })
       .catch(() => undefined)
     return () => {
       cancelled = true
-      if (created) URL.revokeObjectURL(created)
     }
   }, [url])
-  return objectUrl
+  return bytes
 }
 
 /** The first PDF the candidate uploaded, taken as their resume. */
@@ -69,7 +66,7 @@ interface ResumeProps {
  */
 function Resume({ jobId, appId, file, onError }: ResumeProps): ReactElement {
   const link = useApplicationFileLink(jobId, appId, file.id)
-  const preview = useObjectUrl(link.data?.url)
+  const bytes = useFileBytes(link.data?.url)
   return (
     <section className="flex flex-col gap-[12px]">
       <div className="flex items-center justify-between gap-[12px]">
@@ -93,14 +90,7 @@ function Resume({ jobId, appId, file, onError }: ResumeProps): ReactElement {
           </TextButton>
         </div>
       </div>
-      {preview ? (
-        <iframe
-          // The design draws the page alone, without the browser's PDF toolbar and thumbnails.
-          src={`${preview}#toolbar=0&navpanes=0`}
-          title={file.filename}
-          className="h-[640px] w-full rounded-lg-10 border-0 bg-bg-secondary"
-        />
-      ) : null}
+      {bytes ? <PdfPages data={bytes} title={file.filename} /> : null}
     </section>
   )
 }
