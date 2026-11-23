@@ -82,7 +82,23 @@ function getRetryAfterSeconds(error: unknown): number | undefined {
   return Number.isFinite(raw) && raw > 0 ? Math.ceil(raw) : undefined
 }
 
+const WRONG_CODE_MESSAGE = 'Incorrect code. Check the email and try again.'
+
+/**
+ * A readable message for a failed one-time-code check. The server's wording for
+ * a wrong code is terse ("incorrect otp"), so that code gets a friendlier line;
+ * a 429 says how long to wait; anything else uses the server's own message.
+ */
+function verificationCodeError(error: unknown): string {
+  const apiError = getApiError(error)
+  if (apiError?.code === 'invalid_verification_code') return WRONG_CODE_MESSAGE
+  const retryAfter = getRetryAfterSeconds(error)
+  if (retryAfter) return `Too many attempts. Try again in ${retryAfter}s.`
+  return applyApiError(error, undefined, {}, 'Invalid verification code. Please try again.') ?? ''
+}
+
 export {
+  verificationCodeError,
   applyApiError,
   getApiError,
   getApiErrorDetails,

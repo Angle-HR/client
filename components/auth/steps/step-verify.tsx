@@ -12,7 +12,7 @@ import {
   TextButton,
   type OTPInputState,
 } from '@/components/ui'
-import { applyApiError, getRetryAfterSeconds } from '@/lib/api-error'
+import { applyApiError, getRetryAfterSeconds, verificationCodeError } from '@/lib/api-error'
 import {
   clearVerificationSession,
   getCodeExpiresAt,
@@ -137,9 +137,7 @@ function StepVerify({ email, onEditEmail, onVerified }: StepVerifyProps) {
       onVerified(session)
     } catch (err) {
       setOtpState('error')
-      setErrorText(
-        applyApiError(err, undefined, {}, 'Invalid verification code. Please try again.'),
-      )
+      setErrorText(verificationCodeError(err))
     }
   }
 
