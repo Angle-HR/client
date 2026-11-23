@@ -2,6 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
+import { disqualifyPlan } from './applications/stages'
 import { queryKeys } from './query-keys'
 import { requests } from './requests'
 
@@ -52,6 +53,38 @@ function useChangeApplicationStatus(jobId: string) {
     mutationFn: ({ appId, ...body }: { appId: string; status: ApplicationStatus; note?: string }) =>
       requests.changeApplicationStatus(jobId, appId, body),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.applications(jobId) }),
+  })
+}
+
+/**
+ * Disqualifies an application (rejects it). A received one is moved to in
+ * review first, because the server allows that step only; a flagged one is
+ * rejected through its review. The job's applications reload either way, so a
+ * half-done sequence still shows where it stopped.
+ */
+function useDisqualifyApplication(jobId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      appId,
+      status,
+      canDecide,
+    }: {
+      appId: string
+      status: ApplicationStatus
+      canDecide: boolean
+    }): Promise<void> => {
+      const plan = disqualifyPlan(status, canDecide)
+      if (!plan) throw new Error('This application cannot be disqualified.')
+      if (plan.kind === 'review') {
+        await requests.reviewApplication(jobId, appId, { decision: 'reject' })
+        return
+      }
+      for (const next of plan.steps) {
+        await requests.changeApplicationStatus(jobId, appId, { status: next })
+      }
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.applications(jobId) }),
   })
 }
 
@@ -298,6 +331,7 @@ export {
   useConfirmGate,
   useSetScreeningRules,
   useChangeApplicationStatus,
+  useDisqualifyApplication,
   useReviewApplication,
   useAcceptInvite,
   useConfirmTotp,

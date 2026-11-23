@@ -31,6 +31,8 @@ type SelectJob = (jobId: string, options: { range: boolean }) => void
 /** Opens the row's action menu, anchored to the button that was pressed. */
 type OpenJobMenu = (jobId: string, anchor: DOMRect) => void
 
+type OpenJob = (jobId: string) => void
+
 interface JobsTableProps {
   groups: JobGroup[]
   selectedIds: ReadonlySet<string>
@@ -38,6 +40,8 @@ interface JobsTableProps {
   menuJobId: string | null
   onSelect: SelectJob
   onOpenMenu: OpenJobMenu
+  /** Opens the job's candidates. A click anywhere on the row does this. */
+  onOpenJob: OpenJob
 }
 
 const cellText = 'text-body-xs leading-19_2 font-medium text-text-secondary'
@@ -126,9 +130,10 @@ interface JobRowProps {
   menuOpen: boolean
   onSelect: SelectJob
   onOpenMenu: OpenJobMenu
+  onOpenJob: OpenJob
 }
 
-function JobRow({ job, selected, menuOpen, onSelect, onOpenMenu }: JobRowProps) {
+function JobRow({ job, selected, menuOpen, onSelect, onOpenMenu, onOpenJob }: JobRowProps) {
   // The checkbox's change event does not carry modifier keys, so the click
   // that precedes it records whether Shift was down.
   const shiftHeld = useRef(false)
@@ -137,7 +142,12 @@ function JobRow({ job, selected, menuOpen, onSelect, onOpenMenu }: JobRowProps) 
     <div
       role="row"
       aria-selected={selected}
-      className={`group flex h-[40px] shrink-0 items-center gap-[2px] px-[16px] transition-colors ${selected ? rowSelected : rowRest}`}
+      onClick={(event) => {
+        // Checkboxes, menus and links on the row keep their own clicks.
+        if ((event.target as HTMLElement).closest('button, input, label, a')) return
+        onOpenJob(job.id)
+      }}
+      className={`group flex h-[40px] shrink-0 cursor-pointer items-center gap-[2px] px-[16px] transition-colors ${selected ? rowSelected : rowRest}`}
     >
       <div role="cell" className="flex h-full min-w-0 flex-1 items-center gap-[4px]">
         {/* The checkbox only shows on hover or once the row is selected. */}
@@ -159,9 +169,13 @@ function JobRow({ job, selected, menuOpen, onSelect, onOpenMenu }: JobRowProps) 
             }
           />
         </span>
-        <span className="min-w-0 flex-1 truncate py-[4px] text-body-s leading-19_5 font-medium text-text-primary">
+        <button
+          type="button"
+          onClick={() => onOpenJob(job.id)}
+          className="min-w-0 flex-1 truncate py-[4px] text-left text-body-s leading-19_5 font-medium text-text-primary"
+        >
           {job.title}
-        </span>
+        </button>
       </div>
       <div role="cell" className="flex h-full shrink-0 items-center px-[12px]">
         <Chip
@@ -205,7 +219,14 @@ function JobRow({ job, selected, menuOpen, onSelect, onOpenMenu }: JobRowProps) 
   )
 }
 
-function JobsTable({ groups, selectedIds, menuJobId, onSelect, onOpenMenu }: JobsTableProps) {
+function JobsTable({
+  groups,
+  selectedIds,
+  menuJobId,
+  onSelect,
+  onOpenMenu,
+  onOpenJob,
+}: JobsTableProps) {
   const [collapsed, setCollapsed] = useState<ReadonlySet<JobStatus>>(new Set())
 
   function toggleGroup(status: JobStatus) {
@@ -240,6 +261,7 @@ function JobsTable({ groups, selectedIds, menuJobId, onSelect, onOpenMenu }: Job
                     menuOpen={menuJobId === job.id}
                     onSelect={onSelect}
                     onOpenMenu={onOpenMenu}
+                    onOpenJob={onOpenJob}
                   />
                 ))}
           </div>
@@ -250,4 +272,4 @@ function JobsTable({ groups, selectedIds, menuJobId, onSelect, onOpenMenu }: Job
 }
 
 export { GroupHeader, JobsTable, cellText, rowRest, rowSelected }
-export type { JobGroup, JobsTableProps, OpenJobMenu, SelectJob }
+export type { JobGroup, JobsTableProps, OpenJob, OpenJobMenu, SelectJob }

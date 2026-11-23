@@ -1,6 +1,7 @@
 import type {
   ApiApplicationAnswer,
   ApiApplicationDetail,
+  ApiApplicationFile,
   ApiApplicationSummary,
   ApplicationListQuery,
 } from './api-types'
@@ -44,13 +45,25 @@ interface ApplicantAnswer {
   questionId: string
   label: string
   section: string
+  /** The form's question type, e.g. phone_number or short_text. */
+  type: string
   /** The answer as text. Empty for a file, which shows its link instead. */
   text: string
   fileId?: string
 }
 
+/** A file the candidate uploaded. Its link is asked for when it is opened. */
+interface ApplicantFile {
+  id: string
+  questionId: string
+  filename: string
+  contentType: string
+  sizeBytes: number
+}
+
 interface ApplicantDetail extends Applicant {
   answers: ApplicantAnswer[]
+  files: ApplicantFile[]
   canDecide: boolean
   statusNote: string
   decidedAt: string
@@ -94,8 +107,19 @@ function toAnswer(answer: ApiApplicationAnswer): ApplicantAnswer {
     questionId: answer.question_id ?? '',
     label: answer.label ?? '',
     section: answer.section ?? '',
+    type: answer.type ?? '',
     text: answer.file_id ? '' : answerText(answer.value),
     fileId: answer.file_id || undefined,
+  }
+}
+
+function toFile(file: ApiApplicationFile): ApplicantFile {
+  return {
+    id: file.id ?? '',
+    questionId: file.question_id ?? '',
+    filename: file.filename ?? 'File',
+    contentType: file.content_type ?? '',
+    sizeBytes: file.size_bytes ?? 0,
   }
 }
 
@@ -103,6 +127,7 @@ function toApplicantDetail(row: ApiApplicationDetail): ApplicantDetail {
   return {
     ...toApplicant(row),
     answers: (row.answers ?? []).map(toAnswer),
+    files: (row.files ?? []).map(toFile),
     canDecide: row.can_decide ?? false,
     statusNote: row.status_note ?? '',
     decidedAt: row.decided_at ?? '',
@@ -135,4 +160,4 @@ export {
   toApplicant,
   toApplicantDetail,
 }
-export type { Applicant, ApplicantAnswer, ApplicantDetail, ApplicationStatus }
+export type { Applicant, ApplicantAnswer, ApplicantDetail, ApplicantFile, ApplicationStatus }

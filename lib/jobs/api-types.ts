@@ -228,6 +228,8 @@ interface ApiJobView extends ApiJobBody {
   revision?: number
   department_name?: string
   created_by?: string
+  /** ISO timestamp; absent until the job has been published. */
+  published_at?: string
 }
 
 /** A choice option. The API gives it an id once the form is saved. */

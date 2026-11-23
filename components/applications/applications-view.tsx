@@ -1,120 +1,159 @@
 'use client'
 
-import { useState, type ReactElement } from 'react'
+import { useCallback, useMemo, useState, type ReactElement } from 'react'
 
-import { ApplicationModal } from '@/components/applications/application-modal'
-import { Button, Tabs, TextInput, type TabOption } from '@/components/ui'
-import { APPLICATION_STATUSES, type ApplicationStatus } from '@/lib/applications/api'
-import { useApplications, useJob } from '@/lib/queries'
+import { CandidatePanel } from '@/components/applications/candidate-panel'
+import {
+  CandidatesTopBar,
+  JobHeader,
+  WorkflowBanner,
+  type HeaderPerson,
+} from '@/components/applications/candidates-header'
+import { CandidatesTable } from '@/components/applications/candidates-table'
+import { CandidatesToolbar } from '@/components/applications/candidates-toolbar'
+import { JobToast, type JobToastState } from '@/components/jobs/job-toast'
+import { Button, type AvatarColour } from '@/components/ui'
+import { statusesForTab, type StageTab } from '@/lib/applications/stages'
+import { apiMessage } from '@/lib/jobs/api'
+import { previewJobFrom } from '@/lib/jobs/application-preview'
+import { useApplications, useJob, useJobMembers, usePeople } from '@/lib/queries'
 
-type StatusTab = 'all' | ApplicationStatus
+import type { Applicant } from '@/lib/applications/api'
 
 interface ApplicationsViewProps {
   jobId: string
 }
 
-const DATE = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+const FALLBACK_COLOUR: AvatarColour = 'grey'
 
-function formatDate(value: string): string {
-  const date = new Date(value)
-  return Number.isNaN(date.getTime()) ? '' : DATE.format(date)
-}
-
-/** A job's applications: a tab per status with its count, a search, and the application in a dialog. */
+/**
+ * The candidates of one job, in the designer's table: the stage tabs, the
+ * search, and a side panel per candidate. Stages with no server status are
+ * drawn with no data, so their tabs show nothing.
+ */
 function ApplicationsView({ jobId }: ApplicationsViewProps): ReactElement {
-  const [tab, setTab] = useState<StatusTab>('all')
+  const [tab, setTab] = useState<StageTab>('all')
   const [search, setSearch] = useState('')
+  const [oldestFirst, setOldestFirst] = useState(false)
   const [openId, setOpenId] = useState<string | null>(null)
+  const [toast, setToast] = useState<JobToastState | null>(null)
 
   const job = useJob(jobId)
-  const query = { status: tab === 'all' ? undefined : [tab], q: search }
-  const applications = useApplications(jobId, query)
+  const members = useJobMembers(jobId)
+  const people = usePeople()
 
-  const pages = applications.data?.pages ?? []
-  const items = pages.flatMap((page) => page.items)
-  const counts = pages[0]?.counts ?? {}
+  // The job-wide counts come from the unfiltered list, so the tabs keep their
+  // numbers while a stage without a status is open.
+  const summary = useApplications(jobId, { q: '' })
+  const statuses = statusesForTab(tab)
+  const hasStatus = statuses === undefined || statuses.length > 0
+  const applications = useApplications(jobId, { status: statuses, q: search }, hasStatus)
+
+  const counts = summary.data?.pages[0]?.counts ?? {}
   const total = Object.values(counts).reduce((sum, count) => sum + count, 0)
+  // Newest first, as the server sends them, unless Sort has flipped the order.
+  const rows = useMemo<Applicant[]>(() => {
+    const loaded = hasStatus ? (applications.data?.pages ?? []).flatMap((page) => page.items) : []
+    const byDate = [...loaded].sort((a, b) => a.submittedAt.localeCompare(b.submittedAt))
+    return oldestFirst ? byDate : byDate.reverse()
+  }, [applications.data, hasStatus, oldestFirst])
+  const loading = hasStatus && applications.isPending
 
-  const tabs: TabOption<StatusTab>[] = [
-    { key: 'all', label: 'All', count: total },
-    ...APPLICATION_STATUSES.map(({ key, label }) => ({ key, label, count: counts[key] ?? 0 })),
-  ]
+  const dismissToast = useCallback(() => setToast(null), [])
+  const reportError = useCallback(
+    (cause: unknown) =>
+      setToast({
+        id: Date.now(),
+        kind: 'error',
+        message: apiMessage(cause, 'That did not go through. Try again.'),
+      }),
+    [],
+  )
+  const openCandidate = useCallback((appId: string) => setOpenId(appId), [])
+  const closeCandidate = useCallback(() => setOpenId(null), [])
+
+  const view = job.data
+  const preview = view ? previewJobFrom(view, '') : null
+  const details = view
+    ? [view.job_code, preview?.team, preview?.workplace, preview?.location]
+        .filter(Boolean)
+        .join(' · ')
+    : ''
+
+  const hiringPeople = people.data ?? []
+  const creatorPerson = view?.created_by
+    ? hiringPeople.find((person) => person.id === view.created_by)
+    : undefined
+  const creator: HeaderPerson | null = creatorPerson
+    ? { name: creatorPerson.name, colour: creatorPerson.colour }
+    : null
+  const reviewers: HeaderPerson[] = (members.data ?? [])
+    .filter((member) => member.name)
+    .map((member) => ({
+      name: member.name ?? '',
+      colour:
+        hiringPeople.find((person) => person.id === member.user_id)?.colour ?? FALLBACK_COLOUR,
+    }))
 
   return (
-    <div className="flex flex-1 flex-col gap-[16px] p-[24px]">
-      <header className="flex flex-col gap-[4px]">
-        <h1 className="text-body-xl leading-24 font-semibold text-text-primary">Applicants</h1>
-        {job.data ? (
-          <p className="text-body-s leading-19_5 text-text-secondary">{job.data.title}</p>
-        ) : null}
-      </header>
-
-      <Tabs tabs={tabs} value={tab} onValueChange={setTab} aria-label="Application status" />
-      <div className="max-w-[320px]">
-        <TextInput
-          placeholder="Search name or email"
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
+    <div className="relative flex min-h-0 flex-1 flex-col">
+      <CandidatesTopBar title={view?.title ?? ''} total={total} />
+      <div className="flex min-h-0 flex-1 flex-col gap-[20px] overflow-y-auto px-[24px] pt-[20px] pb-[24px]">
+        <JobHeader
+          title={view?.title ?? ''}
+          details={details}
+          creator={creator}
+          reviewers={reviewers}
+          publishedOn={view?.published_at?.slice(0, 10) ?? ''}
         />
+        <WorkflowBanner />
+        <CandidatesToolbar
+          tab={tab}
+          onTabChange={setTab}
+          counts={counts}
+          search={search}
+          onSearchChange={setSearch}
+          onToggleSort={() => setOldestFirst((value) => !value)}
+        />
+
+        {applications.isError ? (
+          <p role="alert" className="text-body-s text-text-secondary">
+            We couldn&apos;t load the applications. Try again in a moment.
+          </p>
+        ) : rows.length === 0 && !loading ? (
+          <p className="text-body-s text-text-secondary">No applications here yet.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <CandidatesTable rows={rows} selectedId={openId} onOpen={openCandidate} />
+          </div>
+        )}
+
+        {applications.hasNextPage ? (
+          <Button
+            type="button"
+            variant="secondary"
+            size="md"
+            className="w-fit"
+            loading={applications.isFetchingNextPage}
+            onClick={() => void applications.fetchNextPage()}
+          >
+            Load more
+          </Button>
+        ) : null}
       </div>
 
-      {applications.isError ? (
-        <p role="alert" className="text-body-s text-text-secondary">
-          We couldn&apos;t load the applications. Try again in a moment.
-        </p>
-      ) : items.length === 0 && !applications.isPending ? (
-        <p className="text-body-s text-text-secondary">No applications here yet.</p>
-      ) : (
-        <ul className="flex flex-col divide-y divide-border-transparent-light">
-          {items.map((item) => (
-            <li key={item.id}>
-              <button
-                type="button"
-                onClick={() => setOpenId(item.id)}
-                className="flex w-full items-center gap-[12px] px-[8px] py-[12px] text-left hover:bg-bg-btn-default-tet-hover"
-              >
-                <span className="flex min-w-0 flex-1 flex-col">
-                  <span className="truncate text-body-s font-semibold text-text-primary">
-                    {item.isNew ? (
-                      <span aria-label="New" className="mr-[6px]">
-                        ●
-                      </span>
-                    ) : null}
-                    {item.name || item.email}
-                  </span>
-                  <span className="truncate text-caption-m text-text-tertiary">{item.email}</span>
-                </span>
-                <span className="w-[80px] text-caption-m text-text-secondary">{item.country}</span>
-                <span className="w-[90px] text-caption-m text-text-secondary capitalize">
-                  {item.source}
-                </span>
-                <span className="w-[90px] text-caption-m text-text-secondary">
-                  {APPLICATION_STATUSES.find((status) => status.key === item.status)?.label}
-                  {item.flagCount > 0 ? ` · ${item.flagCount} flagged` : ''}
-                </span>
-                <span className="w-[100px] text-caption-m text-text-tertiary">
-                  {formatDate(item.submittedAt)}
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {applications.hasNextPage ? (
-        <Button
-          type="button"
-          variant="secondary"
-          size="md"
-          className="w-fit"
-          loading={applications.isFetchingNextPage}
-          onClick={() => void applications.fetchNextPage()}
-        >
-          Load more
-        </Button>
+      {openId ? (
+        <CandidatePanel
+          key={openId}
+          jobId={jobId}
+          appId={openId}
+          rows={rows}
+          onOpen={openCandidate}
+          onClose={closeCandidate}
+          onError={reportError}
+        />
       ) : null}
-
-      <ApplicationModal jobId={jobId} appId={openId} onClose={() => setOpenId(null)} />
+      {toast ? <JobToast toast={toast} onDismiss={dismissToast} /> : null}
     </div>
   )
 }
