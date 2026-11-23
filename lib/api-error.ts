@@ -9,6 +9,11 @@ type FieldErrorMap<T extends FieldValues> = Partial<Record<string, Path<T>>>
 
 const DEFAULT_FALLBACK_MESSAGE = 'Something went wrong. Please try again.'
 
+/** The API words some messages in lower case ("wrong email or password"); show them as sentences. */
+function capitalize(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
+
 function getApiError(error: unknown): ApiErrorBody['error'] | undefined {
   if (!axios.isAxiosError(error)) return undefined
   const body = error.response?.data as Partial<ApiErrorBody> | undefined
@@ -66,7 +71,7 @@ function applyApiError<T extends FieldValues>(
     return undefined
   }
 
-  return apiError.message || fallbackMessage
+  return capitalize(apiError.message) || fallbackMessage
 }
 
 /**

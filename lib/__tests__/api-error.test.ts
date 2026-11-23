@@ -84,7 +84,7 @@ describe('verificationCodeError', () => {
   })
 
   it('falls back to the server message or a generic line', () => {
-    expect(verificationCodeError(withCode(400, 'EXPIRED', 'code expired'))).toBe('code expired')
+    expect(verificationCodeError(withCode(400, 'EXPIRED', 'code expired'))).toBe('Code expired')
     expect(verificationCodeError(new Error('x'))).toBe('Invalid verification code. Please try again.')
   })
 })
