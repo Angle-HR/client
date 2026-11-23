@@ -7,13 +7,21 @@ type ButtonAccent = 'default' | 'blue' | 'red'
 type ButtonSize = 'sm' | 'md'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  /** Visual hierarchy. Use one `primary` per focal area. */
   variant?: ButtonVariant
+  /** Colour accent. Use `red` only for destructive actions that can't be undone. */
   accent?: ButtonAccent
+  /** Height: `sm` = 24px for tables and toolbars, `md` = 32px everywhere else. */
   size?: ButtonSize
+  /** Icon before the label, shown at 14×14px. */
   iconPrefix?: ReactNode
+  /** Icon after the label, shown at 14×14px. */
   iconSuffix?: ReactNode
+  /** Shows a spinner before the label and ignores clicks, while staying focusable. Don't also set `disabled`. */
   loading?: boolean
+  /** Overrides the accessible name. Only needed when the visible label isn't enough. */
   'aria-label'?: string
+  /** Points to an element that explains the button, e.g. why it is disabled. */
   'aria-describedby'?: string
 }
 
@@ -68,6 +76,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
     iconSuffix,
     loading = false,
     disabled,
+    onClick,
     children,
     className = '',
     type = 'button',
@@ -82,41 +91,47 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
 
   const classes = [
     // Figma's 8px inset is measured from the edge, so 7px inside the 1px border.
-    'inline-flex items-center justify-center font-medium rounded-sm-7 border transition-colors',
+    'inline-flex items-center justify-center font-medium rounded-sm-7 border',
+    // Figma: hover dissolves in over 100ms (ease in) and out over 100ms (ease out); press takes 50ms.
+    'transition-colors duration-100 ease-out hover:ease-in active:duration-[50ms]',
     'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bg-selection-controls-selected',
-    'disabled:cursor-not-allowed',
+    'disabled:cursor-not-allowed aria-busy:cursor-wait',
     sizeClasses,
     getColorClasses(variant, accent),
     className,
   ].join(' ')
 
   const isLoading = loading && !disabled
+  const spinnerOrPrefix = isLoading ? <Spinner /> : iconPrefix
 
   return (
     <button
       ref={ref}
       type={type}
-      disabled={disabled || loading}
+      disabled={disabled}
+      // While loading the button stays focusable (so focus isn't lost mid-action) but ignores clicks.
+      aria-disabled={isLoading || undefined}
       aria-busy={isLoading || undefined}
+      onClick={(event) => {
+        if (isLoading) {
+          event.preventDefault()
+          return
+        }
+        onClick?.(event)
+      }}
       className={classes}
       {...props}
     >
-      {isLoading ? (
-        <Spinner />
-      ) : (
-        <>
-          {iconPrefix && (
-            <span className="inline-flex h-[14px] w-[14px] items-center justify-center shrink-0">
-              {iconPrefix}
-            </span>
-          )}
-          {children && <span>{children}</span>}
-          {iconSuffix && (
-            <span className="inline-flex h-[14px] w-[14px] items-center justify-center shrink-0">
-              {iconSuffix}
-            </span>
-          )}
-        </>
+      {spinnerOrPrefix && (
+        <span className="inline-flex h-[14px] w-[14px] items-center justify-center shrink-0">
+          {spinnerOrPrefix}
+        </span>
+      )}
+      {children && <span>{children}</span>}
+      {iconSuffix && (
+        <span className="inline-flex h-[14px] w-[14px] items-center justify-center shrink-0">
+          {iconSuffix}
+        </span>
       )}
     </button>
   )

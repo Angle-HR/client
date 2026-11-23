@@ -1,0 +1,33 @@
+export const metadata = { title: 'Overview' }
+
+# Open HR design system
+
+These docs are live. Every example on these pages is the real component from `components/ui`, every colour swatch is the real CSS variable, and every props table is read from the component's TypeScript types when the app builds. If the code changes, the docs change with it.
+
+Use the theme buttons at the top right to see any page in light or dark mode.
+
+## Foundations
+
+- [Colours](/docs/foundations/colours): primitives and the mode-aware tokens components use
+- [Typography](/docs/foundations/typography): Inter and Fira Code, and every text style
+- [Spacing and radius](/docs/foundations/spacing): gap, padding and corner radius steps
+- [Shadows](/docs/foundations/shadows): elevation and component shadows
+- [Icons](/docs/foundations/icons): the Figma icon library, outline and solid
+
+## Buttons
+
+- [Button](/docs/components/button): most actions, with three hierarchy levels and three accents
+- [Icon Button](/docs/components/icon-button): icon-only actions in toolbars and table rows
+- [Text Button](/docs/components/text-button): inline links and actions in body copy
+- [Flow Button](/docs/components/flow-button): steps in a multi-step flow
+- [Label Button](/docs/components/label-button): filter chips that toggle on and off
+
+The rest of the components move over from Storybook one at a time. Each one gets the same page: overview, live examples with code, props, usage, accessibility and a link to Figma.
+
+## Adding a page
+
+1. Add the examples to `docs/examples/<component>/` and register them in `docs/examples/registry.ts`.
+2. Add the component to the list at the top of `scripts/build-docs.mjs` so its props table is generated.
+3. Write `app/docs/components/<component>/page.mdx`, and add it to `docs/nav.ts`.
+
+Prop descriptions come from the comments above each prop in the component's code, so write them there.

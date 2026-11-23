@@ -1,0 +1,116 @@
+import { TextButtonStates } from '@/docs/components/button-family-states'
+import { DoDont, Guideline } from '@/docs/components/do-dont'
+import { Example } from '@/docs/components/example'
+import { FigmaReference } from '@/docs/components/figma-reference'
+import { PropsTable } from '@/docs/components/props-table'
+
+export const metadata = { title: 'Text Button' }
+
+# Text Button
+
+The lightest action in the button family: text with no background, border or padding. Use it for links and supplementary actions inside or below body copy, such as "View details" or "Read the policy".
+
+When the action needs weight or a clear hit area, use [Button](/docs/components/button).
+
+<Example name="text-button/overview" />
+
+```tsx
+import { TextButton } from '@/components/ui/button'
+```
+
+## Sizes
+
+Match the size to the text around it.
+
+<Example name="text-button/sizes" />
+
+| Size | Text | Left icon | Right icon | When to use                              |
+| ---- | ---- | --------- | ---------- | ---------------------------------------- |
+| `xs` | 10px | 10px      | 10px       | Fine print, badges, dense metadata       |
+| `sm` | 12px | 10px      | 10px       | Captions, table cells, helper text       |
+| `md` | 13px | 11px      | 10px       | The default: body copy, form helper text |
+| `lg` | 14px | 12px      | 12px       | Large body copy, section descriptions    |
+
+## Colour, underline and weight
+
+Text Button is dark grey at rest, turns blue on press and focus, and by default is underlined on hover and press. `underline` changes when the underline shows; `bold` uses medium weight.
+
+<Example name="text-button/underline-bold" />
+
+| Option               | Use it when                                                                                      |
+| -------------------- | ------------------------------------------------------------------------------------------------ |
+| `underline="hover"`  | The default. Inline links and actions in or near copy.                                           |
+| `underline="always"` | The link stands alone, with no copy around it to show it's interactive.                          |
+| `underline="never"`  | Quiet controls in toolbars and menus. Starts in the lighter secondary grey and darkens on hover. |
+| `bold`               | A standalone link needs a little more prominence. Not in the middle of a sentence.               |
+
+`underline` and `underline={false}` still work and mean `"always"` and `"hover"`.
+
+## Wrapped
+
+`wrapped` adds 6px of padding and a faint fill on hover, so a standalone Text Button gets a real click target. Figma pairs it with `underline="never"`.
+
+<Example name="text-button/wrapped" />
+
+## Icons and avatar
+
+The right icon is usually the external-link icon, for links that leave the app. The avatar slot names a person inline, such as "Reviewed by Ada Obi". It's ignored at `xs` and `sm`.
+
+<Example name="text-button/icons-avatar" />
+
+Icons here are smaller than on other buttons (10–12px, set by `size`). Pass the icon at that size: `<MaskIcon … size={10} />`.
+
+## Links
+
+With `href`, Text Button renders an `<a>`. For in-app navigation, pass Next.js `Link` through `as` so the page doesn't reload:
+
+```tsx
+<TextButton as={Link} href="/dashboard/jobs">
+  View all jobs
+</TextButton>
+```
+
+- `disabled` doesn't work on links. Use `aria-disabled="true"` and block the click.
+- With `target="_blank"`, always add `rel="noopener noreferrer"` and a visually hidden "(opens in new tab)".
+
+## States
+
+<TextButtonStates />
+
+Hover and press fade in over 100ms and out over 100ms. Rows show the default underline mode; `never` starts in secondary grey.
+
+## Usage
+
+<DoDont>
+  <Guideline kind="do">Use it for inline links: "Read the full policy", "View details".</Guideline>
+  <Guideline kind="dont">Make it the main or only action in a view. Use Button.</Guideline>
+  <Guideline kind="do">Use the external-link icon only for links that leave the app.</Guideline>
+  <Guideline kind="dont">Use Text Button for destructive actions. It gives no warning.</Guideline>
+</DoDont>
+
+## Writing labels
+
+- Say where it goes: "View payslip", not "Click here" or "More".
+- Sentence case, two to five words, no full stop.
+
+## Accessibility
+
+- **Keyboard:** Tab reaches it. Space or Enter activates a button; Enter follows a link.
+- **Focus:** a 2px blue ring, offset by 2px.
+- **Colour:** the hover underline means it never relies on colour alone (WCAG 1.4.1). With `underline="never"`, only use it where its position makes it obviously interactive, such as a toolbar.
+- **Icons and avatar:** decorative. The label must make sense without them.
+
+## Props
+
+<PropsTable of="TextButton" native="button" />
+
+Text Button forwards `ref` to the underlying `<button>` or `<a>`.
+
+## Figma
+
+<FigmaReference
+  src="/docs/figma/text-button.png"
+  href="https://www.figma.com/design/7jCMwDng7HF5g7F3tGXf0E/Open-HR?node-id=2859-27385"
+  taken="23 Nov 2026"
+  alt="The Text Button component set in Figma: four sizes, bold, underline and wrapped options in every state."
+/>

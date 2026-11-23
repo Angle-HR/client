@@ -92,12 +92,7 @@ function StepLogin2fa({ onVerify, onBack }: StepLogin2faProps) {
 
         <p className="flex flex-wrap items-center gap-[2px] text-body-s font-medium leading-19_5 text-text-secondary">
           <span>No access to one of these?</span>
-          <TextButton
-            href="/login/help"
-            size="md"
-            bold
-            className="text-text-primary hover:text-text-primary"
-          >
+          <TextButton href="/login/help" size="md" bold>
             Get help →
           </TextButton>
         </p>

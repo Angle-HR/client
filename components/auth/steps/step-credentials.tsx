@@ -165,12 +165,7 @@ function StepCredentials({ defaultEmail = '', onContinue }: StepCredentialsProps
 
           <p className="flex flex-wrap items-center justify-center gap-[2px] text-body-s font-medium leading-19_5 text-text-secondary">
             <span>Already have an account?</span>
-            <TextButton
-              href="/login"
-              size="md"
-              bold
-              className="text-text-primary hover:text-text-primary"
-            >
+            <TextButton href="/login" size="md" bold>
               Login →
             </TextButton>
           </p>
