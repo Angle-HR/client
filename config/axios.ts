@@ -37,6 +37,7 @@ const CREDENTIAL_ENDPOINTS = [
   ENDPOINTS.auth.loginOtpRequest(),
   ENDPOINTS.auth.loginOtpVerify(),
   ENDPOINTS.auth.loginTotp(),
+  ENDPOINTS.auth.totpDisable(),
   ENDPOINTS.auth.logout(),
   ENDPOINTS.auth.verifyEmail(),
   ENDPOINTS.auth.resendVerification(),

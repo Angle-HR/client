@@ -15,6 +15,33 @@ import type { Job } from '../jobs/types'
 const today = new Date(2026, 9, 7)
 const owner = { name: 'Alice', colour: 'green' } as const
 
+describe('lawful basis', () => {
+  const base = { ...EMPTY_DRAFT, title: 'Designer', team: 'Design' }
+
+  it('starts as contract and passes', () => {
+    expect(EMPTY_DRAFT.lawfulBasis).toBe('contract')
+    expect(validateDraft(base, today).lawfulBasis).toBeUndefined()
+  })
+
+  it('asks for one when missing or unknown', () => {
+    expect(validateDraft({ ...base, lawfulBasis: '' }, today).lawfulBasis).toBe(
+      'Choose a lawful basis.',
+    )
+    expect(validateDraft({ ...base, lawfulBasis: 'vibes' as never }, today).lawfulBasis).toMatch(
+      /listed/,
+    )
+  })
+
+  it('needs an assessment reference for legitimate interests', () => {
+    const li = { ...base, lawfulBasis: 'legitimate_interests' as const }
+    expect(validateDraft(li, today).liaReference).toMatch(/reference/)
+    expect(validateDraft({ ...li, liaReference: 'LIA-1' }, today).liaReference).toBeUndefined()
+    expect(validateDraft({ ...li, liaReference: 'x'.repeat(501) }, today).liaReference).toMatch(
+      /500/,
+    )
+  })
+})
+
 describe('validateDraft', () => {
   it('requires a title and a team', () => {
     expect(validateDraft(EMPTY_DRAFT, today)).toMatchObject({

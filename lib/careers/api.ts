@@ -1,7 +1,13 @@
 import { formFromApi, isChoiceType } from '../jobs/application-form'
 import { toCountryCode } from '../markets'
 
-import type { ApiApplicationBody, ApiPublicJob, ApiPublicJobData, ApiUploadBody } from './api-types'
+import type {
+  ApiApplicationBody,
+  ApiPublicJob,
+  ApiPublicJobData,
+  ApiPublicPay,
+  ApiUploadBody,
+} from './api-types'
 import type { ApplicationAnswers } from './application'
 import type { CareersEmploymentType, CareersJobPage, CareersWorkplace } from './types'
 import type { FormQuestion } from '../jobs/application-form'
@@ -43,6 +49,36 @@ function locationOf(job: ApiPublicJob): string | undefined {
   return first?.city || first?.market_code || undefined
 }
 
+const PAY_PERIOD: Readonly<Record<string, string>> = {
+  hour: 'per hour',
+  hourly: 'per hour',
+  day: 'per day',
+  daily: 'per day',
+  week: 'per week',
+  weekly: 'per week',
+  month: 'per month',
+  monthly: 'per month',
+  year: 'per year',
+  yearly: 'per year',
+  annual: 'per year',
+}
+
+/** The pay as one line. The API sends minor units (pence, cents), so amounts are divided by 100. */
+function payText(pay: ApiPublicPay | undefined): string | undefined {
+  if (!pay || !pay.currency || (pay.min == null && pay.max == null)) return undefined
+  const fmt = (minor: number): string =>
+    (minor / 100).toLocaleString('en-US', { maximumFractionDigits: 2 })
+  const lo = pay.min && pay.min > 0 ? pay.min : undefined
+  const hi = pay.max && pay.max > 0 ? pay.max : undefined
+  const range =
+    lo !== undefined && hi !== undefined && lo !== hi
+      ? `${fmt(lo)} - ${fmt(hi)}`
+      : fmt((hi ?? lo) as number)
+  if (lo === undefined && hi === undefined) return undefined
+  const period = PAY_PERIOD[(pay.period ?? '').toLowerCase()]
+  return `${pay.currency} ${range}${period ? ` ${period}` : ''}`
+}
+
 /**
  * The public job in the shape the careers screens draw. `jobId` is the job's
  * `public_id`, which is what the careers URL carries. Null when the API sent
@@ -60,6 +96,10 @@ function toCareersJobPage(data: ApiPublicJobData, jobId: string): CareersJobPage
       location: locationOf(job),
       workplace: WORKPLACE_FROM_API[job.workplace_type ?? ''] ?? 'On-site',
       employmentType: EMPLOYMENT_FROM_API[job.employment_type ?? ''] ?? 'Full time',
+      pay: payText(job.pay),
+      seniority: job.seniority || undefined,
+      experience: job.experience || undefined,
+      skills: job.skills && job.skills.length > 0 ? job.skills : undefined,
       descriptionHtml: descriptionHtml(job),
       questions: formFromApi({ questions: job.questions }).questions,
       placeholders: {},
@@ -133,5 +173,5 @@ function toUploadBody(question: FormQuestion, file: File): ApiUploadBody {
   }
 }
 
-export { descriptionHtml, toApplicationBody, toCareersJobPage, toUploadBody }
+export { descriptionHtml, payText, toApplicationBody, toCareersJobPage, toUploadBody }
 export type { ApplicationBodyInput, PublicJobState }

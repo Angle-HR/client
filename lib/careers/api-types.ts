@@ -42,6 +42,8 @@ interface ApiPublicJob {
   description_text?: string
   questions?: ApiPublicQuestion[]
   skills?: string[]
+  seniority?: string
+  experience?: string
   closing_date?: string
   job_code?: string
 }

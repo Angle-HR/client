@@ -8,7 +8,7 @@ import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar'
 import { DashboardSettingUpState } from '@/components/dashboard/dashboard-states'
 import { isUnauthorized } from '@/lib/api-error'
 import { clearSession } from '@/lib/auth-session'
-import { useKyb, useMe } from '@/lib/queries'
+import { useHiringMe, useKyb, useMe } from '@/lib/queries'
 import { requests } from '@/lib/requests'
 
 import type { ReactNode } from 'react'
@@ -17,6 +17,7 @@ function DashboardLayout({ children }: { children: ReactNode }) {
   const router = useRouter()
   const queryClient = useQueryClient()
   const me = useMe()
+  const hiringMe = useHiringMe()
   const [collapsed, setCollapsed] = useState(false)
 
   // Nothing signed in: the API answers the account request with a 401 when the
@@ -40,7 +41,11 @@ function DashboardLayout({ children }: { children: ReactNode }) {
   }
 
   const workspaceName =
-    me.data?.legal_full_name || me.data?.first_name || me.data?.email || 'Your workspace'
+    hiringMe.data?.company_name ||
+    me.data?.legal_full_name ||
+    me.data?.first_name ||
+    me.data?.email ||
+    'Your workspace'
 
   // The company's KYB state decides it; until that has loaded, or where none can
   // be read, a workspace counts as still under review until onboarding completes.

@@ -78,7 +78,7 @@ function LoginPasswordPage() {
           }
           setVerificationSession(session)
           setSignupEmail(values.email)
-          router.push(`/verify?email=${encodeURIComponent(values.email)}`)
+          router.push('/verify')
           return
         }
       }
@@ -94,7 +94,7 @@ function LoginPasswordPage() {
           resend_available_in_seconds: retryAfter,
         })
         setSignupEmail(values.email)
-        router.push(`/verify?email=${encodeURIComponent(values.email)}`)
+        router.push('/verify')
         return
       }
       if (retryAfter) {

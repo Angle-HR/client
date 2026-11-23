@@ -26,6 +26,12 @@ const nextConfig: NextConfig = {
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
         ],
       },
+      // Pages that carry or follow a secret (reset token, email being verified, invite token):
+      // never send a Referer. Listed after the catch-all so this value wins.
+      ...['/reset-password', '/verify', '/invite', '/invite/join'].map((source) => ({
+        source,
+        headers: [{ key: 'Referrer-Policy', value: 'no-referrer' }],
+      })),
     ]
   },
 }

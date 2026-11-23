@@ -40,6 +40,11 @@ function PublicJobPage({ slug, jobId }: PublicJobPageProps): ReactElement | null
     { label: 'Workplace type', value: job.workplace },
     { label: 'Employment type', value: job.employmentType },
     { label: 'Team', value: job.team },
+    // Not in the design's meta column; the API returns them, so they follow in the same style.
+    { label: 'Pay', value: job.pay },
+    { label: 'Seniority', value: job.seniority },
+    { label: 'Experience', value: job.experience },
+    { label: 'Skills', value: job.skills?.join(', ') },
   ].filter((row): row is { label: string; value: string } => Boolean(row.value))
 
   return (

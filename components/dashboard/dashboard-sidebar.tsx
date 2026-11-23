@@ -1,8 +1,14 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 
-import { DashboardIcon, NAV_GROUPS, NavIcon, TOP_LINKS } from '@/components/dashboard/nav-config'
+import {
+  DashboardIcon,
+  NAV_GROUPS,
+  NavIcon,
+  SHOW_UNBUILT_NAV,
+  TOP_LINKS,
+} from '@/components/dashboard/nav-config'
 import { Button, CompanySelector, Sidebar, SidebarGroupItem, SidebarItem } from '@/components/ui'
 import { MaskIcon } from '@/components/ui/icons/mask-icon'
 import { buildFeedbackMailto } from '@/lib/feedback'
@@ -44,6 +50,7 @@ function DashboardSidebar({
   onSignOut,
 }: DashboardSidebarProps) {
   const pathname = usePathname()
+  const router = useRouter()
   const { theme, setTheme } = useTheme()
 
   return (
@@ -57,7 +64,12 @@ function DashboardSidebar({
           onIconButtonIcon={<MenuIcon name="sidebar-toggle" />}
           onIconButtonClick={onToggleCollapsed}
           menuItems={[
-            { key: 'account', label: 'Account settings', icon: <MenuIcon name="menu-user" /> },
+            {
+              key: 'account',
+              label: 'Account settings',
+              icon: <MenuIcon name="menu-user" />,
+              onClick: () => router.push('/dashboard/settings/account'),
+            },
             {
               key: 'members',
               label: 'Invite and manage members',
@@ -127,12 +139,14 @@ function DashboardSidebar({
         )
       }
       footer={
-        <SidebarItem
-          label="Help"
-          href="/dashboard/help"
-          icon={<NavIcon name="question-mark" />}
-          collapsed={collapsed}
-        />
+        SHOW_UNBUILT_NAV ? (
+          <SidebarItem
+            label="Help"
+            href="/dashboard/help"
+            icon={<NavIcon name="question-mark" />}
+            collapsed={collapsed}
+          />
+        ) : undefined
       }
     >
       <div className="flex flex-col gap-[2px]">

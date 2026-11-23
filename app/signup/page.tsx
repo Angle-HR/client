@@ -20,7 +20,7 @@ function SignupPage() {
 
   function handleContinue(result: AuthSignupData, values: SignupFormValues) {
     setSignupEmail(values.email)
-    router.push(`/verify?email=${encodeURIComponent(result.email)}`)
+    router.push('/verify')
   }
 
   return (

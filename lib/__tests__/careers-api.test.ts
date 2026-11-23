@@ -127,3 +127,30 @@ describe('toUploadBody', () => {
     })
   })
 })
+
+describe('public job extras', () => {
+  it('shows pay, seniority, experience and skills', () => {
+    const page = toCareersJobPage(
+      {
+        job: {
+          title: 'T',
+          pay: { currency: 'GBP', min: 5000000, max: 7000000, period: 'year' },
+          seniority: 'Senior',
+          experience: '3-5 years',
+          skills: ['Go', 'SQL'],
+        },
+      },
+      'x',
+    )
+    expect(page?.job.pay).toBe('GBP 50,000 - 70,000 per year')
+    expect(page?.job.seniority).toBe('Senior')
+    expect(page?.job.experience).toBe('3-5 years')
+    expect(page?.job.skills).toEqual(['Go', 'SQL'])
+  })
+
+  it('leaves them out when absent', () => {
+    const job = toCareersJobPage({ job: { title: 'T' } }, 'x')?.job
+    expect(job?.pay).toBeUndefined()
+    expect(job?.skills).toBeUndefined()
+  })
+})
