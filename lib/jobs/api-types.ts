@@ -216,6 +216,7 @@ interface ApiJobBody {
   pay?: ApiJobPay
   skills?: ApiJobSkill[]
   markets?: ApiJobMarket[]
+  lawful_basis?: string
   /** `POST /jobs` only: the template the job starts from. */
   template_id?: string
 }

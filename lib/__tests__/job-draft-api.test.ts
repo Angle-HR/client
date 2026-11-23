@@ -40,6 +40,10 @@ describe('marketFor', () => {
 })
 
 describe('draftToBody', () => {
+  it('always names a lawful basis, which publishing requires', () => {
+    expect(draftToBody(EMPTY_DRAFT, lookups, today).lawful_basis).toBe('contract')
+  })
+
   it('sends names as the ids the API holds', () => {
     const body = draftToBody(
       {

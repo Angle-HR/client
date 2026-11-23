@@ -96,6 +96,9 @@ function marketsOf(draft: JobDraft, companyAddress: string | undefined): ApiJobM
   return []
 }
 
+/** Processing job applications to take steps toward a contract is the usual basis for recruiting. */
+const DEFAULT_LAWFUL_BASIS = 'contract'
+
 const amount = (text: string): number | null => {
   const digits = text.replaceAll(',', '')
   return digits ? Number(digits) : null
@@ -138,6 +141,9 @@ function draftToBody(draft: JobDraft, lookups: DraftLookups, today: Date): ApiJo
       return id ? { skill_id: id } : { custom_label: skill }
     }),
     markets: marketsOf(draft, lookups.companyAddress),
+    // The form has no control for it yet, and the API refuses to publish a job without one
+    // (`lawful_basis_missing`); a full `PUT /details` would otherwise clear it every save.
+    lawful_basis: DEFAULT_LAWFUL_BASIS,
   }
 }
 
