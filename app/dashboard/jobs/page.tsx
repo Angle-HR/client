@@ -475,6 +475,7 @@ function JobsPage() {
             menuJobId={rowMenu?.jobId ?? null}
             onSelect={selectJob}
             onOpenMenu={(jobId, rect) => setRowMenu({ jobId, anchor: toAnchor(rect) })}
+            onOpenJob={(jobId) => router.push(`/dashboard/jobs/${jobId}/applications`)}
           />
         </div>
       ) : (
