@@ -174,6 +174,8 @@ function reasonNeedsNote(reason: string): boolean {
  */
 function disqualifyNote(reason: string, note: string): string {
   const text = note.trim()
+  // "Other" says nothing on its own: its required note is the reason.
+  if (reasonNeedsNote(reason)) return text
   return text ? `${reason} — ${text}` : reason
 }
 

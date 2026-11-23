@@ -121,6 +121,10 @@ describe('DISQUALIFY_REASONS', () => {
 })
 
 describe('disqualifyNote', () => {
+  it('sends only the note for Other, which requires one', () => {
+    expect(disqualifyNote('Other (requires a note)', ' Moved abroad ')).toBe('Moved abroad')
+  })
+
   it('sends the reason alone when there is no note', () => {
     expect(disqualifyNote("Didn't pass assessment", '  ')).toBe("Didn't pass assessment")
   })
