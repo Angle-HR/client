@@ -1,11 +1,12 @@
 'use client'
 
+import axios from 'axios'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar'
 import { DashboardSettingUpState } from '@/components/dashboard/dashboard-states'
-import { clearSession, getAccessToken, getRefreshToken } from '@/lib/auth-session'
+import { clearSession } from '@/lib/auth-session'
 import { useKyb, useMe } from '@/lib/queries'
 import { requests } from '@/lib/requests'
 
@@ -16,19 +17,18 @@ function DashboardLayout({ children }: { children: ReactNode }) {
   const me = useMe()
   const [collapsed, setCollapsed] = useState(false)
 
-  // Nothing signed in. Checked on arrival, and again whenever the account
-  // request fails: by then the 401 interceptor has given the refresh token its
-  // one chance and, if that failed too, cleared the session.
+  // Nothing signed in: the session cookie is missing, expired or revoked, so
+  // the account request answers 401.
+  const signedOut = axios.isAxiosError(me.error) && me.error.response?.status === 401
   useEffect(() => {
-    if (!getAccessToken()) router.replace('/login')
-  }, [router, me.isError])
+    if (signedOut) router.replace('/login')
+  }, [router, signedOut])
 
   async function handleSignOut() {
-    const refreshToken = getRefreshToken()
     try {
       // Revoking is best-effort: the API treats logout as idempotent, and the
       // local session has to end either way.
-      if (refreshToken) await requests.logout({ refresh_token: refreshToken })
+      await requests.logout()
     } finally {
       clearSession()
       router.replace('/login')

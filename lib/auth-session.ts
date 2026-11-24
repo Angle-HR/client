@@ -1,15 +1,12 @@
 import type {
   AuthLoginResult,
   AuthMfaRequiredData,
+  AuthSessionData,
   AuthSignupData,
-  AuthTokenData,
   OnboardingProgressSummary,
 } from './types'
 
 const KEYS = {
-  accessToken: 'openhr.auth.access_token',
-  refreshToken: 'openhr.auth.refresh_token',
-  expiresAt: 'openhr.auth.expires_at',
   onboarding: 'openhr.auth.onboarding',
   verificationSessionId: 'openhr.signup.verification_session_id',
   verificationEmail: 'openhr.signup.verification_email',
@@ -21,7 +18,6 @@ const KEYS = {
   loginOtpEmail: 'openhr.login.otp_email',
   loginOtpCodeExpiresAt: 'openhr.login.otp_code_expires_at',
   loginOtpResendAvailableAt: 'openhr.login.otp_resend_available_at',
-  mfaToken: 'openhr.login.mfa_token',
   mfaExpiresAt: 'openhr.login.mfa_expires_at',
 } as const
 
@@ -44,19 +40,27 @@ function removeItem(key: string) {
   window.sessionStorage.removeItem(key)
 }
 
-function setAuthTokens(data: AuthTokenData) {
-  setItem(KEYS.accessToken, data.access_token)
-  setItem(KEYS.refreshToken, data.refresh_token)
-  setItem(KEYS.expiresAt, String(Date.now() + data.expires_in * 1000))
+/**
+ * The session's CSRF token. The session itself is an HttpOnly cookie the page
+ * never sees; this token goes with every write as `X-CSRF-Token`. It lives in
+ * memory only: after a reload the API client asks `/auth/me` for it again.
+ */
+let csrfToken: string | null = null
+
+function setCsrfToken(token: string | null | undefined): void {
+  csrfToken = token || null
+}
+
+function getCsrfToken(): string | null {
+  return csrfToken
+}
+
+/** Adopt what a login-family response returned: its CSRF token and onboarding progress. */
+function setSession(data: AuthSessionData): void {
+  setCsrfToken(data.csrf_token)
   if (data.onboarding) {
     setItem(KEYS.onboarding, JSON.stringify(data.onboarding))
   }
-}
-
-/** Replace just the access token after a refresh; the refresh token is unchanged. */
-function setAccessToken(token: string, expiresInSeconds: number) {
-  setItem(KEYS.accessToken, token)
-  setItem(KEYS.expiresAt, String(Date.now() + expiresInSeconds * 1000))
 }
 
 /** Keep the stored onboarding summary in step with what the API last reported. */
@@ -65,31 +69,22 @@ function setStoredOnboarding(onboarding?: OnboardingProgressSummary | null) {
   setItem(KEYS.onboarding, JSON.stringify(onboarding))
 }
 
-/** Persist progress and atomically adopt the regional token pair returned by a migrating step. */
+/**
+ * Persist progress, and adopt the new CSRF token when the step moved the account
+ * out of the global holding region: the server rotated the session, so the old
+ * token is dead.
+ */
 function reconcileOnboardingStep(result: {
   onboarding: OnboardingProgressSummary
-  tokens?: AuthTokenData
+  session?: { csrf_token: string }
 }): void {
-  if (result.tokens) {
-    setAuthTokens({ ...result.tokens, onboarding: result.onboarding })
-    return
-  }
+  if (result.session) setCsrfToken(result.session.csrf_token)
   setStoredOnboarding(result.onboarding)
 }
 
-function clearAuthTokens() {
-  removeItem(KEYS.accessToken)
-  removeItem(KEYS.refreshToken)
-  removeItem(KEYS.expiresAt)
+function clearAuthState(): void {
+  setCsrfToken(null)
   removeItem(KEYS.onboarding)
-}
-
-function getAccessToken(): string | null {
-  return getItem(KEYS.accessToken)
-}
-
-function getRefreshToken(): string | null {
-  return getItem(KEYS.refreshToken)
 }
 
 function getStoredOnboarding(): OnboardingProgressSummary | undefined {
@@ -173,37 +168,37 @@ function getLoginOtpResendAvailableAt(): number | null {
 }
 
 /**
- * Held between a login that answered `totp_required` and the authenticator
- * screen that redeems it. Short-lived by design — the API expires it too.
+ * Marks a login that answered `totp_required`. The challenge itself is a
+ * short-lived HttpOnly cookie; this only remembers when it runs out, so the
+ * authenticator screen can send the visitor back once it has.
  */
 function setMfaChallenge(data: AuthMfaRequiredData) {
-  setItem(KEYS.mfaToken, data.mfa_token)
   setItem(KEYS.mfaExpiresAt, String(Date.now() + data.expires_in * 1000))
 }
 
 function clearMfaChallenge() {
-  removeItem(KEYS.mfaToken)
   removeItem(KEYS.mfaExpiresAt)
 }
 
-function getMfaToken(): string | null {
+function hasMfaChallenge(): boolean {
   const expiresAt = readTimestamp(KEYS.mfaExpiresAt)
-  if (expiresAt !== null && Date.now() > expiresAt) {
+  if (expiresAt === null) return false
+  if (Date.now() > expiresAt) {
     clearMfaChallenge()
-    return null
+    return false
   }
-  return getItem(KEYS.mfaToken)
+  return true
 }
 
 /** Everything a signed-out user should not be carrying around. */
 function clearSession() {
-  clearAuthTokens()
+  clearAuthState()
   clearVerificationSession()
   clearLoginOtpSession()
   clearMfaChallenge()
 }
 
-/** A login answered with an MFA challenge rather than tokens. */
+/** A login answered with an MFA challenge rather than a session. */
 function isMfaRequired(result: AuthLoginResult): result is AuthMfaRequiredData {
   return 'totp_required' in result && result.totp_required
 }
@@ -219,7 +214,7 @@ function landAfterLogin(result: AuthLoginResult): string {
     return '/login/2fa'
   }
 
-  setAuthTokens(result)
+  setSession(result)
   clearMfaChallenge()
   clearLoginOtpSession()
   clearVerificationSession()
@@ -253,19 +248,18 @@ function routeForOnboarding(onboarding?: OnboardingProgressSummary | null): stri
 }
 
 export {
-  clearAuthTokens,
+  clearAuthState,
   clearLoginOtpSession,
   clearMfaChallenge,
   clearSession,
   clearVerificationSession,
-  getAccessToken,
   getCodeExpiresAt,
+  getCsrfToken,
   getLoginOtpCodeExpiresAt,
   getLoginOtpEmail,
   getLoginOtpResendAvailableAt,
   getLoginOtpSessionId,
-  getMfaToken,
-  getRefreshToken,
+  hasMfaChallenge,
   isMfaRequired,
   landAfterLogin,
   getResendAvailableAt,
@@ -274,9 +268,9 @@ export {
   getVerificationSessionId,
   reconcileOnboardingStep,
   routeForOnboarding,
-  setAccessToken,
-  setAuthTokens,
+  setCsrfToken,
   setLoginOtpSession,
   setMfaChallenge,
+  setSession,
   setVerificationSession,
 }

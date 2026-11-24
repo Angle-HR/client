@@ -1,11 +1,13 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
 import {
-  getAccessToken,
-  getRefreshToken,
+  clearSession,
+  getCsrfToken,
   getStoredOnboarding,
+  hasMfaChallenge,
+  landAfterLogin,
   reconcileOnboardingStep,
-  setAuthTokens,
+  setSession,
 } from '@/lib/auth-session'
 
 import type { OnboardingProgressSummary } from '@/lib/types'
@@ -19,35 +21,45 @@ const onboarding: OnboardingProgressSummary = {
 
 beforeEach(() => {
   sessionStorage.clear()
+  clearSession()
 })
 
 describe('reconcileOnboardingStep', () => {
-  it('stores replacement tokens returned after a region migration', () => {
-    reconcileOnboardingStep({
-      onboarding,
-      tokens: {
-        access_token: 'regional-access',
-        refresh_token: 'regional-refresh',
-        expires_in: 3600,
-      },
-    })
+  it('adopts the new CSRF token after a region migration rotated the session', () => {
+    setSession({ csrf_token: 'global' })
 
-    expect(getAccessToken()).toBe('regional-access')
-    expect(getRefreshToken()).toBe('regional-refresh')
+    reconcileOnboardingStep({ onboarding, session: { csrf_token: 'regional' } })
+
+    expect(getCsrfToken()).toBe('regional')
     expect(getStoredOnboarding()).toEqual(onboarding)
   })
 
-  it('preserves the current tokens when the step did not migrate regions', () => {
-    setAuthTokens({
-      access_token: 'existing-access',
-      refresh_token: 'existing-refresh',
-      expires_in: 3600,
-    })
+  it('keeps the current token when the step did not migrate regions', () => {
+    setSession({ csrf_token: 'existing' })
 
     reconcileOnboardingStep({ onboarding })
 
-    expect(getAccessToken()).toBe('existing-access')
-    expect(getRefreshToken()).toBe('existing-refresh')
+    expect(getCsrfToken()).toBe('existing')
     expect(getStoredOnboarding()).toEqual(onboarding)
+  })
+})
+
+describe('landAfterLogin', () => {
+  it('keeps the CSRF token and routes by onboarding', () => {
+    expect(landAfterLogin({ csrf_token: 'abc', onboarding })).toBe('/onboarding/compliance')
+    expect(getCsrfToken()).toBe('abc')
+  })
+
+  it('sends a TOTP challenge to the authenticator screen, with no session', () => {
+    expect(landAfterLogin({ totp_required: true, expires_in: 300 })).toBe('/login/2fa')
+    expect(hasMfaChallenge()).toBe(true)
+    expect(getCsrfToken()).toBeNull()
+  })
+
+  it('forgets the CSRF token on sign out', () => {
+    setSession({ csrf_token: 'abc', onboarding })
+    clearSession()
+    expect(getCsrfToken()).toBeNull()
+    expect(getStoredOnboarding()).toBeUndefined()
   })
 })

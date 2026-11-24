@@ -13,7 +13,7 @@ import {
   routeForOnboarding,
 } from '@/lib/auth-session'
 
-import type { AuthTokenData } from '@/lib/types'
+import type { AuthSessionData } from '@/lib/types'
 
 function VerifyPageContent() {
   const router = useRouter()
@@ -39,8 +39,8 @@ function VerifyPageContent() {
     return null
   }
 
-  function handleVerified(tokens: AuthTokenData) {
-    router.push(routeForOnboarding(tokens.onboarding))
+  function handleVerified(session: AuthSessionData) {
+    router.push(routeForOnboarding(session.onboarding))
   }
 
   return (
