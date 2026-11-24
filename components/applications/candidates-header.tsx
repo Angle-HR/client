@@ -124,7 +124,7 @@ function JobHeader({
  */
 function WorkflowBanner(): ReactElement {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-[12px] rounded-lg-10 bg-blue-alpha-5 px-[12px] py-[10px]">
+    <div className="flex w-fit max-w-full flex-wrap items-center justify-between gap-[24px] rounded-lg-10 bg-blue-alpha-5 px-[12px] py-[10px]">
       <div className="flex min-w-0 flex-col gap-[2px]">
         <p className="text-body-m leading-21 font-medium text-text-primary">
           Automate Applicant review with Workflow

@@ -64,7 +64,10 @@ function CandidatesTable({
           role="columnheader"
           className={`${COLUMNS[0].className} flex shrink-0 items-center gap-[8px] pl-[2px] ${cellText}`}
         >
-          <DashboardIcon name="chev-down-solid" size={10} />
+          {/* The chevron is not drawn at rest (10670:729402); it only holds the column's indent. */}
+          <span className="invisible inline-flex" aria-hidden="true">
+            <DashboardIcon name="chev-down-solid" size={10} />
+          </span>
           {COLUMNS[0].label}
         </span>
         {COLUMNS.slice(1).map((column) => (
@@ -97,8 +100,11 @@ function CandidatesTable({
             className={`group flex h-[40px] shrink-0 cursor-pointer items-center gap-[2px] px-[12px] transition-colors ${selected ? 'bg-bg-transparent-light' : 'hover:bg-bg-transparent-light'}`}
           >
             <div role="cell" className="flex min-w-[261px] flex-1 items-center gap-[4px]">
-              <span className="flex shrink-0 items-center px-[3px]">
-                {/* Multi-select is drawn in the design; no bulk action exists yet, so it only ticks. */}
+              {/* The checkbox shows on the hovered or open row only, as drawn. No bulk action
+                  exists yet, so it does nothing. */}
+              <span
+                className={`flex shrink-0 items-center px-[3px] ${selected ? 'visible' : 'invisible group-hover:visible'}`}
+              >
                 <Checkbox
                   size="sm"
                   aria-label={`Select ${name}`}
