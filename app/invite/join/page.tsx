@@ -33,7 +33,7 @@ function InviteJoinPage() {
 
     setFormError(undefined)
     try {
-      const tokens = await acceptInvite.mutateAsync({
+      const session = await acceptInvite.mutateAsync({
         token,
         password: values.password,
         first_name: values.firstName,
@@ -42,7 +42,7 @@ function InviteJoinPage() {
       // An invitee joins an existing workspace, so the API marks onboarding
       // complete and landAfterLogin sends them past the owner wizard.
       clearInviteContext()
-      router.push(landAfterLogin(tokens))
+      router.push(landAfterLogin(session))
     } catch (err) {
       setFormError(
         applyApiError(err, undefined, {}, 'We could not complete your invite. Please try again.'),

@@ -217,6 +217,9 @@ interface ApiJobBody {
   pay?: ApiJobPay
   skills?: ApiJobSkill[]
   markets?: ApiJobMarket[]
+  lawful_basis?: string
+  /** Needed to publish on legitimate interests. */
+  lia_reference?: string
   /** `POST /jobs` only: the template the job starts from. */
   template_id?: string
 }

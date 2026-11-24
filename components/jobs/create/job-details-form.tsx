@@ -27,6 +27,7 @@ import { flagCodeFor } from '@/lib/jobs/areas'
 import {
   AREA_OPTIONS,
   CURRENCY_OPTIONS,
+  LAWFUL_BASIS_OPTIONS,
   TIMEZONE_OFFSET_OPTIONS,
   formatAmount,
 } from '@/lib/jobs/draft'
@@ -47,6 +48,7 @@ import type {
   DraftErrors,
   HiringArea,
   JobDraft,
+  LawfulBasis,
   PayPeriod,
   TravelFrequency,
 } from '@/lib/jobs/draft'
@@ -604,6 +606,35 @@ function JobDetailsForm({ draft, errors, onChange, ai, onToast }: JobDetailsForm
           body='Directive 2023/970 requires a salary range to be disclosed in job postings. Publishing the range is mandatory - you cannot hide it or show "competitive salary".'
           className="w-[384px]"
         />
+      </section>
+
+      <Rule />
+
+      <section className="relative flex flex-col gap-[24px]">
+        <SectionTitle>Data protection</SectionTitle>
+        <div className="flex w-[384px] max-w-full flex-col gap-[16px]">
+          <InputSelection
+            label="Lawful basis for processing applications"
+            placeholder="Select a basis"
+            options={LAWFUL_BASIS_OPTIONS.map(({ value, label }) => ({ value, label }))}
+            value={draft.lawfulBasis}
+            onChange={(value) => onChange({ lawfulBasis: single(value) as LawfulBasis })}
+            errorText={errors.lawfulBasis}
+            helperText={
+              LAWFUL_BASIS_OPTIONS.find((option) => option.value === draft.lawfulBasis)?.hint ??
+              'Required before the job can be published.'
+            }
+          />
+          {draft.lawfulBasis === 'legitimate_interests' ? (
+            <TextInput
+              label="Legitimate interests assessment reference"
+              placeholder="Link or document reference"
+              value={draft.liaReference}
+              onChange={(event) => onChange({ liaReference: event.target.value })}
+              errorText={errors.liaReference}
+            />
+          ) : null}
+        </div>
       </section>
     </>
   )

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 
 import { ArrowRightIcon } from '@/components/auth/icons'
 import { BannerSmall, FlowButton, OTPInput, TextButton, type OTPInputState } from '@/components/ui'
+import { formatWait } from '@/lib/api-error'
 
 const OTP_LENGTH = 6
 
@@ -72,7 +73,7 @@ function StepLoginVerify({
         setSecondsLeft(result.expiresIn)
         setResendBanner(true)
       } else {
-        setErrorText(`Please wait ${result.resendIn}s before requesting another code.`)
+        setErrorText(`Please wait ${formatWait(result.resendIn)} before requesting another code.`)
         setOtpState('error')
       }
     } catch {

@@ -1,21 +1,11 @@
 const ENDPOINTS = {
-  waitlist: {
-    join: () => '/waitlist',
-    onboarding: () => '/waitlist/onboarding',
-  },
   countries: () => '/countries',
-  industries: () => '/industries',
-  hiringTools: () => '/hiring-tools',
-  hiringFrustrations: () => '/hiring-frustrations',
-  roles: () => '/roles',
-  teamSizes: () => '/team-sizes',
   auth: {
     signup: () => '/auth/signup',
     login: () => '/auth/login',
     loginOtpRequest: () => '/auth/login/otp/request',
     loginOtpVerify: () => '/auth/login/otp/verify',
     loginTotp: () => '/auth/login/totp',
-    refresh: () => '/auth/refresh',
     logout: () => '/auth/logout',
     verifyEmail: () => '/auth/verify-email',
     resendVerification: () => '/auth/resend-verification',

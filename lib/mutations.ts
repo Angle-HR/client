@@ -14,19 +14,18 @@ import type { ApiRulesBody } from './compliance/api-types'
 import type { ApiCompanySetup, ApiKybState } from './organization/api-types'
 import type { OnboardingProgressSummary, ProductOnboardingStatusData } from './types'
 
-function useJoinWaitlist() {
-  return useMutation({ mutationFn: requests.joinWaitlist })
-}
-
-function useSubmitOnboarding() {
-  return useMutation({ mutationFn: requests.submitOnboarding })
-}
-
 /** Sends a candidate's application for one job. `source` is the `src` of the link they came from. */
 function useSubmitApplication(job: CareersJob, source?: string) {
   return useMutation({
-    mutationFn: ({ answers, market }: { answers: ApplicationAnswers; market?: string }) =>
-      requests.submitApplication(job, answers, source, market),
+    mutationFn: ({
+      answers,
+      market,
+      declaration,
+    }: {
+      answers: ApplicationAnswers
+      market?: string
+      declaration?: { country?: string; privacyAcknowledged?: boolean; consent?: boolean }
+    }) => requests.submitApplication(job, answers, source, market, declaration),
   })
 }
 
@@ -171,6 +170,10 @@ function useKybWrite<Input>(write: (input: Input) => Promise<ApiKybState>) {
 
 function useSubmitKyb() {
   return useKybWrite(requests.submitKyb)
+}
+
+function useRequestKybReview() {
+  return useKybWrite<void>(() => requests.requestKybReview())
 }
 
 function useRetryKyb() {
@@ -335,6 +338,7 @@ export {
   useRecordDpia,
   useRetryKyb,
   useSetPrivacyContact,
+  useRequestKybReview,
   useSubmitKyb,
   useConfirmGate,
   useSetScreeningRules,
@@ -352,12 +356,10 @@ export {
   useVerifyLoginOtp,
   useVerifyLoginTotp,
   useCompleteOnboarding,
-  useJoinWaitlist,
   useLogin,
   useResendVerification,
   useSignup,
   useSubmitApplication,
-  useSubmitOnboarding,
   useUpdateSignupEmail,
   useUpsertAddress,
   useUpsertBusiness,

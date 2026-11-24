@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { DashboardIcon } from '@/components/dashboard/nav-config'
 import { Button, Modal, ModalActions, TextInput } from '@/components/ui'
 import { validateTeamName } from '@/lib/jobs/draft'
-import { useMe } from '@/lib/queries'
+import { useHiringMe, useMe } from '@/lib/queries'
 
 interface CreateTeamModalProps {
   /** Names already taken, so a duplicate can be refused. */
@@ -20,9 +20,10 @@ interface CreateTeamModalProps {
  */
 function CreateTeamModal({ existing, onCreate, onClose }: CreateTeamModalProps) {
   const me = useMe()
+  const hiringMe = useHiringMe()
   const [name, setName] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const organization = me.data?.legal_full_name || me.data?.first_name || 'Your workspace'
+  const organization = hiringMe.data?.company_name || me.data?.first_name || 'Your workspace'
 
   function submit() {
     const problem = validateTeamName(name, existing)

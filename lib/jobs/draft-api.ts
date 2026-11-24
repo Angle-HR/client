@@ -1,7 +1,7 @@
 import { parseFutureDate } from './actions'
 import { EMPLOYMENT_FROM_API, EMPLOYMENT_TO_API, WORKPLACE_FROM_API, WORKPLACE_TO_API } from './api'
 import { flagCodeFor } from './areas'
-import { EMPTY_DRAFT } from './draft'
+import { EMPTY_DRAFT, isLawfulBasis } from './draft'
 
 import type {
   ApiCatalog,
@@ -98,7 +98,8 @@ function marketsOf(draft: JobDraft, companyAddress: string | undefined): ApiJobM
 
 const amount = (text: string): number | null => {
   const digits = text.replaceAll(',', '')
-  return digits ? Number(digits) : null
+  // The API holds minor units (pence, cents): 39,000 on the form is 3900000.
+  return digits ? Math.round(Number(digits) * 100) : null
 }
 
 /** The body that saves a draft: every field the form holds, empty ones cleared. */
@@ -138,6 +139,9 @@ function draftToBody(draft: JobDraft, lookups: DraftLookups, today: Date): ApiJo
       return id ? { skill_id: id } : { custom_label: skill }
     }),
     markets: marketsOf(draft, lookups.companyAddress),
+    // Publishing needs one (`lawful_basis_missing`); a full `PUT /details` clears it when omitted.
+    lawful_basis: draft.lawfulBasis,
+    lia_reference: draft.lawfulBasis === 'legitimate_interests' ? draft.liaReference.trim() : '',
   }
 }
 
@@ -145,7 +149,7 @@ const sectionHtml = (section: string | { html?: string } | undefined): string =>
   typeof section === 'string' ? section : (section?.html ?? '')
 
 const money = (value: number | null | undefined): string =>
-  typeof value === 'number' ? value.toLocaleString('en-GB') : ''
+  typeof value === 'number' ? (value / 100).toLocaleString('en-GB') : ''
 
 /** The form state for a job (or a template's payload) as the API holds it. */
 function draftFromView(view: ApiJobView, lookups: DraftLookups): JobDraft {
@@ -197,6 +201,13 @@ function draftFromView(view: ApiJobView, lookups: DraftLookups): JobDraft {
     payMax: payType === 'range' ? money(view.pay?.max) : '',
     payPeriod: keyOf(PAY_PERIOD_TO_API, view.pay?.period) ?? EMPTY_DRAFT.payPeriod,
     showPayOnCareerPage: view.pay?.visible ?? EMPTY_DRAFT.showPayOnCareerPage,
+    // One the API does not know shows as empty, so the form asks for it; none at all means the default.
+    lawfulBasis: view.lawful_basis
+      ? isLawfulBasis(view.lawful_basis)
+        ? view.lawful_basis
+        : ''
+      : EMPTY_DRAFT.lawfulBasis,
+    liaReference: view.lia_reference ?? '',
   }
 }
 

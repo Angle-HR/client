@@ -13,6 +13,7 @@ import {
 import { useLoginEmail } from '@/components/auth/use-flow-storage'
 import {
   applyApiError,
+  formatWait,
   getApiError,
   getApiErrorDetails,
   getRetryAfterSeconds,
@@ -42,7 +43,7 @@ function LoginPasswordPage() {
     setFormError(undefined)
 
     try {
-      // Either tokens or a TOTP challenge; landAfterLogin persists whichever
+      // Either a session or a TOTP challenge; landAfterLogin notes whichever
       // came back and answers with the next route.
       const result = await login.mutateAsync({
         email: values.email,
@@ -77,7 +78,7 @@ function LoginPasswordPage() {
           }
           setVerificationSession(session)
           setSignupEmail(values.email)
-          router.push(`/verify?email=${encodeURIComponent(values.email)}`)
+          router.push('/verify')
           return
         }
       }
@@ -93,11 +94,11 @@ function LoginPasswordPage() {
           resend_available_in_seconds: retryAfter,
         })
         setSignupEmail(values.email)
-        router.push(`/verify?email=${encodeURIComponent(values.email)}`)
+        router.push('/verify')
         return
       }
       if (retryAfter) {
-        setFormError(`Please wait ${retryAfter}s before trying again.`)
+        setFormError(`Please wait ${formatWait(retryAfter)} before trying again.`)
         return
       }
 
@@ -117,7 +118,7 @@ function LoginPasswordPage() {
       const retryAfter = getRetryAfterSeconds(err)
       setFormError(
         retryAfter
-          ? `Please wait ${retryAfter}s before requesting another code.`
+          ? `Please wait ${formatWait(retryAfter)} before requesting another code.`
           : applyApiError(err),
       )
     }

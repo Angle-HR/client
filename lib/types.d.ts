@@ -1,19 +1,3 @@
-export type WaitlistStep = 'intro' | 'success' | 'survey' | 'early-access' | 'thanks'
-
-export interface WaitlistPayload {
-  email: string
-  // LEGACY: `POST /waitlist` takes `email` alone. These stay optional only so
-  // the retired StepIntro form (no longer routed) still compiles — the API
-  // ignores them. Don't send them from new code.
-  full_name?: string
-  country_id?: string
-}
-
-export interface WaitlistResponse {
-  message: string
-  region: string
-}
-
 export interface Country {
   id: string
   name: string
@@ -22,57 +6,11 @@ export interface Country {
   icon_key: string
 }
 
-export interface Industry {
-  id: string
-  name: string
-  slug: string
-  emoji?: string
-}
-
-export interface HiringFrustration {
-  id: string
-  description: string
-  slug: string
-  emoji?: string
-}
-
-export interface HiringTool {
-  id: string
-  name: string
-  slug: string
-  icon_url?: string
-}
-
 export interface Role {
   id: string
   name: string
   slug: string
   emoji?: string
-}
-
-export interface TeamSize {
-  id: string
-  label: string
-  min_size: number
-  max_size?: number
-}
-
-export interface OnboardingPayload {
-  token: string
-  industry_ids: string[]
-  tool_ids: string[]
-  frustration_ids: string[]
-  role_id: string
-  team_size_id: string
-  other_industry?: string
-  other_tool?: string
-  other_frustration?: string
-  wants_early_access: boolean
-  wants_user_testing: boolean
-}
-
-export interface OnboardingResponse {
-  message: string
 }
 
 // Envelope `meta`. `request_id` is always present; the cursor fields only carry
@@ -129,19 +67,6 @@ export interface AuthLoginPayload {
   password: string
 }
 
-export interface AuthRefreshPayload {
-  refresh_token: string
-}
-
-export interface AuthRefreshData {
-  access_token: string
-  expires_in: number
-}
-
-export interface AuthLogoutPayload {
-  refresh_token: string
-}
-
 /** Passwordless login — POST /auth/login/otp/request, /auth/login/otp/verify. */
 export interface AuthLoginOtpRequestPayload {
   email: string
@@ -154,19 +79,17 @@ export interface AuthLoginOtpVerifyPayload {
 
 /**
  * Returned by password login and OTP verify when the account has TOTP enabled:
- * no tokens yet, just a short-lived token to exchange on /auth/login/totp.
+ * no session yet, just a short-lived pre-auth cookie that /auth/login/totp redeems.
  */
 export interface AuthMfaRequiredData {
   totp_required: true
-  mfa_token: string
   expires_in: number
 }
 
-/** Login can land on either full tokens or an MFA challenge — branch on `totp_required`. */
-export type AuthLoginResult = AuthTokenData | AuthMfaRequiredData
+/** Login can land on either a full session or an MFA challenge — branch on `totp_required`. */
+export type AuthLoginResult = AuthSessionData | AuthMfaRequiredData
 
 export interface AuthTotpLoginPayload {
-  mfa_token: string
   code: string
 }
 
@@ -200,6 +123,7 @@ export interface AuthMeData {
   region?: string
   totp_enabled: boolean
   onboarding?: OnboardingProgressSummary
+  csrf_token?: string
 }
 
 /** Product invite — GET /auth/invite/{token}, POST /auth/accept-invite. */
@@ -248,11 +172,14 @@ export interface OnboardingProgressSummary {
   completed_steps?: string[]
 }
 
-export interface AuthTokenData {
-  access_token: string
-  refresh_token: string
-  expires_in: number
+/**
+ * What every step that starts or advances a session answers. The session itself
+ * is an HttpOnly cookie; `csrf_token` is the only credential JS holds, in memory.
+ */
+export interface AuthSessionData {
   onboarding?: OnboardingProgressSummary
+  user?: AuthMeData
+  csrf_token: string
 }
 
 export type AccountTypeApi = 'individual' | 'business'
@@ -272,8 +199,6 @@ export interface ProductProfilePayload {
 export interface ProductProfileData extends ProductProfilePayload {
   region?: string
   onboarding: OnboardingProgressSummary
-  /** Returned when this step moves the account from the global holding region. */
-  tokens?: AuthTokenData
 }
 
 /** Identification keys vary by country, so this is a map, not fixed fields. */
@@ -296,8 +221,6 @@ export interface ProductAddressPayload {
 export interface ProductAddressData extends ProductAddressPayload {
   verification_status?: AddressVerificationStatus
   onboarding: OnboardingProgressSummary
-  /** Returned when this step moves the account from the global holding region. */
-  tokens?: AuthTokenData
 }
 
 /**
@@ -364,9 +287,11 @@ export interface IdentificationRequirementsData {
 }
 
 export interface ProductBusinessPayload {
-  business_type_id: string
+  /** Not asked of individuals (the server ignores it, and omits it from the echo). */
+  business_type_id?: string
   industry_id: string
-  employee_count: number
+  /** Not asked of individuals; 0 in the echo when not given. */
+  employee_count?: number
 }
 
 export interface ProductBusinessData extends ProductBusinessPayload {
@@ -422,4 +347,13 @@ export interface ProductOnboardingCompleteData {
   status: string
   redirect_url?: string
   workspace?: ProductWorkspaceStub
+  /** Individuals only: the personal organization created by this call. */
+  organization?: {
+    id: string
+    kind: OrganizationKind
+    verification_status: string
+  }
 }
+
+/** `individual` is the implicit personal organization of an individual account. */
+export type OrganizationKind = 'individual' | 'business'

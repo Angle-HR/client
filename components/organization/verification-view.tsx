@@ -4,9 +4,15 @@ import { useState, type FormEvent, type ReactElement } from 'react'
 
 import { Button, TextInput } from '@/components/ui'
 import { getApiError } from '@/lib/api-error'
-import { toCountryCode, toMarketCode } from '@/lib/markets'
-import { useConfirmKybAddress, useConfirmKybName, useRetryKyb, useSubmitKyb } from '@/lib/mutations'
-import { useHiringCatalog, useKyb } from '@/lib/queries'
+import { EMPLOYER_COUNTRIES } from '@/lib/employer-countries'
+import {
+  useConfirmKybAddress,
+  useConfirmKybName,
+  useRequestKybReview,
+  useRetryKyb,
+  useSubmitKyb,
+} from '@/lib/mutations'
+import { useKyb } from '@/lib/queries'
 
 import type { ApiKybDisplay } from '@/lib/organization/api-types'
 
@@ -16,6 +22,13 @@ const HEADLINE: Record<ApiKybDisplay, string> = {
   action_required: 'We need you to check something',
   failed: 'Verification did not pass',
   not_started: 'Verify your company',
+}
+
+/** What an individual sees: there is no registry to check, so a person reviews their identity. */
+const INDIVIDUAL_HEADLINE: Record<string, string> = {
+  verified: 'Your account is verified',
+  pending: 'Your identity is being reviewed',
+  failed: 'Your identity review did not pass',
 }
 
 const sectionText = 'text-body-xs leading-19_2 text-text-tertiary'
@@ -28,12 +41,11 @@ const sectionText = 'text-body-xs leading-19_2 text-text-tertiary'
  */
 function VerificationView(): ReactElement {
   const kyb = useKyb()
-  // The select lists the hiring catalog's markets, which spell the UK `UK`; the verification takes ISO codes.
-  const catalog = useHiringCatalog()
   const submit = useSubmitKyb()
   const retry = useRetryKyb()
   const confirmName = useConfirmKybName()
   const confirmAddress = useConfirmKybAddress()
+  const requestReview = useRequestKybReview()
 
   const state = kyb.data
   const [country, setCountry] = useState('')
@@ -52,10 +64,50 @@ function VerificationView(): ReactElement {
     )
   }
 
+  if (state.kind === 'individual') {
+    const status = state.status ?? 'pending'
+    return (
+      <div className="flex w-[640px] max-w-full flex-col gap-[24px] p-[24px]">
+        <h1 className="text-body-xl leading-24 font-semibold text-text-primary">
+          {INDIVIDUAL_HEADLINE[status] ?? INDIVIDUAL_HEADLINE.pending}
+        </h1>
+        {status === 'pending' ? (
+          <p className={sectionText}>
+            A member of our team reviews every personal account by hand. We&apos;ll email you when
+            it&apos;s done. You can keep drafting jobs in the meantime; publishing opens once
+            you&apos;re verified.
+          </p>
+        ) : null}
+        {status === 'verified' ? <p className={sectionText}>You can publish jobs.</p> : null}
+        {status === 'failed' ? (
+          <>
+            {state.failure_reason ? <p className={sectionText}>{state.failure_reason}</p> : null}
+            <Button
+              type="button"
+              variant="primary"
+              accent="blue"
+              size="md"
+              className="w-fit"
+              loading={requestReview.isPending}
+              onClick={() => requestReview.mutate()}
+            >
+              Request a new review
+            </Button>
+          </>
+        ) : null}
+        {requestReview.isError ? (
+          <p role="alert" className={sectionText}>
+            {getApiError(requestReview.error)?.message ?? 'That did not go through. Try again.'}
+          </p>
+        ) : null}
+      </div>
+    )
+  }
+
   const display = state.display ?? 'not_started'
   const editing = display === 'not_started' || (display === 'failed' && !state.light_retry)
-  const market = country || toMarketCode(state.country_code ?? '')
-  const countryCode = market ? toCountryCode(market) : ''
+  const market = country || (state.country_code === 'UK' ? 'GB' : (state.country_code ?? ''))
+  const countryCode = market
   const busy =
     submit.isPending || retry.isPending || confirmName.isPending || confirmAddress.isPending
   const failure = [submit, retry, confirmName, confirmAddress].find((item) => item.isError)
@@ -175,7 +227,7 @@ function VerificationView(): ReactElement {
               onChange={(event) => setCountry(event.target.value)}
             >
               <option value="">Select a country</option>
-              {(catalog.data?.markets ?? []).map((item) => (
+              {EMPLOYER_COUNTRIES.map((item) => (
                 <option key={item.code} value={item.code}>
                   {item.name}
                 </option>

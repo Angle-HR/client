@@ -57,6 +57,67 @@ function validateApplication(
   return errors
 }
 
+/** Codes Intl names that are regions or reservations, not countries a candidate lives in. */
+const NOT_COUNTRIES: ReadonlySet<string> = new Set(
+  (
+    'EU UN EZ ZZ QO XA XB AC CP DG EA IC TA CQ' +
+    // Retired codes Intl still names: Dahomey, Upper Volta, Zaire, Netherlands Antilles, Metropolitan France,
+    // East Germany, Burma, USSR, Yugoslavia, Serbia and Montenegro, East Timor, the UK's old code, New Hebrides,
+    // North and South Vietnam, South Yemen, Rhodesia.
+    ' DY HV ZR AN FX DD BU SU YU CS TP UK NH VD YD RH'
+  ).split(' '),
+)
+
+interface CountryOption {
+  code: string
+  name: string
+}
+
+/**
+ * Every ISO 3166-1 country the browser can name, sorted by name. A job open
+ * "Anywhere" accepts any candidate, so the list is not limited to its markets.
+ */
+function allCountries(): CountryOption[] {
+  const names = new Intl.DisplayNames(['en'], { type: 'region' })
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  const found: CountryOption[] = []
+  for (const a of letters) {
+    for (const b of letters) {
+      const code = `${a}${b}`
+      let name: string | undefined
+      try {
+        name = names.of(code)
+      } catch {
+        continue
+      }
+      // Unassigned codes come back as the code itself; EU, UN and the like are not countries.
+      if (name && name !== code && !NOT_COUNTRIES.has(code)) found.push({ code, name })
+    }
+  }
+  // A name can still repeat (a renamed code); keep the first.
+  const unique = found.filter((c, i) => found.findIndex((o) => o.name === c.name) === i)
+  return unique.sort((x, y) => x.name.localeCompare(y.name, 'en'))
+}
+
+interface Declaration {
+  country: string
+  privacyAcknowledged: boolean
+  consent: boolean
+}
+
+/** What the candidate must still confirm: a country, the privacy notice and, when asked, consent. */
+function validateDeclaration(
+  declaration: Declaration,
+  consentRequired: boolean,
+): Partial<Record<keyof Declaration, string>> {
+  const errors: Partial<Record<keyof Declaration, string>> = {}
+  if (!declaration.country) errors.country = 'Select the country you live in.'
+  if (!declaration.privacyAcknowledged)
+    errors.privacyAcknowledged = 'Confirm that you have read the privacy notice.'
+  if (consentRequired && !declaration.consent) errors.consent = 'Give your consent to continue.'
+  return errors
+}
+
 /** The kind a file name shows as, from its extension. Unknown names are Word, the default upload format. */
 function attachmentKind(fileName: string): AttachmentKind {
   const extension = fileName.split('.').pop()?.toLowerCase() ?? ''
@@ -87,10 +148,19 @@ function isAcceptedFile(
 
 export {
   EMAIL_ERROR_MESSAGE,
+  allCountries,
+  validateDeclaration,
   attachmentKind,
   isAcceptedFile,
   isAnswered,
   isValidEmail,
   validateApplication,
 }
-export type { AnswerValue, ApplicationAnswers, ApplicationErrors, AttachmentKind }
+export type {
+  CountryOption,
+  Declaration,
+  AnswerValue,
+  ApplicationAnswers,
+  ApplicationErrors,
+  AttachmentKind,
+}

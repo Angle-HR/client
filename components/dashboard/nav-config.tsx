@@ -61,19 +61,31 @@ interface NavGroup {
   items: NavLink[]
 }
 
+/**
+ * Entries whose page does not exist yet. They are hidden unless
+ * NEXT_PUBLIC_SHOW_UNBUILT_NAV=true is set at build time, so no link goes to a 404.
+ */
+const SHOW_UNBUILT_NAV = process.env.NEXT_PUBLIC_SHOW_UNBUILT_NAV === 'true'
+
+/** The routes that have a page; every other entry is hidden by default. */
+const BUILT_NAV_KEYS: ReadonlySet<string> = new Set(['jobs'])
+
+function visibleNav(link: NavLink): boolean {
+  return SHOW_UNBUILT_NAV || BUILT_NAV_KEYS.has(link.key)
+}
+
 /** Sits above the groups, with no title of its own. */
-const TOP_LINKS: NavLink[] = [
-  { key: 'inbox', label: 'Inbox', href: '/dashboard/inbox', icon: 'inbox', notificationCount: 12 },
+const ALL_TOP_LINKS: NavLink[] = [
+  { key: 'inbox', label: 'Inbox', href: '/dashboard/inbox', icon: 'inbox' },
   {
     key: 'schedule',
     label: 'Schedule',
     href: '/dashboard/schedule',
     icon: 'calendar',
-    unread: true,
   },
 ]
 
-const NAV_GROUPS: NavGroup[] = [
+const ALL_NAV_GROUPS: NavGroup[] = [
   {
     key: 'hiring',
     title: 'Hiring',
@@ -112,5 +124,12 @@ const NAV_GROUPS: NavGroup[] = [
   },
 ]
 
-export { DashboardIcon, NavIcon, NAV_GROUPS, TOP_LINKS }
+const TOP_LINKS: NavLink[] = ALL_TOP_LINKS.filter(visibleNav)
+
+const NAV_GROUPS: NavGroup[] = ALL_NAV_GROUPS.map((group) => ({
+  ...group,
+  items: group.items.filter(visibleNav),
+})).filter((group) => group.items.length > 0)
+
+export { DashboardIcon, NavIcon, NAV_GROUPS, SHOW_UNBUILT_NAV, TOP_LINKS }
 export type { NavGroup, NavLink }

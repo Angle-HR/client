@@ -1,20 +1,15 @@
-import { PublicJobPage } from '@/components/careers/public-job-page'
+import { PlainApplyPage } from '@/components/careers/plain-apply-page'
 
-interface ShareLinkApplyPageProps {
+interface ApplyPageProps {
   params: Promise<{ publicId: string }>
 }
 
-/**
- * Where the server-rendered job page (/j/{public_id}) sends candidates to apply.
- * The same page as the careers job page, without a careers page to go back to.
- */
-export default async function ShareLinkApplyPage({
-  params,
-}: ShareLinkApplyPageProps): Promise<React.ReactElement> {
+/** The application form of a job by its public id. Outside the dashboard, so no sign-in. */
+export default async function ApplyPage({ params }: ApplyPageProps): Promise<React.ReactElement> {
   const { publicId } = await params
   return (
-    <main className="min-h-screen">
-      <PublicJobPage slug="" jobId={publicId} />
+    <main className="mx-auto w-full max-w-[800px] px-[16px] py-[32px]">
+      <PlainApplyPage publicId={publicId} />
     </main>
   )
 }

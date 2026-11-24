@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { Suspense, useEffect } from 'react'
 
 import { AuthShell } from '@/components/auth/auth-shell'
@@ -13,34 +13,33 @@ import {
   routeForOnboarding,
 } from '@/lib/auth-session'
 
-import type { AuthTokenData } from '@/lib/types'
+import type { AuthSessionData } from '@/lib/types'
 
 function VerifyPageContent() {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const fromQuery = searchParams.get('email')?.trim() ?? ''
   const storedEmail = useSignupEmail()
   const verificationEmail = useVerificationEmail()
-  const email = fromQuery || storedEmail || verificationEmail
+  // The address is kept in sessionStorage, never in the URL.
+  const email = storedEmail || verificationEmail
 
   useEffect(() => {
     // Storage is read here rather than reusing `email`: the first commit after a
     // fresh load still holds the server snapshot (''), which would bounce a
     // visitor who does have a session open.
-    const resolved = fromQuery || getSignupEmail() || getVerificationEmail() || ''
+    const resolved = getSignupEmail() || getVerificationEmail() || ''
     if (!resolved || !getVerificationSessionId()) {
       router.replace('/signup')
       return
     }
     setSignupEmail(resolved)
-  }, [fromQuery, router])
+  }, [router])
 
   if (!email) {
     return null
   }
 
-  function handleVerified(tokens: AuthTokenData) {
-    router.push(routeForOnboarding(tokens.onboarding))
+  function handleVerified(session: AuthSessionData) {
+    router.push(routeForOnboarding(session.onboarding))
   }
 
   return (

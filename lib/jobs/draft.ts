@@ -16,6 +16,41 @@ type TravelFrequency = 'never' | 'few' | 'monthly'
 type PayType = 'exact' | 'range'
 type PayPeriod = 'hourly' | 'monthly' | 'annually'
 
+/** The lawful bases the API accepts for processing applications (`GET /hiring/catalog` lists the same). */
+type LawfulBasis = 'contract' | 'legitimate_interests' | 'consent' | 'legal_obligation'
+
+/**
+ * Plain-language hints, kept short and neutral. Wording is for the owner's legal review.
+ */
+const LAWFUL_BASIS_OPTIONS: { value: LawfulBasis; label: string; hint: string }[] = [
+  {
+    value: 'contract',
+    label: 'Contract',
+    hint: 'Handling applications to take steps toward employing someone. The usual choice for hiring.',
+  },
+  {
+    value: 'legitimate_interests',
+    label: 'Legitimate interests',
+    hint: 'Your organisation has a genuine reason to handle applications. Needs a reference to your legitimate interests assessment.',
+  },
+  {
+    value: 'consent',
+    label: 'Consent',
+    hint: 'Candidates agree to it and can withdraw. Often hard to rely on for hiring; candidates are asked to consent when they apply.',
+  },
+  {
+    value: 'legal_obligation',
+    label: 'Legal obligation',
+    hint: 'A law requires you to handle this data.',
+  },
+]
+
+const isLawfulBasis = (value: string): value is LawfulBasis =>
+  LAWFUL_BASIS_OPTIONS.some((option) => option.value === value)
+
+/** The server refuses a longer reference. */
+const LIA_REFERENCE_MAX = 500
+
 interface JobDraft {
   title: string
   team: string
@@ -45,6 +80,10 @@ interface JobDraft {
   payPeriod: PayPeriod
   showPayOnCareerPage: boolean
   saveAsTemplate: boolean
+  /** Why applications are processed. Publishing needs one; `contract` is the starting value. */
+  lawfulBasis: LawfulBasis | ''
+  /** Reference to the legitimate interests assessment. Needed to publish on that basis. */
+  liaReference: string
 }
 
 const EMPTY_DRAFT: JobDraft = {
@@ -74,6 +113,8 @@ const EMPTY_DRAFT: JobDraft = {
   payPeriod: 'annually',
   showPayOnCareerPage: true,
   saveAsTemplate: false,
+  lawfulBasis: 'contract',
+  liaReference: '',
 }
 
 const option = (value: string) => ({ value, label: value })
@@ -130,7 +171,9 @@ const AREA_OPTIONS = [
   { value: 'Nigeria', flag: 'ng' },
 ].map(({ value, flag }) => ({ value, label: value, flag }))
 
-type DraftErrors = Partial<Record<'title' | 'team' | 'closingDate' | 'pay', string>>
+type DraftErrors = Partial<
+  Record<'title' | 'team' | 'closingDate' | 'pay' | 'lawfulBasis' | 'liaReference', string>
+>
 
 /** Problems that stop a draft moving on to the next step. Saving as a draft only needs a title. */
 function validateDraft(draft: JobDraft, today: Date): DraftErrors {
@@ -152,6 +195,16 @@ function validateDraft(draft: JobDraft, today: Date): DraftErrors {
   const max = Number(draft.payMax.replaceAll(',', ''))
   if (draft.payType === 'range' && draft.payMin && draft.payMax && min > max) {
     errors.pay = 'The minimum cannot be more than the maximum.'
+  }
+  if (!draft.lawfulBasis) errors.lawfulBasis = 'Choose a lawful basis.'
+  else if (!isLawfulBasis(draft.lawfulBasis)) errors.lawfulBasis = 'Choose one of the listed bases.'
+  else if (draft.lawfulBasis === 'legitimate_interests') {
+    const reference = draft.liaReference.trim()
+    if (!reference) {
+      errors.liaReference = 'Add a reference to your legitimate interests assessment.'
+    } else if (new TextEncoder().encode(reference).length > LIA_REFERENCE_MAX) {
+      errors.liaReference = `Keep the reference to ${LIA_REFERENCE_MAX} characters or fewer.`
+    }
   }
   return errors
 }
@@ -224,6 +277,9 @@ function applyDraftToJob(job: Job, draft: JobDraft, today: Date): Job {
 
 export {
   AREA_OPTIONS,
+  LAWFUL_BASIS_OPTIONS,
+  LIA_REFERENCE_MAX,
+  isLawfulBasis,
   CURRENCY_OPTIONS,
   EMPTY_DRAFT,
   TIMEZONE_OFFSET_OPTIONS,
@@ -234,4 +290,4 @@ export {
   validateDraft,
   validateTeamName,
 }
-export type { DraftErrors, HiringArea, JobDraft, PayPeriod, PayType, TravelFrequency }
+export type { DraftErrors, HiringArea, JobDraft, LawfulBasis, PayPeriod, PayType, TravelFrequency }

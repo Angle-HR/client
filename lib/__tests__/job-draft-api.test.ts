@@ -40,6 +40,22 @@ describe('marketFor', () => {
 })
 
 describe('draftToBody', () => {
+  it('names the lawful basis the form holds, contract by default', () => {
+    expect(draftToBody(EMPTY_DRAFT, lookups, today).lawful_basis).toBe('contract')
+    const li = {
+      ...EMPTY_DRAFT,
+      lawfulBasis: 'legitimate_interests' as const,
+      liaReference: ' LIA-1 ',
+    }
+    expect(draftToBody(li, lookups, today)).toMatchObject({
+      lawful_basis: 'legitimate_interests',
+      lia_reference: 'LIA-1',
+    })
+    expect(
+      draftToBody({ ...EMPTY_DRAFT, lawfulBasis: 'consent' }, lookups, today).lia_reference,
+    ).toBe('')
+  })
+
   it('sends names as the ids the API holds', () => {
     const body = draftToBody(
       {
@@ -141,8 +157,8 @@ describe('draftToBody', () => {
       type: 'range',
       currency: 'GBP',
       period: 'year',
-      min: 39000,
-      max: 49000,
+      min: 3900000,
+      max: 4900000,
       visible: true,
     })
 
@@ -158,7 +174,7 @@ describe('draftToBody', () => {
       lookups,
       today,
     )
-    expect(exact.pay).toMatchObject({ type: 'exact', period: 'hour', min: 20, max: null })
+    expect(exact.pay).toMatchObject({ type: 'exact', period: 'hour', min: 2000, max: null })
     expect(exact.pay?.visible).toBe(false)
   })
 
@@ -202,7 +218,7 @@ describe('draftFromView', () => {
         employment_type: 'contract',
         seniority_level_id: 'sen-1',
         experience_range_id: 'exp-1',
-        pay: { type: 'range', currency: 'GBP', period: 'month', min: 39000, max: 49000 },
+        pay: { type: 'range', currency: 'GBP', period: 'month', min: 3900000, max: 4900000 },
         skills: [{ skill_id: 'skill-1' }, { custom_label: 'Sketching' }],
         markets: [{ market_code: 'UK', city: 'London' }, { market_code: 'US' }],
       },
@@ -251,7 +267,7 @@ describe('draftFromView', () => {
         location_mode: 'specific_timezone',
         markets: [{ market_code: 'UK', timezone: 'Europe/London' }],
         custom_industry: 'Space',
-        pay: { type: 'exact', min: 20, max: 20, visible: false },
+        pay: { type: 'exact', min: 2000, max: 2000, visible: false },
       },
       lookups,
     )

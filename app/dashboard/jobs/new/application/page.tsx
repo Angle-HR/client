@@ -8,6 +8,7 @@ import { ApplicationFormBuilder } from '@/components/jobs/create/application-for
 import { ApplicationPreview } from '@/components/jobs/create/application-preview'
 import { JobFlowHeader } from '@/components/jobs/create/job-flow-header'
 import { JobToast } from '@/components/jobs/job-toast'
+import { BannerSmall } from '@/components/ui'
 import { getFieldErrors } from '@/lib/api-error'
 import { apiMessage } from '@/lib/jobs/api'
 import {
@@ -121,7 +122,9 @@ function ApplicationFormPage() {
     }
   }
 
-  const saveDisabled = saving || !jobId || !form
+  // The API only lets a draft's form change; a job that has been published keeps the one it was published with.
+  const locked = Boolean(job && job.status !== 'draft')
+  const saveDisabled = saving || !jobId || !form || locked
 
   return (
     <div className="relative flex min-h-0 flex-1 flex-col">
@@ -136,6 +139,14 @@ function ApplicationFormPage() {
       <div className="min-h-0 flex-1 overflow-y-auto">
         <div className="flex min-h-full">
           <div className="w-[640px] max-w-full shrink-0 p-[40px]">
+            {locked ? (
+              <div className="pb-[24px]">
+                <BannerSmall state="info" outline={false} showCloseButton={false}>
+                  This job has been published, so its application form can no longer be changed.
+                  Candidates apply with the form it was published with.
+                </BannerSmall>
+              </div>
+            ) : null}
             {form ? (
               <ApplicationFormBuilder
                 backHref={backHref}

@@ -1,7 +1,7 @@
 import Link from 'next/link'
 
 import { ChatBubbleLeftRightIcon } from '@/components/auth/icons'
-import { WaitlistLogo } from '@/components/waitlist/waitlist-logo'
+import { BrandLogo } from '@/components/brand/brand-logo'
 
 import type { ReactNode } from 'react'
 
@@ -16,7 +16,7 @@ function LoginShell({ children, footer, hideContact = false }: LoginShellProps) 
   return (
     <div className="relative flex min-h-dvh flex-col bg-bg-secondary px-[24px] pb-[24px] pt-[32px] md:px-[64px]">
       <header className="shrink-0">
-        <WaitlistLogo />
+        <BrandLogo />
       </header>
 
       {/* Figma Login: form container top = 200px (header 32 + content offset 168). */}

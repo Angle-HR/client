@@ -8,22 +8,42 @@ import { ArrowRightIcon } from '@/components/auth/icons'
 import { FlowButton, InputSelection, TextInput, type SelectOption } from '@/components/ui'
 import { useBusinessTypes, useOnboardingIndustries } from '@/lib/queries'
 
-const complianceSchema = z.object({
+const businessSchema = z.object({
   businessDescriptor: z.string().min(1, 'Please select an option.'),
   industryId: z.string().min(1, 'Please select your industry.'),
   employeeCount: z.string().trim().min(1, 'Please enter how many employees will use Open HR.'),
 })
 
-type ComplianceValues = z.infer<typeof complianceSchema>
+// An individual is asked one question: the field they mostly hire in. The business
+// fields are not rendered and not validated; they stay empty.
+const individualSchema = z.object({
+  businessDescriptor: z.string(),
+  industryId: z.string().min(1, 'Please select the field you mostly hire in.'),
+  employeeCount: z.string(),
+})
+
+type ComplianceValues = z.infer<typeof businessSchema>
 
 interface StepComplianceProps {
+  /** Defaults to a business, which is asked all three questions. */
+  accountType?: 'individual' | 'business'
   onContinue: (values: ComplianceValues) => void | Promise<void>
   onBack: () => void
   submitting?: boolean
 }
 
-function StepCompliance({ onContinue, onBack, submitting = false }: StepComplianceProps) {
-  const { data: businessTypes, isLoading: typesLoading, isError: typesError } = useBusinessTypes()
+function StepCompliance({
+  accountType = 'business',
+  onContinue,
+  onBack,
+  submitting = false,
+}: StepComplianceProps) {
+  const individual = accountType === 'individual'
+  const {
+    data: businessTypes,
+    isLoading: typesLoading,
+    isError: typesError,
+  } = useBusinessTypes(!individual)
   const {
     data: industries,
     isLoading: industriesLoading,
@@ -35,7 +55,7 @@ function StepCompliance({ onContinue, onBack, submitting = false }: StepComplian
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<ComplianceValues>({
-    resolver: zodResolver(complianceSchema),
+    resolver: zodResolver(individual ? individualSchema : businessSchema),
     defaultValues: { businessDescriptor: '', industryId: '', employeeCount: '' },
   })
 
@@ -49,8 +69,8 @@ function StepCompliance({ onContinue, onBack, submitting = false }: StepComplian
     label: industry.name,
   }))
 
-  const isLoading = typesLoading || industriesLoading
-  const isError = typesError || industriesError
+  const isLoading = (!individual && typesLoading) || industriesLoading
+  const isError = (!individual && typesError) || industriesError
   const pending = submitting || isSubmitting
 
   return (
@@ -60,36 +80,40 @@ function StepCompliance({ onContinue, onBack, submitting = false }: StepComplian
           One Last step
         </h1>
         <p className="text-body-l font-medium leading-21 text-text-secondary">
-          This is to ensure you&apos;re compliant
+          {individual
+            ? 'This helps us tailor Open HR to the hiring you do'
+            : 'This is to ensure you&apos;re compliant'}
         </p>
       </header>
 
       <form onSubmit={handleSubmit(onContinue)} className="flex flex-col gap-[24px]">
         <div className="flex flex-col gap-[12px]">
-          <Controller
-            control={control}
-            name="businessDescriptor"
-            render={({ field }) => (
-              <InputSelection
-                label="What best describes your business?"
-                placeholder="Select an option..."
-                size="md"
-                options={descriptorOptions}
-                value={field.value}
-                onChange={field.onChange}
-                errorText={
-                  errors.businessDescriptor?.message ??
-                  (typesError ? 'Failed to load business types. Please try again.' : undefined)
-                }
-              />
-            )}
-          />
+          {individual ? null : (
+            <Controller
+              control={control}
+              name="businessDescriptor"
+              render={({ field }) => (
+                <InputSelection
+                  label="What best describes your business?"
+                  placeholder="Select an option..."
+                  size="md"
+                  options={descriptorOptions}
+                  value={field.value}
+                  onChange={field.onChange}
+                  errorText={
+                    errors.businessDescriptor?.message ??
+                    (typesError ? 'Failed to load business types. Please try again.' : undefined)
+                  }
+                />
+              )}
+            />
+          )}
           <Controller
             control={control}
             name="industryId"
             render={({ field }) => (
               <InputSelection
-                label="Select your industry"
+                label={individual ? 'What field do you mostly hire in?' : 'Select your industry'}
                 placeholder="Select an industry..."
                 size="md"
                 options={industryOptions}
@@ -102,12 +126,14 @@ function StepCompliance({ onContinue, onBack, submitting = false }: StepComplian
               />
             )}
           />
-          <TextInput
-            label="How many of your employees will use Open HR?"
-            size="md"
-            errorText={errors.employeeCount?.message}
-            {...register('employeeCount')}
-          />
+          {individual ? null : (
+            <TextInput
+              label="How many of your employees will use Open HR?"
+              size="md"
+              errorText={errors.employeeCount?.message}
+              {...register('employeeCount')}
+            />
+          )}
         </div>
 
         <div className="flex flex-col gap-[8px]">

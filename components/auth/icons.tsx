@@ -2,7 +2,7 @@ import type { SVGProps } from 'react'
 
 type IconProps = SVGProps<SVGSVGElement>
 
-export { ArrowRightIcon } from '@/components/waitlist/icons'
+export { ArrowRightIcon } from '@/components/brand/icons'
 
 export function EyeIcon(props: IconProps) {
   return (

@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 import { DashboardIcon } from '@/components/dashboard/nav-config'
 
 import type { ComplianceState } from '@/lib/jobs/publish-step'
@@ -39,10 +41,15 @@ const STATUS: Record<ComplianceState, StatusStyle> = {
 interface ComplianceStatusProps {
   state: ComplianceState
   bullets: string[]
+  links?: (string | undefined)[]
+  individual?: boolean
 }
 
-function ComplianceStatus({ state, bullets }: ComplianceStatusProps): ReactNode {
-  const style = STATUS[state]
+function ComplianceStatus({ state, bullets, links, individual }: ComplianceStatusProps): ReactNode {
+  const style =
+    state === 'unverified' && individual
+      ? { ...STATUS[state], label: 'Your account is still unverified' }
+      : STATUS[state]
   return (
     <div className="flex flex-col gap-[12px]">
       <div className="flex items-center gap-[3px]">
@@ -55,7 +62,17 @@ function ComplianceStatus({ state, bullets }: ComplianceStatusProps): ReactNode 
       </div>
       <ul className="flex list-disc flex-col pl-[14px] text-body-xs leading-19_2 text-text-secondary">
         {bullets.map((bullet, index) => (
-          <li key={`${index}-${bullet}`}>{bullet}</li>
+          <li key={`${index}-${bullet}`}>
+            {bullet}
+            {links?.[index] ? (
+              <>
+                {' '}
+                <Link href={links[index]} className="text-text-primary underline">
+                  Fix this
+                </Link>
+              </>
+            ) : null}
+          </li>
         ))}
       </ul>
     </div>

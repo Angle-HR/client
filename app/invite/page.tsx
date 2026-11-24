@@ -1,10 +1,10 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Suspense, useEffect } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 
 import { AuthShell } from '@/components/auth/auth-shell'
-import { setInviteContext } from '@/components/auth/flow-storage'
+import { getInviteContext, setInviteContext } from '@/components/auth/flow-storage'
 import { InviteAcceptFooter, StepInviteAccept } from '@/components/auth/steps/step-invite-accept'
 import { BannerSmall } from '@/components/ui'
 import { getApiError } from '@/lib/api-error'
@@ -23,7 +23,23 @@ function messageForInviteError(error: unknown): string {
 function InvitePageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const token = searchParams.get('token')?.trim() ?? ''
+  // The token is read once from the link, then the address bar is cleaned so it does not stay in
+  // the history or a Referer. It lives in state, and in sessionStorage once the invite loads, so
+  // "Back" from /invite/join finds it again.
+  const queryToken = searchParams.get('token')?.trim() ?? ''
+  const [token, setToken] = useState(queryToken)
+  useEffect(() => {
+    if (queryToken) {
+      // One-time capture of the link's token before the URL is cleaned; there is no external store to read it from afterwards.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setToken(queryToken)
+      window.history.replaceState(window.history.state, '', window.location.pathname)
+    } else {
+      const stored = getInviteContext()?.token
+
+      if (stored) setToken(stored)
+    }
+  }, [queryToken])
   const invite = useInvite(token)
 
   // Carried forward so /invite/join has the token and company without the query.
