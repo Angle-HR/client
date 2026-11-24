@@ -14,6 +14,14 @@ describe('publish compliance view', () => {
     expect(canPublish(view)).toBe(true)
   })
 
+  it('marks an unverified individual so the heading can say "your account"', () => {
+    const view = complianceView({ blocking: [{ code: 'company_not_verified' }] }, true)
+    expect(view).toMatchObject({ state: 'unverified', individual: true })
+    expect(complianceView({ blocking: [{ code: 'company_not_verified' }] })).not.toHaveProperty(
+      'individual',
+    )
+  })
+
   it('shows an unverified company as its own state, with the drawn copy', () => {
     const view = complianceView({
       blocking: [

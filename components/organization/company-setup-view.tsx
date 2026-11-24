@@ -45,7 +45,7 @@ function CompanySetupView(): ReactElement {
   }
   if (!data) return <div className="p-[24px]" aria-busy />
 
-  const privacyEmail = email ?? data.privacy_contact_email ?? (individual ? accountEmail : '')
+  const privacyEmail = email ?? (data.privacy_contact_email || (individual ? accountEmail : ''))
   const dpoContact = dpo ?? data.dpo_contact ?? ''
   const dpiaRecorded = (data.dpia_version ?? 0) > 0
 

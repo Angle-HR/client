@@ -19,6 +19,8 @@ interface ComplianceView {
   bullets: string[]
   /** Where to fix each bullet, in step with `bullets` (undefined where there is no page for it). Only set when some bullet has one. */
   links?: (string | undefined)[]
+  /** A person hiring as themselves: the unverified heading says "your account", not "company account". */
+  individual?: boolean
 }
 
 /** The code the API gives an account that has not been verified yet. */
@@ -45,7 +47,10 @@ function issueText(issue: ApiPublishIssue): string {
  * unverified company shows only that reason, as drawn; any other blocking
  * issue or warning shows as one bullet each.
  */
-function complianceView(check: ApiPublishCheck | undefined): ComplianceView | null {
+function complianceView(
+  check: ApiPublishCheck | undefined,
+  individual = false,
+): ComplianceView | null {
   if (!check) return null
   const blocking = check.blocking ?? []
   const warnings = check.warnings ?? []
@@ -55,6 +60,7 @@ function complianceView(check: ApiPublishCheck | undefined): ComplianceView | nu
       state: 'unverified',
       bullets: [UNVERIFIED_BULLET],
       links: ['/dashboard/verification'],
+      ...(individual ? { individual } : {}),
     }
   }
   if (blocking.length > 0 || warnings.length > 0) {

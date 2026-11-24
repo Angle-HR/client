@@ -42,10 +42,14 @@ interface ComplianceStatusProps {
   state: ComplianceState
   bullets: string[]
   links?: (string | undefined)[]
+  individual?: boolean
 }
 
-function ComplianceStatus({ state, bullets, links }: ComplianceStatusProps): ReactNode {
-  const style = STATUS[state]
+function ComplianceStatus({ state, bullets, links, individual }: ComplianceStatusProps): ReactNode {
+  const style =
+    state === 'unverified' && individual
+      ? { ...STATUS[state], label: 'Your account is still unverified' }
+      : STATUS[state]
   return (
     <div className="flex flex-col gap-[12px]">
       <div className="flex items-center gap-[3px]">

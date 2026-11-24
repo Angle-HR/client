@@ -79,7 +79,12 @@ function PublishStep({
           </p>
         </div>
         {view ? (
-          <ComplianceStatus state={view.state} bullets={view.bullets} links={view.links} />
+          <ComplianceStatus
+            state={view.state}
+            bullets={view.bullets}
+            links={view.links}
+            individual={view.individual}
+          />
         ) : null}
         {gates}
       </section>

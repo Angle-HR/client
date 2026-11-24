@@ -102,3 +102,41 @@ Driven in the Orca browser against a fresh stack (company, KYB approval, publish
   `candidate_country` (GB, UK, US, PH, KE all "this role is not open to candidates in that country"), so no one can
   apply. Specific-area jobs with a market work.
 - `verify-email` gives no remaining-attempts info and no lockout was seen after 6 wrong codes.
+
+## Fourth pass (individual accounts hire, branch split/client-individual, own stack openhr-client-individual)
+Backend: split/individual-hiring (stack built at e24c4e7; the later 0ac0b2f only adds the personal case's country, a
+script and docs). Client dev server on 127.0.0.1:3100 against the web-bff (monolith behind it). Driven in the Orca
+browser, start to finish, as one individual:
+
+signup -> email code (mailhog) -> Individual -> profile -> compliance -> setup -> dashboard -> verification page ->
+hiring settings (accept DPA, privacy contact) -> create team -> job details (specific area, lawful basis Contract) ->
+application form -> permissions -> publish (blocked) -> admin approves the case -> publish -> public job page ->
+apply as a candidate -> "Your application was received" -> the hirer's applicants list shows the candidate.
+
+Changes and what was seen:
+- Landing/legal (task A): `/` redirects to `/dashboard` (signed out then goes on to `/login`) through `next.config` redirects;
+  `/privacy` redirects to `/privacy-policy`. `scripts/build-landing.mjs` and `deploy-landing.yml` now publish only the legal
+  pages (`/terms`, `/privacy-policy`, `/privacy`) and make the bucket root a redirect document to `APP_URL`
+  (default https://app.tryopenhr.com). Waitlist wording proposals: `docs/legal-copy-proposal.md` (not applied).
+- Compliance step for an individual asks one question ("What field do you mostly hire in?"); business type and employee
+  count are neither shown nor sent; the account type comes from the server's onboarding status, not the draft. Verified live.
+- Verification page for an individual: "Your identity is being reviewed" (pending), verified, and, after a rejection, the
+  reason and "Request a new review" (`POST /organization/verification {}`). Pending and verified were seen live; the
+  rejected state is covered by unit tests only.
+- Hiring settings (`/dashboard/settings/company`): titled "Hiring settings", says the person is the data controller, prefills the
+  privacy contact with the account email (a legal statement, so only saved on pressing Save). Found live: the field stayed empty
+  because the server returns an empty string, fixed (`||`). DPIA text says screening is not available for personal accounts.
+- Dashboard welcome state now follows the organization's verification status like the sidebar does.
+- Publish step heading says "Your account is still unverified" for individuals (was "Company account ...").
+- Team modal organization name is the person's name ("Sam Solo"); sidebar and public page too. `/hiring/me` returns 200.
+- Not driven: rejected review re-request, TOTP-protected admin, CV upload (no scanner locally; the CV question was removed from
+  the form for the test), mobile widths.
+
+Gaps and notes:
+- Low: the public job page keeps wording "our recruitment team" in the privacy blurb; reads oddly for a person. Legal copy, not changed.
+- Low: no navigation link to hiring settings or verification except the sidebar status button and the publish blocker links.
+
+Backend observations:
+- At e24c4e7 the admin queue item and case showed `country_code: "individual"` instead of the person's country (fixed in 0ac0b2f, not re-checked live).
+- Verification emails are still branded "Angle HR".
+- Share-link host in the publish dialog is the API origin (`/j/<id>`), not the careers page of the client app.
