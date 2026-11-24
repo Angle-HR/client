@@ -4,6 +4,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { Button } from '../button/button'
 import { FlowButton } from '../button/flow-button'
 import { IconButton } from '../button/icon-button'
+import { LabelButton } from '../button/label-button'
 import { TextButton } from '../button/text-button'
 
 describe('Button', () => {
@@ -60,10 +61,19 @@ describe('Button', () => {
     expect(screen.getByRole('button')).toBeDisabled()
   })
 
-  it('shows spinner when loading', () => {
-    render(<Button loading>Btn</Button>)
-    expect(screen.getByRole('button')).toBeDisabled()
-    expect(screen.queryByText('Btn')).not.toBeInTheDocument()
+  it('shows a spinner next to the label and ignores clicks when loading', () => {
+    const handler = vi.fn()
+    render(
+      <Button loading onClick={handler}>
+        Saving…
+      </Button>,
+    )
+    const button = screen.getByRole('button', { name: 'Saving…' })
+    expect(button).not.toBeDisabled()
+    expect(button).toHaveAttribute('aria-busy', 'true')
+    expect(button).toHaveAttribute('aria-disabled', 'true')
+    fireEvent.click(button)
+    expect(handler).not.toHaveBeenCalled()
   })
 
   it('fires onClick', () => {
@@ -96,9 +106,45 @@ describe('FlowButton', () => {
 
   it('supports position left/right', () => {
     const { rerender } = render(<FlowButton position="left">F</FlowButton>)
-    expect(screen.getByRole('button')).toBeInTheDocument()
+    expect(screen.getByRole('button').className).not.toContain('rounded-l-none')
     rerender(<FlowButton position="right">F</FlowButton>)
-    expect(screen.getByRole('button')).toBeInTheDocument()
+    // Figma: only the left corners are squared, so it joins a container on its left.
+    expect(screen.getByRole('button').className).toContain('rounded-l-none')
+    expect(screen.getByRole('button').className).not.toContain('rounded-none')
+  })
+
+  it('keeps the label and ignores clicks when loading', () => {
+    const handler = vi.fn()
+    render(
+      <FlowButton loading onClick={handler}>
+        Submitting…
+      </FlowButton>,
+    )
+    const button = screen.getByRole('button', { name: 'Submitting…' })
+    expect(button).not.toBeDisabled()
+    expect(button).toHaveAttribute('aria-busy', 'true')
+    fireEvent.click(button)
+    expect(handler).not.toHaveBeenCalled()
+  })
+
+  it('pads 1px less than Figma to make room for the border', () => {
+    render(<FlowButton size="md">Next</FlowButton>)
+    expect(screen.getByRole('button').className).toContain('px-[11px]')
+  })
+
+  it('uses a 7px radius for a standalone sm primary, 10px otherwise', () => {
+    const { rerender } = render(
+      <FlowButton size="sm" variant="primary">
+        Next
+      </FlowButton>,
+    )
+    expect(screen.getByRole('button').className).toContain('rounded-sm-7')
+    rerender(
+      <FlowButton size="sm" variant="secondary">
+        Next
+      </FlowButton>,
+    )
+    expect(screen.getByRole('button').className).toContain('rounded-lg-10')
   })
 
   it('renders icon prefix (14px) and suffix (15px)', () => {
@@ -122,7 +168,14 @@ describe('IconButton', () => {
   })
 
   it('supports all variants', () => {
-    const variants = ['primary', 'secondary', 'tertiary', 'light'] as const
+    const variants = [
+      'primary',
+      'secondary',
+      'tertiary',
+      'light',
+      'light-w-hover',
+      'error',
+    ] as const
     variants.forEach((variant) => {
       const { unmount } = render(
         <IconButton variant={variant} icon={<span>X</span>} aria-label="test" />,
@@ -137,6 +190,28 @@ describe('IconButton', () => {
     expect(screen.getByRole('button')).toBeInTheDocument()
     rerender(<IconButton size="md" icon={<span>X</span>} aria-label="test" />)
     expect(screen.getByRole('button')).toBeInTheDocument()
+  })
+
+  it('xs is 16px with a 10px icon box and 4px radius', () => {
+    render(<IconButton size="xs" icon={<span>X</span>} aria-label="Remove" />)
+    const btn = screen.getByRole('button')
+    expect(btn.className).toContain('h-[16px]')
+    expect(btn.className).toContain('rounded-xs-4')
+    expect((btn.firstElementChild as HTMLElement).style.width).toBe('10px')
+  })
+
+  it('light never fills; light-w-hover fills on hover', () => {
+    const { rerender } = render(<IconButton variant="light" icon={<span>X</span>} aria-label="x" />)
+    expect(screen.getByRole('button').className).not.toContain('hover:bg-')
+    rerender(<IconButton variant="light-w-hover" icon={<span>X</span>} aria-label="x" />)
+    expect(screen.getByRole('button').className).toContain('hover:bg-bg-transparent-light')
+  })
+
+  it('error uses the red icon and red tertiary hover', () => {
+    render(<IconButton variant="error" icon={<span>X</span>} aria-label="Delete" />)
+    const btn = screen.getByRole('button')
+    expect(btn.className).toContain('text-text-error')
+    expect(btn.className).toContain('hover:bg-bg-btn-red-tet-hover')
   })
 
   it('shows counter badge when showCounter is set', () => {
@@ -169,7 +244,7 @@ describe('TextButton', () => {
   })
 
   it('supports all sizes', () => {
-    const sizes = ['sm', 'md', 'lg'] as const
+    const sizes = ['xs', 'sm', 'md', 'lg'] as const
     sizes.forEach((size) => {
       const { unmount } = render(<TextButton size={size}>T</TextButton>)
       expect(screen.getByRole('button')).toBeInTheDocument()
@@ -185,7 +260,53 @@ describe('TextButton', () => {
     )
     const btn = screen.getByRole('button')
     expect(btn.className).toContain('font-medium')
-    expect(btn.className).toContain('underline')
+    expect(screen.getByText('Styled').className.split(' ')).toContain('underline')
+  })
+
+  it('is grey at rest and underlines on hover by default', () => {
+    render(<TextButton>Link</TextButton>)
+    const btn = screen.getByRole('button')
+    expect(btn.className).toContain('text-text-primary')
+    expect(btn.className).toContain('active:text-text-blue-accent')
+    const label = screen.getByText('Link')
+    expect(label.className).toContain('group-hover/text-button:underline')
+    expect(label.className.split(' ')).not.toContain('underline')
+  })
+
+  it('underline="never" starts secondary and never underlines', () => {
+    render(<TextButton underline="never">Link</TextButton>)
+    const btn = screen.getByRole('button')
+    expect(btn.className).toContain('text-text-secondary')
+    expect(screen.getByText('Link').className).not.toMatch(/(^|\s|:)underline(\s|$)/)
+  })
+
+  it('underline={true} still means always', () => {
+    render(<TextButton underline>Link</TextButton>)
+    expect(screen.getByText('Link').className.split(' ')).toContain('underline')
+  })
+
+  it('wrapped trims the label to its cap height, as in Figma', () => {
+    render(<TextButton wrapped>Link</TextButton>)
+    expect(screen.getByText('Link').className).toContain('leading-[0.727em]')
+  })
+
+  it('puts the avatar after the left icon', () => {
+    render(
+      <TextButton iconLeft={<i data-testid="icon" />} avatar={<i data-testid="avatar" />}>
+        Ada
+      </TextButton>,
+    )
+    const icon = screen.getByTestId('icon')
+    expect(icon.compareDocumentPosition(screen.getByTestId('avatar'))).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    )
+  })
+
+  it('wrapped adds 6px padding and a hover fill', () => {
+    render(<TextButton wrapped>Link</TextButton>)
+    const btn = screen.getByRole('button')
+    expect(btn.className).toContain('p-[6px]')
+    expect(btn.className).toContain('hover:bg-bg-transparent-light')
   })
 
   it('renders left and right icons', () => {
@@ -217,5 +338,25 @@ describe('TextButton', () => {
       </TextButton>,
     )
     expect(screen.getByTestId('avatar')).toBeInTheDocument()
+  })
+})
+
+describe('LabelButton', () => {
+  it('passes the click event and native attributes through', () => {
+    const handler = vi.fn()
+    render(
+      <LabelButton id="filter-remote" data-testid="chip" onClick={handler}>
+        Remote
+      </LabelButton>,
+    )
+    const chip = screen.getByTestId('chip')
+    expect(chip).toHaveAttribute('id', 'filter-remote')
+    fireEvent.click(chip)
+    expect(handler.mock.calls[0]?.[0]).toHaveProperty('type', 'click')
+  })
+
+  it('mirrors selected in aria-pressed', () => {
+    render(<LabelButton selected>Remote</LabelButton>)
+    expect(screen.getByRole('button', { name: 'Remote' })).toHaveAttribute('aria-pressed', 'true')
   })
 })

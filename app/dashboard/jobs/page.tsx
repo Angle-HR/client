@@ -307,7 +307,7 @@ function JobsPage() {
         <TextButton
           size="sm"
           href="/dashboard/help"
-          className="absolute bottom-[29px] left-1/2 -translate-x-1/2 text-text-primary!"
+          className="absolute bottom-[29px] left-1/2 -translate-x-1/2"
           iconRight={<DashboardIcon name="arrow-top-right-on-square-solid" size={10} />}
         >
           Learn How to create job on OpenHR
@@ -475,6 +475,7 @@ function JobsPage() {
             menuJobId={rowMenu?.jobId ?? null}
             onSelect={selectJob}
             onOpenMenu={(jobId, rect) => setRowMenu({ jobId, anchor: toAnchor(rect) })}
+            onOpenJob={(jobId) => router.push(`/dashboard/jobs/${jobId}/applications`)}
           />
         </div>
       ) : (

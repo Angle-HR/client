@@ -76,7 +76,7 @@
   --bg-btn-red-tet-rest: var(--color-non);
   --bg-btn-red-tet-hover: var(--color-red-12);
   --bg-btn-red-tet-pressed: var(--color-red-12);
-  --bg-btn-red-tet-disabled: var(--color-non);
+  --bg-btn-red-tet-disabled: var(--color-red-12);
   --bg-btn-red-tet-focus: var(--color-white-2);
 
   /* ── Background / Flow Button ── */
@@ -190,6 +190,7 @@
   --text-btn-default-secondary: var(--color-dark-grey-7);
   --text-btn-default-tertiary: var(--color-dark-grey-9);
   --text-btn-default-disabled: var(--color-light-grey-4);
+  --text-btn-default-light: var(--color-light-grey-7);
 
   /* ── Text / Blue Button ── */
   --text-btn-blue-primary: var(--color-white);
@@ -551,6 +552,7 @@
     --text-btn-default-secondary: var(--color-light-grey-7);
     --text-btn-default-tertiary: var(--color-dark-grey-8);
     --text-btn-default-disabled: var(--color-dark-grey-3);
+    --text-btn-default-light: var(--color-dark-grey-6);
 
     /* ── Text / Blue Button ── */
     --text-btn-blue-primary: var(--color-white);
@@ -670,8 +672,8 @@
     --border-btn-red-pri-pressed: var(--color-black-14);
     --border-btn-red-pri-disabled: var(--color-black-14);
     --border-btn-red-pri-focus: var(--color-blue-8);
-    --border-btn-red-sec-rest: var(--color-red-10);
-    --border-btn-red-sec-hover: var(--color-red-10);
+    --border-btn-red-sec-rest: var(--color-red-4);
+    --border-btn-red-sec-hover: var(--color-red-4);
     --border-btn-red-sec-pressed: var(--color-red-10);
     --border-btn-red-sec-disabled: var(--color-red-7);
     --border-btn-red-sec-focus: var(--color-blue-8);
@@ -911,6 +913,7 @@
     --text-btn-default-secondary: var(--color-light-grey-7);
     --text-btn-default-tertiary: var(--color-dark-grey-8);
     --text-btn-default-disabled: var(--color-dark-grey-3);
+    --text-btn-default-light: var(--color-dark-grey-6);
 
     /* ── Text / Blue Button ── */
     --text-btn-blue-primary: var(--color-white);
@@ -1030,8 +1033,8 @@
     --border-btn-red-pri-pressed: var(--color-black-14);
     --border-btn-red-pri-disabled: var(--color-black-14);
     --border-btn-red-pri-focus: var(--color-blue-8);
-    --border-btn-red-sec-rest: var(--color-red-10);
-    --border-btn-red-sec-hover: var(--color-red-10);
+    --border-btn-red-sec-rest: var(--color-red-4);
+    --border-btn-red-sec-hover: var(--color-red-4);
     --border-btn-red-sec-pressed: var(--color-red-10);
     --border-btn-red-sec-disabled: var(--color-red-7);
     --border-btn-red-sec-focus: var(--color-blue-8);

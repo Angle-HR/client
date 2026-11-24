@@ -162,6 +162,8 @@ function NewJobPage() {
       if (mode === 'edit-job' && jobId) {
         await requests.updateJob(jobId, body, job?.revision)
         await queryClient.invalidateQueries({ queryKey: queryKeys.jobs })
+        // The next open of this job must carry the new revision.
+        await queryClient.invalidateQueries({ queryKey: queryKeys.job(jobId) })
         router.push('/dashboard/jobs?saved=changes')
         return
       }
@@ -252,7 +254,6 @@ function NewJobPage() {
           <div className="flex h-[24px] items-center justify-between">
             <TextButton
               size="md"
-              className="text-text-primary!"
               iconLeft={<DashboardIcon name="chevron-left-solid" size={11} />}
               onClick={() => router.push(backHref)}
             >

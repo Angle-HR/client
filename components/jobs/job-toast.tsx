@@ -45,7 +45,9 @@ function JobToast({ toast, onDismiss }: { toast: JobToastState; onDismiss: () =>
       <div role="status" className="absolute top-[9px] left-1/2 z-30 -translate-x-1/2">
         <BannerSmall
           state="info"
-          showCloseButton={false}
+          // Without an Undo the banner keeps its close button (ATS: "Liam Disqualified").
+          showCloseButton={!toast.onUndo}
+          onClose={onDismiss}
           withButton={Boolean(toast.onUndo)}
           onUndo={() => {
             toast.onUndo?.()

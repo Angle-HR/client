@@ -1,0 +1,29 @@
+import { SpacingScale } from '@/docs/components/spacing-scale'
+
+export const metadata = { title: 'Spacing and radius' }
+
+# Spacing and radius
+
+Open HR's spacing is flat by design. There is no token layer: spacing primitives are used directly in components. Each one is named `{category}-{scale}-{value}`, for example `gap-sm-8` or `radius-sm-7`, so the name tells you the exact value you get.
+
+In Tailwind the spacing scale is in pixels: `p-8` is 8px, `gap-24` is 24px.
+
+```css
+.card {
+  gap: var(--gap-sm-8);
+  padding: var(--padding-xl-16);
+  border-radius: var(--radius-sm-8);
+}
+```
+
+## Gap
+
+<SpacingScale group="Gap" />
+
+## Padding
+
+<SpacingScale group="Padding" />
+
+## Radius
+
+<SpacingScale group="Border Radius" />

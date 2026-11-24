@@ -212,7 +212,7 @@ function StepWorkspace({
               type="button"
               size="md"
               bold
-              className="mt-[2px] justify-start text-text-primary hover:text-text-primary"
+              className="mt-[2px] justify-start"
               iconLeft={<LocationPinIcon />}
               onClick={() => {
                 setAddressNotFound(false)
@@ -312,7 +312,7 @@ function StepWorkspace({
               type="button"
               size="md"
               bold
-              className="mt-[2px] justify-start text-text-primary hover:text-text-primary"
+              className="mt-[2px] justify-start"
               onClick={() => {
                 setAddressNotFound(false)
                 searchForm.reset({

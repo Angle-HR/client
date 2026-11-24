@@ -18,12 +18,12 @@ function useCareersPage(slug: string) {
   })
 }
 
-/** One public job of a company. Skipped until there is a slug and a job id. */
+/** One public job, by its public id. The company slug is only part of the careers URL. */
 function usePublicJob(slug: string, jobId: string) {
   return useQuery({
     queryKey: queryKeys.publicJob(slug, jobId),
     queryFn: () => requests.getPublicJob(slug, jobId),
-    enabled: Boolean(slug) && Boolean(jobId),
+    enabled: Boolean(jobId),
   })
 }
 
@@ -120,15 +120,32 @@ function usePublishCheck(id: string | null) {
   })
 }
 
-/** A job's applications, a page at a time. Fetch the next page while `hasNextPage`. */
-function useApplications(jobId: string, query: ApplicationListQuery = {}) {
+/**
+ * A job's applications, a page at a time. Fetch the next page while `hasNextPage`.
+ * `enabled` is false for a stage the server has no status for, so nothing is asked.
+ */
+function useApplications(jobId: string, query: ApplicationListQuery = {}, enabled = true) {
   return useInfiniteQuery({
     queryKey: queryKeys.applicationList(jobId, query),
     queryFn: ({ pageParam }) => requests.getApplications(jobId, query, pageParam),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (page) => page.nextCursor,
-    enabled: Boolean(jobId),
+    enabled: Boolean(jobId) && enabled,
     placeholderData: keepPreviousData,
+  })
+}
+
+/**
+ * The link to one application file, for showing it inline. Links work for five
+ * minutes, so the link is asked for again after four.
+ */
+function useApplicationFileLink(jobId: string, appId: string, fileId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.applicationFile(jobId, appId, fileId ?? ''),
+    queryFn: () => requests.getApplicationFileLink(jobId, appId, fileId ?? ''),
+    enabled: Boolean(jobId) && Boolean(appId) && Boolean(fileId),
+    staleTime: 4 * 60 * 1000,
+    refetchOnWindowFocus: false,
   })
 }
 
@@ -278,6 +295,7 @@ export {
   useShareKit,
   useApplications,
   useApplication,
+  useApplicationFileLink,
   usePublishCheck,
   useJobMembers,
   useIdentificationRequirements,

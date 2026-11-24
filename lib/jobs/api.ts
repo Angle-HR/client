@@ -125,8 +125,7 @@ function toJob(row: ApiJobListItem, lookups: Lookups = {}): Job {
       colour: colourFor(creatorId || creator),
     },
     totalApplicants: row.applicant_count ?? 0,
-    // The API has no count of new applicants.
-    newApplicants: 0,
+    newApplicants: row.new_applicant_count ?? 0,
     // A job that has never been published is dated by when it was created.
     postedAt: day(row.published_at) || created,
     createdAt: created,

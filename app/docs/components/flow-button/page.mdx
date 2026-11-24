@@ -1,0 +1,103 @@
+import { FlowButtonStates } from '@/docs/components/button-family-states'
+import { DoDont, Guideline } from '@/docs/components/do-dont'
+import { Example } from '@/docs/components/example'
+import { FigmaReference } from '@/docs/components/figma-reference'
+import { PropsTable } from '@/docs/components/props-table'
+
+export const metadata = { title: 'Flow Button' }
+
+# Flow Button
+
+For moving through steps: multi-step forms, onboarding, pipelines. It's a little bigger than [Button](/docs/components/button) and can join flush onto an input. For everyday actions like "Save" or "Delete", use Button.
+
+<Example name="flow-button/overview" />
+
+```tsx
+import { FlowButton } from '@/components/ui/button'
+```
+
+## Variants
+
+The default is `secondary`. There's no accent.
+
+<Example name="flow-button/variants" />
+
+| Variant     | Use it for                                   |
+| ----------- | -------------------------------------------- |
+| `primary`   | Moving forward: "Continue", "Submit"         |
+| `secondary` | Going back or sideways: "Back", "Save draft" |
+| `tertiary`  | Steps people can skip: "Skip for now"        |
+
+## Sizes
+
+<Example name="flow-button/sizes" />
+
+| Size | Height | Padding | Gap | Radius | Text | Use it for                 |
+| ---- | ------ | ------- | --- | ------ | ---- | -------------------------- |
+| `xs` | 25px   | 8px     | 4px | 7px    | 13px | Dense pipeline steps       |
+| `sm` | 32px   | 10px    | 8px | 10px\* | 14px | Multi-step forms (default) |
+| `md` | 40px   | 12px    | 8px | 10px   | 14px | Onboarding, big decisions  |
+
+Padding is measured from the outer edge, as in Figma. Icons are 14px on the left and 15px on the right.
+
+\*A standalone `primary` at `sm` has a 7px radius in Figma, so it does here too.
+
+## Joined to an input
+
+`position="right"` squares off the left corners so the button sits flush against whatever is to its left, like an email field. It's a shape, not CSS positioning. Figma only has it for `primary` and `secondary`.
+
+<Example name="flow-button/attached" />
+
+## Loading
+
+Set `loading` while the step submits. A spinner appears before the label, the label stays, and extra clicks are ignored. It keeps focus.
+
+<Example name="flow-button/loading" caption="Click to see the loading state." />
+
+## States
+
+<FlowButtonStates />
+
+Primary fades in over 100ms on hover; secondary and tertiary take 50ms. Fading out takes 100ms and a press takes 50ms.
+
+## Usage
+
+<DoDont>
+  <Guideline kind="do">
+    Give each step one primary to go forward and a secondary to go back.
+  </Guideline>
+  <Guideline kind="dont">Put two primaries side by side.</Guideline>
+  <Guideline kind="do">Use `position="right"` only when something sits to its left.</Guideline>
+  <Guideline kind="dont">Use it on a standalone button. The flat edge looks like a bug.</Guideline>
+  <Guideline kind="do">Keep one size throughout a flow.</Guideline>
+  <Guideline kind="dont">Use it for general actions like "Save" or "Delete".</Guideline>
+</DoDont>
+
+## Writing labels
+
+- Name where it leads: "Continue to billing", not "Step 3".
+- Keep the direction clear: "Next", "Back", "Skip".
+- Sentence case, one to four words.
+
+## Accessibility
+
+- **Keyboard:** fields come first; the primary Flow Button is the last stop in each step.
+- **Focus:** a 2px blue ring.
+- **Context:** point `aria-describedby` at the step heading so screen reader users know where they are.
+- **Blocked step:** if "Next" is disabled, show inline messages that say why.
+- **Loading:** sets `aria-busy` and `aria-disabled`. Change the label, like "Submitting…".
+
+## Props
+
+<PropsTable of="FlowButton" native="button" />
+
+Forwards `ref` to the `<button>`.
+
+## Figma
+
+<FigmaReference
+  src="/docs/figma/flow-button.png"
+  href="https://www.figma.com/design/7jCMwDng7HF5g7F3tGXf0E/Open-HR?node-id=1985-48157"
+  taken="23 Nov 2026"
+  alt="The Flow Button component set in Figma: three variants, three sizes, five states, with and without the right position."
+/>

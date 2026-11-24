@@ -18,8 +18,9 @@ interface ApiJobListItem {
   markets?: string[]
   managers?: ApiListPerson[]
   created_by?: string
-  /** Always 0 until candidate applications exist in the API. */
   applicant_count?: number
+  /** Applications still in the received state. */
+  new_applicant_count?: number
   created_at?: string
   updated_at?: string
   published_at?: string
@@ -231,6 +232,8 @@ interface ApiJobView extends ApiJobBody {
   revision?: number
   department_name?: string
   created_by?: string
+  /** ISO timestamp; absent until the job has been published. */
+  published_at?: string
 }
 
 /** A choice option. The API gives it an id once the form is saved. */

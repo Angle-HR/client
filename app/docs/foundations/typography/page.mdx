@@ -1,0 +1,42 @@
+import { TypeScale } from '@/docs/components/type-scale'
+
+export const metadata = { title: 'Typography' }
+
+# Typography
+
+Typography is the system's primary voice. Every size, weight and spacing decision is deliberate. These styles keep Open HR legible and consistent, from dense data tables to full-page layouts.
+
+[Open the type styles in Figma](https://www.figma.com/design/7jCMwDng7HF5g7F3tGXf0E/Angle-HR?node-id=29-367)
+
+## Typefaces
+
+- **Inter** for all interface text, in Regular 400, Medium 500 and SemiBold 600.
+- **Fira Code** for code, IDs and figures that need to line up, in Regular 400 and Medium 500.
+
+Both are loaded once in `app/layout.tsx` with `next/font`.
+
+## Using a text style
+
+Each style is a class named `{category}-{size}-{weight}`, which sets the font, size, line height and letter spacing together. Set the colour separately with a text token.
+
+```tsx
+<h2 className="heading-h4-semibold text-text-primary">Team</h2>
+<p className="body-s-regular text-text-secondary">3 people joined this month</p>
+```
+
+## Text styles
+
+Every style in `typography.css`, rendered with its own class.
+
+<TypeScale />
+
+## Vertical trim
+
+Every font carries invisible space above its capital letters and below its baseline. Vertical trim removes it, so a text box matches the ink on screen. It only affects the outer edges of a text block; line height between lines stays as specified.
+
+```css
+.heading {
+  text-box-trim: trim-both;
+  text-box-edge: cap alphabetic;
+}
+```

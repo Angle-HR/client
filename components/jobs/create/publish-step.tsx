@@ -49,7 +49,6 @@ function PublishStep({
       <div className="flex h-[24px] items-center">
         <TextButton
           size="md"
-          className="text-text-primary!"
           iconLeft={<DashboardIcon name="chevron-left-solid" size={11} />}
           href={backHref}
         >

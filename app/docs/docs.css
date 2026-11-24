@@ -1,0 +1,49 @@
+/* Styles only the /docs pages need. Everything else uses design-system tokens
+   through Tailwind classes. */
+
+.docs-inline-code {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  padding: 1px 5px;
+  border-radius: var(--radius-xs-4);
+  background: var(--bg-transparent-light);
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.docs-pre {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  padding: 16px;
+  overflow-x: auto;
+  border-radius: var(--radius-lg-10);
+  background: var(--bg-primary);
+  outline: 0.5px solid var(--border-transparent-medium);
+  outline-offset: -0.5px;
+}
+.docs-pre .docs-inline-code { padding: 0; background: none; white-space: pre; }
+
+.docs-anchor { opacity: 0; transition: opacity 0.1s; }
+.group:hover .docs-anchor, .docs-anchor:focus-visible { opacity: 1; }
+
+/* Shiki output: two colour sets as CSS variables, picked by the theme. */
+.docs-code pre { margin: 0; background: transparent !important; font-family: var(--font-mono); font-size: 0.8125rem; line-height: 1.65; }
+.docs-code .shiki span { color: var(--shiki-light); }
+:root[data-theme="dark"] .docs-code .shiki span { color: var(--shiki-dark); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .docs-code .shiki span { color: var(--shiki-dark); }
+}
+
+/* Chequerboard behind swatches, so see-through colours read as see-through. */
+.docs-checker {
+  background-color: var(--bg-secondary);
+  background-image:
+    linear-gradient(45deg, var(--bg-transparent-medium) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--bg-transparent-medium) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--bg-transparent-medium) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--bg-transparent-medium) 75%);
+  background-size: 8px 8px;
+  background-position: 0 0, 0 4px, 4px -4px, -4px 0;
+}
