@@ -117,7 +117,7 @@ Changes and what was seen:
 - Landing/legal (task A): `/` redirects to `/dashboard` (signed out then goes on to `/login`) through `next.config` redirects;
   `/privacy` redirects to `/privacy-policy`. `scripts/build-landing.mjs` and `deploy-landing.yml` now publish only the legal
   pages (`/terms`, `/privacy-policy`, `/privacy`) and make the bucket root a redirect document to `APP_URL`
-  (default https://app.tryopenhr.com). Waitlist wording proposals: `docs/legal-copy-proposal.md` (not applied).
+  (default https://tryopenhr.com). Waitlist wording proposals: `docs/legal-copy-proposal.md` (not applied).
 - Compliance step for an individual asks one question ("What field do you mostly hire in?"); business type and employee
   count are neither shown nor sent; the account type comes from the server's onboarding status, not the draft. Verified live.
 - Verification page for an individual: "Your identity is being reviewed" (pending), verified, and, after a rejection, the

@@ -8,7 +8,7 @@
 //
 // The marketing landing/waitlist pages are gone: the static site now only holds the legal pages (/terms,
 // /privacy-policy, plus /privacy as an alias). The root `/` is not a page of its own: it is a small redirect document
-// that sends visitors to the app (APP_URL, default https://app.tryopenhr.com), where signed-in users land on
+// that sends visitors to the app (APP_URL, default https://tryopenhr.com), where signed-in users land on
 // /dashboard and everyone else on /login. Redirect status codes are not available on a static bucket, so this uses
 // a meta refresh with a visible link as the fallback.
 import { spawnSync } from 'node:child_process'
@@ -87,7 +87,7 @@ if (!existsSync(join(output, 'privacy-policy', 'index.html'))) {
 mkdirSync(join(output, 'privacy'), { recursive: true })
 cpSync(join(output, 'privacy-policy', 'index.html'), join(output, 'privacy', 'index.html'))
 
-const appUrl = (process.env.APP_URL || 'https://app.tryopenhr.com').replace(/\/+$/, '')
+const appUrl = (process.env.APP_URL || 'https://tryopenhr.com').replace(/\/+$/, '')
 writeFileSync(
   join(output, 'index.html'),
   `<!doctype html>
