@@ -1,5 +1,6 @@
-# Publishes the public landing site (the `(open-hr)` routes, built by scripts/build-landing.mjs as a static export) to
-# the landing bucket in the production AWS account, which serves tryopenhr.com. Independent of deploy-staging.yml,
+# Publishes the public legal pages (/terms, /privacy-policy, /privacy; the `(open-hr)` routes, built by
+# scripts/build-landing.mjs as a static export) to the landing bucket in the production AWS account, which serves
+# tryopenhr.com. There is no marketing page: `/` is a redirect document that sends visitors to the app (APP_URL). Independent of deploy-staging.yml,
 # which ships the app image to ECS.
 #
 # Infra: Angle-HR/infra envs/landing. The role below trusts this repo's `staging` branch only (no GitHub environment,
@@ -37,10 +38,11 @@ jobs:
 
       - run: npm ci
 
-      - name: Build landing site
+      - name: Build legal pages and root redirect
         run: npm run build:landing
         env:
           NEXT_PUBLIC_GA_ID: ${{ secrets.NEXT_PUBLIC_GA_ID }}
+          APP_URL: ${{ vars.APP_URL || 'https://app.tryopenhr.com' }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4

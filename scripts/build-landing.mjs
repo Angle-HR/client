@@ -7,7 +7,10 @@
 //   node scripts/build-landing.mjs        ->  out-landing/  (sync this to the landing bucket)
 //
 // The marketing landing/waitlist pages are gone: the static site now only holds the legal pages (/terms,
-// /privacy-policy). The root `/` of the real app redirects to /dashboard, so here `/` is a copy of the terms page.
+// /privacy-policy, plus /privacy as an alias). The root `/` is not a page of its own: it is a small redirect document
+// that sends visitors to the app (APP_URL, default https://app.tryopenhr.com), where signed-in users land on
+// /dashboard and everyone else on /login. Redirect status codes are not available on a static bucket, so this uses
+// a meta refresh with a visible link as the fallback.
 import { spawnSync } from 'node:child_process'
 import {
   appendFileSync,
@@ -76,6 +79,32 @@ if (!existsSync(join(output, 'terms', 'index.html'))) {
   console.error('expected out-landing/terms/index.html')
   process.exit(1)
 }
-cpSync(join(output, 'terms', 'index.html'), join(output, 'index.html'))
+if (!existsSync(join(output, 'privacy-policy', 'index.html'))) {
+  console.error('expected out-landing/privacy-policy/index.html')
+  process.exit(1)
+}
+// /privacy is the address the terms text points at; serve the same page there.
+mkdirSync(join(output, 'privacy'), { recursive: true })
+cpSync(join(output, 'privacy-policy', 'index.html'), join(output, 'privacy', 'index.html'))
+
+const appUrl = (process.env.APP_URL || 'https://app.tryopenhr.com').replace(/\/+$/, '')
+writeFileSync(
+  join(output, 'index.html'),
+  `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Open HR</title>
+<meta name="robots" content="noindex">
+<meta http-equiv="refresh" content="0; url=${appUrl}/">
+<link rel="canonical" href="${appUrl}/">
+</head>
+<body>
+<p>Redirecting to <a href="${appUrl}/">Open HR</a>. <a href="/terms/">Terms</a> &middot; <a href="/privacy/">Privacy</a></p>
+<script>location.replace(${JSON.stringify(appUrl + '/')})</script>
+</body>
+</html>
+`,
+)
 rmSync(work, { recursive: true, force: true })
 console.log('landing site built in out-landing/')

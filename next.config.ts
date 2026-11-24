@@ -16,6 +16,14 @@ const nextConfig: NextConfig = {
     const target = process.env.DEV_API_PROXY_TARGET ?? 'https://api.staging.tryopenhr.com'
     return [{ source: '/api/v1/:path*', destination: `${target}/api/v1/:path*` }]
   },
+  // The app's root is not a page: signed-in users go to the dashboard, and the dashboard layout sends anyone without
+  // a session on to /login. /privacy is the address the terms text uses for the privacy policy.
+  async redirects() {
+    return [
+      { source: '/', destination: '/dashboard', permanent: false },
+      { source: '/privacy', destination: '/privacy-policy', permanent: false },
+    ]
+  },
   async headers() {
     return [
       {
