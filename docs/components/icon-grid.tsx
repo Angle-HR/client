@@ -7,6 +7,8 @@ import { TextInput } from '@/components/ui/input'
 import { Tabs } from '@/components/ui/tabs'
 import tokens from '@/docs/generated/tokens.json'
 
+import { DOCS_CARD_TABS } from './docs-tabs'
+
 const names = tokens.icons as string[]
 type Style = 'outline' | 'solid'
 
@@ -49,6 +51,7 @@ function IconGrid() {
       </div>
       <div className="overflow-hidden rounded-lg-10 outline-[0.5px] -outline-offset-[0.5px] outline-border-transparent-medium">
         <Tabs
+          className={DOCS_CARD_TABS}
           aria-label="Icon style"
           tabs={[
             { key: 'outline', label: 'Outline' },

@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import { MaskIcon } from '@/components/ui/icons'
 import { Tabs } from '@/components/ui/tabs'
 
+import { DOCS_CARD_TABS } from './docs-tabs'
+
 type View = 'preview' | 'code'
 
 const VIEWS = [
@@ -38,10 +40,8 @@ function ExampleFrame({ name, caption, code, html, children }: ExampleFrameProps
 
   return (
     <figure className="not-prose my-[20px] overflow-hidden rounded-lg-10 bg-bg-secondary outline-[0.5px] -outline-offset-[0.5px] outline-border-transparent-medium">
-      {/* A compact bar for the card header: 28px tabs in a 36px row, so the hover
-          fill stays 8px off the card's top edge, with a 4px inset from the corner. */}
       <Tabs
-        className="h-[36px]! pl-[1px] [&>div]:h-[28px]! [&_[role=tab]]:h-[28px]! [&_[role=tab]]:px-[10px]!"
+        className={DOCS_CARD_TABS}
         aria-label={`${name} example`}
         tabs={VIEWS}
         value={view}
