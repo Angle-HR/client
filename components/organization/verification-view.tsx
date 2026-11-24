@@ -4,7 +4,7 @@ import { useState, type FormEvent, type ReactElement } from 'react'
 
 import { Button, TextInput } from '@/components/ui'
 import { getApiError } from '@/lib/api-error'
-import { toCountryCode, toMarketCode } from '@/lib/markets'
+import { EMPLOYER_COUNTRIES } from '@/lib/employer-countries'
 import {
   useConfirmKybAddress,
   useConfirmKybName,
@@ -12,7 +12,7 @@ import {
   useRetryKyb,
   useSubmitKyb,
 } from '@/lib/mutations'
-import { useHiringCatalog, useKyb } from '@/lib/queries'
+import { useKyb } from '@/lib/queries'
 
 import type { ApiKybDisplay } from '@/lib/organization/api-types'
 
@@ -41,8 +41,6 @@ const sectionText = 'text-body-xs leading-19_2 text-text-tertiary'
  */
 function VerificationView(): ReactElement {
   const kyb = useKyb()
-  // The select lists the hiring catalog's markets, which spell the UK `UK`; the verification takes ISO codes.
-  const catalog = useHiringCatalog()
   const submit = useSubmitKyb()
   const retry = useRetryKyb()
   const confirmName = useConfirmKybName()
@@ -108,8 +106,8 @@ function VerificationView(): ReactElement {
 
   const display = state.display ?? 'not_started'
   const editing = display === 'not_started' || (display === 'failed' && !state.light_retry)
-  const market = country || toMarketCode(state.country_code ?? '')
-  const countryCode = market ? toCountryCode(market) : ''
+  const market = country || (state.country_code === 'UK' ? 'GB' : (state.country_code ?? ''))
+  const countryCode = market
   const busy =
     submit.isPending || retry.isPending || confirmName.isPending || confirmAddress.isPending
   const failure = [submit, retry, confirmName, confirmAddress].find((item) => item.isError)
@@ -229,7 +227,7 @@ function VerificationView(): ReactElement {
               onChange={(event) => setCountry(event.target.value)}
             >
               <option value="">Select a country</option>
-              {(catalog.data?.markets ?? []).map((item) => (
+              {EMPLOYER_COUNTRIES.map((item) => (
                 <option key={item.code} value={item.code}>
                   {item.name}
                 </option>

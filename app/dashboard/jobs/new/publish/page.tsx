@@ -84,7 +84,9 @@ function PublishPage() {
     if (!jobId || publishing || !publishable) return
     setPublishing(true)
     try {
-      await requests.publishJob(jobId, job?.revision)
+      // Read the revision again: the steps before this one saved the job after the cached copy was taken.
+      const fresh = await requests.getJob(jobId)
+      await requests.publishJob(jobId, fresh.revision)
       await queryClient.invalidateQueries({ queryKey: queryKeys.jobs })
       await queryClient.invalidateQueries({ queryKey: queryKeys.job(jobId) })
       await queryClient.invalidateQueries({ queryKey: queryKeys.publishCheck(jobId) })
