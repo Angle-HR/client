@@ -5,10 +5,11 @@ import { useEffect, useState, type ReactNode } from 'react'
 
 import { IconButton } from '@/components/ui/button'
 import { MaskIcon } from '@/components/ui/icons'
-import { Overlay, Sidebar, SidebarGroupItem, SidebarItem } from '@/components/ui/sidebar'
+import { Overlay, Sidebar, SidebarItem } from '@/components/ui/sidebar'
 import { DOCS_HOME, DOCS_NAV } from '@/docs/nav'
 import { useTheme } from '@/providers/theme'
 
+import { DocsNavGroup } from './docs-nav-group'
 import { PageToc } from './page-toc'
 
 import type { ThemePreference } from '@/lib/theme'
@@ -54,18 +55,22 @@ function DocsNav({ onNavigate }: { onNavigate?: () => void }) {
           onClick={onNavigate}
         />
       </div>
-      {DOCS_NAV.map((group) => (
-        <SidebarGroupItem
-          key={group.key}
-          title={group.title}
-          items={group.items.map((item) => ({
-            label: item.label,
-            href: item.href,
-            active: pathname === item.href,
-            onClick: onNavigate,
-          }))}
-        />
-      ))}
+      <div className="flex flex-col gap-[12px]">
+        {DOCS_NAV.map((group) => (
+          <DocsNavGroup
+            key={group.key}
+            id={group.key}
+            title={group.title}
+            icon={group.icon}
+            onNavigate={onNavigate}
+            items={group.items.map((item) => ({
+              label: item.label,
+              href: item.href,
+              active: pathname === item.href,
+            }))}
+          />
+        ))}
+      </div>
     </Sidebar>
   )
 }

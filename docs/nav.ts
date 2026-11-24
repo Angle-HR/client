@@ -8,6 +8,8 @@ interface DocsNavItem {
 interface DocsNavGroup {
   key: string
   title: string
+  /** File in public/dashboard/icons, without "-outline.svg". */
+  icon: string
   items: DocsNavItem[]
 }
 
@@ -17,6 +19,7 @@ const DOCS_NAV: DocsNavGroup[] = [
   {
     key: 'foundations',
     title: 'Foundations',
+    icon: 'swatch',
     items: [
       { label: 'Colours', href: '/docs/foundations/colours' },
       { label: 'Typography', href: '/docs/foundations/typography' },
@@ -28,6 +31,7 @@ const DOCS_NAV: DocsNavGroup[] = [
   {
     key: 'buttons',
     title: 'Buttons',
+    icon: 'cursor-arrow-rays',
     items: [
       { label: 'Button', href: '/docs/components/button' },
       { label: 'Icon Button', href: '/docs/components/icon-button' },
