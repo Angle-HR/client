@@ -107,6 +107,7 @@ function toCareersJobPage(data: ApiPublicJobData, jobId: string): CareersJobPage
       consentRequired: data.consent_required ?? false,
       state: (data.state as PublicJobState | undefined) ?? 'open',
       accepting: data.accepting ?? true,
+      privacyNoticeUrl: data.privacy_notice_url || undefined,
     },
   }
 }
@@ -131,9 +132,15 @@ interface ApplicationBodyInput {
   market?: string
   consentRequired: boolean
   source?: string
+  /** An ISO country picked from the full list. Wins over `market`. */
+  country?: string
+  /** What the candidate ticked. Absent: the form's legal line stands in for both. */
+  privacyAcknowledged?: boolean
+  consent?: boolean
 }
 
 function candidateCountry(input: ApplicationBodyInput): string | undefined {
+  if (input.country) return input.country
   const market = input.market ?? (input.markets.length === 1 ? input.markets[0] : undefined)
   return market ? toCountryCode(market) : undefined
 }
@@ -158,8 +165,8 @@ function toApplicationBody(input: ApplicationBodyInput): ApiApplicationBody {
     // The API wants the candidate's country as an ISO code, one of the job's markets. A job with one market has no choice.
     candidate_country: candidateCountry(input),
     // The form's legal line is shown above the button, so submitting acknowledges it.
-    privacy_notice_acknowledged: true,
-    consent: input.consentRequired ? true : undefined,
+    privacy_notice_acknowledged: input.privacyAcknowledged ?? true,
+    consent: input.consent ?? (input.consentRequired ? true : undefined),
     source: input.source,
   }
 }

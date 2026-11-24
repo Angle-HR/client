@@ -116,6 +116,34 @@ describe('toApplicationBody', () => {
   })
 })
 
+describe('toApplicationBody declaration', () => {
+  const base = { questions: [], answers: {}, uploads: {}, markets: ['UK'], consentRequired: false }
+
+  it('sends the picked country, the acknowledgement and an explicit consent', () => {
+    const body = toApplicationBody({
+      ...base,
+      country: 'FR',
+      privacyAcknowledged: true,
+      consent: false,
+      source: 'direct',
+    })
+    expect(body).toMatchObject({
+      candidate_country: 'FR',
+      privacy_notice_acknowledged: true,
+      consent: false,
+      source: 'direct',
+    })
+  })
+
+  it('reads the privacy notice url from the job', () => {
+    const page = toCareersJobPage(
+      { job: { title: 'T' }, privacy_notice_url: 'https://x.test/privacy' },
+      'abc',
+    )
+    expect(page?.job.privacyNoticeUrl).toBe('https://x.test/privacy')
+  })
+})
+
 describe('toUploadBody', () => {
   it('describes the file for its question', () => {
     const file = new File(['abc'], 'cv.pdf', { type: 'application/pdf' })

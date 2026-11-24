@@ -295,6 +295,7 @@ const requests = {
     answers: ApplicationAnswers,
     source?: string,
     market?: string,
+    declaration?: { country?: string; privacyAcknowledged?: boolean; consent?: boolean },
   ): Promise<void> => {
     const uploads: Record<string, string[]> = {}
     for (const question of job.questions) {
@@ -329,6 +330,7 @@ const requests = {
         market,
         consentRequired: job.consentRequired ?? false,
         source,
+        ...declaration,
       }),
       { headers: { 'Idempotency-Key': crypto.randomUUID() } },
     )

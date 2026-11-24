@@ -16,8 +16,15 @@ import type { OnboardingProgressSummary, ProductOnboardingStatusData } from './t
 /** Sends a candidate's application for one job. `source` is the `src` of the link they came from. */
 function useSubmitApplication(job: CareersJob, source?: string) {
   return useMutation({
-    mutationFn: ({ answers, market }: { answers: ApplicationAnswers; market?: string }) =>
-      requests.submitApplication(job, answers, source, market),
+    mutationFn: ({
+      answers,
+      market,
+      declaration,
+    }: {
+      answers: ApplicationAnswers
+      market?: string
+      declaration?: { country?: string; privacyAcknowledged?: boolean; consent?: boolean }
+    }) => requests.submitApplication(job, answers, source, market, declaration),
   })
 }
 

@@ -43,6 +43,8 @@ interface CareersJob {
   state?: 'open' | 'closed' | 'paused' | 'archived'
   /** False once the job takes no more applications. */
   accepting?: boolean
+  /** The employer's privacy notice, when the API sends one. */
+  privacyNoticeUrl?: string
 }
 
 interface CareersJobPage {
