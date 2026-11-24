@@ -3,11 +3,12 @@
 import { useRouter } from 'next/navigation'
 
 import { DashboardErrorState, WelcomeEmptyState } from '@/components/dashboard/dashboard-states'
-import { useMe } from '@/lib/queries'
+import { useKyb, useMe } from '@/lib/queries'
 
 function DashboardPage() {
   const router = useRouter()
   const me = useMe()
+  const kyb = useKyb()
 
   if (me.isError) {
     // Offline is its own state in the design; anything else is the generic
@@ -22,10 +23,15 @@ function DashboardPage() {
     )
   }
 
-  // KYB status is not on the API yet (backend flagged it as out of scope until
-  // job-publish gating), so a workspace is treated as still under review until
-  // it says otherwise.
-  const verification = me.data?.onboarding?.status === 'completed' ? 'verified' : 'pending'
+  // The organization's verification decides it (a company's KYB or an individual's identity review). Until
+  // it has loaded, or where none can be read, completing onboarding counts as verified, as in the layout.
+  const verification = kyb.data
+    ? kyb.data.status === 'verified'
+      ? 'verified'
+      : 'pending'
+    : me.data?.onboarding?.status === 'completed'
+      ? 'verified'
+      : 'pending'
 
   return (
     <WelcomeEmptyState

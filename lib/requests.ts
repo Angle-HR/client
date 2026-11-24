@@ -519,6 +519,15 @@ const requests = {
     return data.data
   },
 
+  /** Individuals: asks for a new manual review after a rejection (an empty body). */
+  requestKybReview: async (): Promise<ApiKybState> => {
+    const { data } = await axiosInstance.post<ApiResponse<ApiKybState>>(
+      ENDPOINTS.organization.verification(),
+      {},
+    )
+    return data.data
+  },
+
   /** Light retry after number_not_found or name_mismatch; country and address are reused. */
   retryKyb: async (body: ApiKybRetryBody): Promise<ApiKybState> => {
     const { data } = await axiosInstance.post<ApiResponse<ApiKybState>>(

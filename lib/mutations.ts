@@ -124,6 +124,10 @@ function useSubmitKyb() {
   return useKybWrite(requests.submitKyb)
 }
 
+function useRequestKybReview() {
+  return useKybWrite<void>(() => requests.requestKybReview())
+}
+
 function useRetryKyb() {
   return useKybWrite(requests.retryKyb)
 }
@@ -286,6 +290,7 @@ export {
   useRecordDpia,
   useRetryKyb,
   useSetPrivacyContact,
+  useRequestKybReview,
   useSubmitKyb,
   useConfirmGate,
   useSetScreeningRules,

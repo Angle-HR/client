@@ -34,6 +34,8 @@ type ApiKybStatus = 'not_started' | 'pending' | 'verified' | 'failed'
 type ApiKybDisplay = 'verified' | 'pending_review' | 'action_required' | 'failed' | 'not_started'
 
 interface ApiKybState {
+  /** `individual` for a personal organization: manual identity review, no registry questions. */
+  kind?: 'individual' | 'business'
   status?: ApiKybStatus
   /** What to show: `action_required` is a warning the user can resolve in place. */
   display?: ApiKybDisplay

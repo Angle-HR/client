@@ -5,7 +5,7 @@ import { useState, type FormEvent, type ReactElement } from 'react'
 import { Button, Checkbox, TextInput } from '@/components/ui'
 import { getApiError } from '@/lib/api-error'
 import { useAcceptAgreements, useRecordDpia, useSetPrivacyContact } from '@/lib/mutations'
-import { useCompanySetup } from '@/lib/queries'
+import { useCompanySetup, useKyb, useMe } from '@/lib/queries'
 
 const sectionTitle = 'text-body-s leading-19_5 font-semibold text-text-primary'
 const sectionText = 'text-body-xs leading-19_2 text-text-tertiary'
@@ -24,6 +24,10 @@ function CompanySetupView(): ReactElement {
   const accept = useAcceptAgreements()
   const dpia = useRecordDpia()
   const contact = useSetPrivacyContact()
+  // A person hiring as themselves is the data controller. Their account email is a sensible default for the
+  // privacy contact, but it is a legal statement, so it is only prefilled: nothing is saved until they save.
+  const individual = useKyb().data?.kind === 'individual'
+  const accountEmail = useMe().data?.email ?? ''
 
   const data = setup.data
   const [agreed, setAgreed] = useState(false)
@@ -35,13 +39,13 @@ function CompanySetupView(): ReactElement {
   if (setup.isError) {
     return (
       <p role="alert" className="p-[24px] text-body-s text-text-secondary">
-        We couldn&apos;t load your company settings. Try again in a moment.
+        We couldn&apos;t load your hiring settings. Try again in a moment.
       </p>
     )
   }
   if (!data) return <div className="p-[24px]" aria-busy />
 
-  const privacyEmail = email ?? data.privacy_contact_email ?? ''
+  const privacyEmail = email ?? data.privacy_contact_email ?? (individual ? accountEmail : '')
   const dpoContact = dpo ?? data.dpo_contact ?? ''
   const dpiaRecorded = (data.dpia_version ?? 0) > 0
 
@@ -57,7 +61,9 @@ function CompanySetupView(): ReactElement {
 
   return (
     <div className="flex w-[640px] max-w-full flex-col gap-[40px] p-[24px]">
-      <h1 className="text-body-xl leading-24 font-semibold text-text-primary">Company settings</h1>
+      <h1 className="text-body-xl leading-24 font-semibold text-text-primary">
+        {individual ? 'Hiring settings' : 'Company settings'}
+      </h1>
 
       <section className="flex flex-col gap-[16px]">
         <div className="flex flex-col gap-[6px]">
@@ -102,6 +108,7 @@ function CompanySetupView(): ReactElement {
           <h2 className={sectionTitle}>Privacy contact</h2>
           <p className={sectionText}>
             Candidates are shown this address for questions about their data.
+            {individual ? ' You are the data controller for the applications you receive.' : ''}
           </p>
         </div>
         <TextInput
@@ -139,7 +146,11 @@ function CompanySetupView(): ReactElement {
           <p className={sectionText}>
             Needed to publish a job with automated screening.{' '}
             {dpiaRecorded ? `Version ${data.dpia_version} on file.` : 'None on file.'}
-            {data.automated_screening_enabled ? '' : ' Screening is not enabled for your company.'}
+            {data.automated_screening_enabled
+              ? ''
+              : individual
+                ? ' Screening is not available for personal accounts.'
+                : ' Screening is not enabled for your company.'}
           </p>
         </div>
         <TextInput

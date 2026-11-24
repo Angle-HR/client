@@ -35,8 +35,12 @@ function useCompanyRoles() {
   return useQuery({ queryKey: queryKeys.companyRoles, queryFn: requests.getCompanyRoles })
 }
 
-function useBusinessTypes() {
-  return useQuery({ queryKey: queryKeys.businessTypes, queryFn: requests.getBusinessTypes })
+function useBusinessTypes(enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.businessTypes,
+    queryFn: requests.getBusinessTypes,
+    enabled,
+  })
 }
 
 function useOnboardingIndustries() {

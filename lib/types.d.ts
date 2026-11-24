@@ -287,9 +287,11 @@ export interface IdentificationRequirementsData {
 }
 
 export interface ProductBusinessPayload {
-  business_type_id: string
+  /** Not asked of individuals (the server ignores it, and omits it from the echo). */
+  business_type_id?: string
   industry_id: string
-  employee_count: number
+  /** Not asked of individuals; 0 in the echo when not given. */
+  employee_count?: number
 }
 
 export interface ProductBusinessData extends ProductBusinessPayload {
@@ -345,4 +347,13 @@ export interface ProductOnboardingCompleteData {
   status: string
   redirect_url?: string
   workspace?: ProductWorkspaceStub
+  /** Individuals only: the personal organization created by this call. */
+  organization?: {
+    id: string
+    kind: OrganizationKind
+    verification_status: string
+  }
 }
+
+/** `individual` is the implicit personal organization of an individual account. */
+export type OrganizationKind = 'individual' | 'business'

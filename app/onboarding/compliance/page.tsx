@@ -12,26 +12,36 @@ import { BannerSmall } from '@/components/ui'
 import { applyApiError } from '@/lib/api-error'
 import { routeForOnboarding } from '@/lib/auth-session'
 import { useUpsertCompliance } from '@/lib/mutations'
+import { useOnboardingStatus } from '@/lib/queries'
 
 function OnboardingCompliancePage() {
   const router = useRouter()
   const upsertCompliance = useUpsertCompliance()
   const draft = useOnboardingDraft()
+  const status = useOnboardingStatus()
+  // The server's account type wins over the draft, which a reload or another device loses.
+  const individual = (status.data?.account_type ?? draft.accountType) === 'individual'
   const [fallbackError, setFallbackError] = useState<string>()
 
   // The server decides whether this step is the right one to be on.
   const { checking } = useOnboardingResume()
-  const backHref = draft.accountType === 'business' ? '/onboarding/workspace' : '/onboarding'
+  const backHref =
+    !individual && draft.accountType === 'business' ? '/onboarding/workspace' : '/onboarding'
 
   async function handleContinue(values: ComplianceValues) {
     setFallbackError(undefined)
     try {
+      // An individual is asked for an industry only; the business questions are not sent.
       const employeeCount = Number.parseInt(values.employeeCount, 10)
-      const result = await upsertCompliance.mutateAsync({
-        business_type_id: values.businessDescriptor,
-        industry_id: values.industryId,
-        employee_count: Number.isFinite(employeeCount) ? employeeCount : 0,
-      })
+      const result = await upsertCompliance.mutateAsync(
+        individual
+          ? { industry_id: values.industryId }
+          : {
+              business_type_id: values.businessDescriptor,
+              industry_id: values.industryId,
+              employee_count: Number.isFinite(employeeCount) ? employeeCount : 0,
+            },
+      )
       patchOnboardingDraft({ compliance: values })
       router.push(routeForOnboarding(result.onboarding) || '/onboarding/setup')
     } catch (err) {
@@ -62,6 +72,7 @@ function OnboardingCompliancePage() {
           </BannerSmall>
         ) : null}
         <StepCompliance
+          accountType={individual ? 'individual' : 'business'}
           submitting={upsertCompliance.isPending}
           onContinue={handleContinue}
           onBack={() => router.push(backHref)}
