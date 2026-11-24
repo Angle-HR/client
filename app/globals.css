@@ -37,6 +37,11 @@ input:-webkit-autofill:active {
      use this instead of Tailwind's 150ms default. */
   --default-transition-duration: 0.05s;
 
+  /* Figma prototype easings, exactly: "Ease in" and "Ease out" in Figma's
+     transition menu. Tailwind's own ease-in/ease-out curves are different. */
+  --ease-figma-in: cubic-bezier(0.42, 0, 1, 1);
+  --ease-figma-out: cubic-bezier(0, 0, 0.58, 1);
+
   /* ══════════════════════════════════════════════════════════════════════════
      SPACING — unified scale for p-*, m-*, gap-*, w-*, h-*, inset-*, etc.
      ══════════════════════════════════════════════════════════════════════════ */

@@ -202,7 +202,7 @@ describe('IconButton', () => {
 
   it('light never fills; light-w-hover fills on hover', () => {
     const { rerender } = render(<IconButton variant="light" icon={<span>X</span>} aria-label="x" />)
-    expect(screen.getByRole('button').className).not.toContain('hover:bg-')
+    expect(screen.getByRole('button').className).not.toMatch(/hover:bg-(?!transparent)/)
     rerender(<IconButton variant="light-w-hover" icon={<span>X</span>} aria-label="x" />)
     expect(screen.getByRole('button').className).toContain('hover:bg-bg-transparent-light')
   })
@@ -269,7 +269,7 @@ describe('TextButton', () => {
     expect(btn.className).toContain('text-text-primary')
     expect(btn.className).toContain('active:text-text-blue-accent')
     const label = screen.getByText('Link')
-    expect(label.className).toContain('group-hover/text-button:underline')
+    expect(label.className).toContain('group-[:hover:not(:disabled)]/text-button:underline')
     expect(label.className.split(' ')).not.toContain('underline')
   })
 

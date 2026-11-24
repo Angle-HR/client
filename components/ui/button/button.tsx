@@ -25,25 +25,27 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   'aria-describedby'?: string
 }
 
+// Generated from button.figma.ts by hand, one string per accent and variant so
+// Tailwind can see every class. button.test.tsx checks these against the spec.
 const colorClassMap: Record<`${ButtonAccent}-${ButtonVariant}`, string> = {
   'default-primary':
-    'bg-bg-btn-default-pri-rest hover:bg-bg-btn-default-pri-hover active:bg-bg-btn-default-pri-pressed focus-visible:bg-bg-btn-default-pri-focus disabled:bg-bg-btn-default-pri-disabled border-border-btn-default-pri-rest hover:border-border-btn-default-pri-hover active:border-border-btn-default-pri-pressed focus-visible:border-border-btn-default-pri-focus disabled:border-border-btn-default-pri-disabled text-text-btn-default-primary disabled:text-text-btn-default-disabled',
+    'bg-bg-btn-default-pri-rest hover:bg-bg-btn-default-pri-hover active:bg-bg-btn-default-pri-pressed focus-visible:bg-bg-btn-default-pri-focus disabled:bg-bg-btn-default-pri-disabled border-border-btn-default-pri-rest hover:border-border-btn-default-pri-hover active:border-border-btn-default-pri-hover focus-visible:border-border-btn-blue-pri-focus disabled:border-border-btn-default-pri-disabled text-text-btn-default-primary disabled:text-text-btn-default-disabled',
   'default-secondary':
-    'bg-bg-btn-default-sec-rest hover:bg-bg-btn-default-sec-hover active:bg-bg-btn-default-sec-pressed focus-visible:bg-bg-btn-default-sec-focus disabled:bg-bg-btn-default-sec-disabled border-border-btn-default-sec-rest hover:border-border-btn-default-sec-hover active:border-border-btn-default-sec-pressed focus-visible:border-border-btn-default-sec-focus disabled:border-border-btn-default-sec-disabled text-text-btn-default-secondary disabled:text-text-btn-default-disabled',
+    'bg-bg-btn-default-sec-rest hover:bg-bg-btn-default-sec-hover active:bg-bg-btn-default-sec-pressed focus-visible:bg-bg-btn-default-pri-focus disabled:bg-bg-btn-default-pri-disabled border-border-btn-default-sec-rest hover:border-border-btn-default-sec-hover active:border-border-btn-default-sec-pressed focus-visible:border-border-btn-blue-sec-focus disabled:border-border-btn-default-sec-disabled text-text-btn-default-secondary disabled:text-text-btn-default-disabled',
   'default-tertiary':
-    'bg-bg-btn-default-tet-rest hover:bg-bg-btn-default-tet-hover active:bg-bg-btn-default-tet-pressed focus-visible:bg-bg-btn-default-tet-focus disabled:bg-bg-btn-default-tet-disabled border-border-btn-default-tet-rest hover:border-border-btn-default-tet-hover active:border-border-btn-default-tet-pressed focus-visible:border-border-btn-default-tet-focus disabled:border-border-btn-default-tet-disabled text-text-btn-default-tertiary disabled:text-text-btn-default-disabled',
+    'bg-bg-btn-default-tet-rest hover:bg-bg-btn-default-tet-hover active:bg-bg-btn-default-tet-pressed focus-visible:bg-bg-btn-default-pri-focus disabled:bg-bg-btn-default-tet-disabled border-border-btn-default-tet-rest hover:border-border-btn-default-tet-hover active:border-border-btn-default-tet-disabled focus-visible:border-border-btn-blue-tet-focus disabled:border-border-btn-default-tet-disabled text-text-btn-default-tertiary disabled:text-text-btn-default-disabled',
   'blue-primary':
-    'bg-bg-btn-blue-pri-rest hover:bg-bg-btn-blue-pri-hover active:bg-bg-btn-blue-pri-pressed focus-visible:bg-bg-btn-blue-pri-focus disabled:bg-bg-btn-blue-pri-disabled border-border-btn-blue-pri-rest hover:border-border-btn-blue-pri-hover active:border-border-btn-blue-pri-pressed focus-visible:border-border-btn-blue-pri-focus disabled:border-border-btn-blue-pri-disabled text-text-btn-blue-primary disabled:opacity-40',
+    'bg-bg-btn-blue-pri-rest hover:bg-bg-btn-blue-pri-hover active:bg-bg-btn-blue-pri-pressed focus-visible:bg-bg-btn-blue-pri-focus disabled:bg-bg-btn-blue-pri-disabled border-border-btn-blue-pri-rest hover:border-border-btn-blue-pri-rest active:border-border-btn-default-pri-hover focus-visible:border-transparent focus-visible:shadow-[0_0_0_1px_var(--bg-btn-blue-pri-focus)] disabled:border-border-btn-blue-pri-disabled text-text-btn-blue-primary disabled:opacity-24',
   'blue-secondary':
-    'bg-bg-btn-blue-sec-rest hover:bg-bg-btn-blue-sec-hover active:bg-bg-btn-blue-sec-pressed focus-visible:bg-bg-btn-blue-sec-focus disabled:bg-bg-btn-blue-sec-disabled border-border-btn-blue-sec-rest hover:border-border-btn-blue-sec-hover active:border-border-btn-blue-sec-pressed focus-visible:border-border-btn-blue-sec-focus disabled:border-border-btn-blue-sec-disabled text-text-btn-blue-secondary',
+    'bg-bg-btn-blue-sec-rest hover:bg-bg-btn-blue-sec-hover active:bg-bg-btn-blue-sec-pressed focus-visible:bg-bg-btn-blue-sec-focus disabled:bg-bg-btn-blue-sec-disabled border-border-btn-blue-sec-rest hover:border-border-btn-blue-sec-hover active:border-border-btn-blue-sec-pressed focus-visible:border-border-btn-blue-sec-focus disabled:border-border-btn-blue-sec-disabled text-text-btn-blue-secondary disabled:opacity-24',
   'blue-tertiary':
-    'bg-bg-btn-blue-tet-rest hover:bg-bg-btn-blue-tet-hover active:bg-bg-btn-blue-tet-pressed focus-visible:bg-bg-btn-blue-tet-focus disabled:bg-bg-btn-blue-tet-disabled border-border-btn-blue-tet-rest hover:border-border-btn-blue-tet-hover active:border-border-btn-blue-tet-pressed focus-visible:border-border-btn-blue-tet-focus disabled:border-border-btn-blue-tet-disabled text-text-btn-blue-tertiary',
+    'bg-bg-btn-blue-tet-rest hover:bg-bg-btn-blue-tet-hover active:bg-bg-btn-blue-tet-pressed focus-visible:bg-bg-btn-blue-tet-focus disabled:bg-bg-btn-blue-tet-disabled border-border-btn-blue-tet-rest hover:border-border-btn-blue-tet-hover active:border-border-btn-blue-tet-selected focus-visible:border-transparent focus-visible:shadow-[0_0_0_1px_var(--border-btn-blue-tet-focus)] disabled:border-border-btn-blue-tet-disabled text-text-btn-blue-tertiary disabled:opacity-24',
   'red-primary':
-    'bg-bg-btn-red-pri-rest hover:bg-bg-btn-red-pri-hover active:bg-bg-btn-red-pri-pressed focus-visible:bg-bg-btn-red-pri-focus disabled:bg-bg-btn-red-pri-disabled border-border-btn-red-pri-rest hover:border-border-btn-red-pri-hover active:border-border-btn-red-pri-pressed focus-visible:border-border-btn-red-pri-focus disabled:border-border-btn-red-pri-disabled text-text-btn-red-primary disabled:opacity-40',
+    'bg-bg-btn-red-pri-rest hover:bg-bg-btn-red-pri-hover active:bg-bg-btn-red-pri-pressed focus-visible:bg-bg-btn-red-pri-focus disabled:bg-bg-btn-red-pri-disabled border-border-btn-red-pri-rest hover:border-border-btn-red-pri-hover active:border-border-btn-blue-pri-pressed focus-visible:border-transparent focus-visible:shadow-[0_0_0_1px_var(--border-btn-red-pri-focus)] disabled:border-border-btn-red-pri-disabled text-text-btn-red-primary disabled:opacity-24',
   'red-secondary':
-    'bg-bg-btn-red-sec-rest hover:bg-bg-btn-red-sec-hover active:bg-bg-btn-red-sec-pressed focus-visible:bg-bg-btn-red-sec-focus disabled:bg-bg-btn-red-sec-disabled border-border-btn-red-sec-rest hover:border-border-btn-red-sec-hover active:border-border-btn-red-sec-pressed focus-visible:border-border-btn-red-sec-focus disabled:border-border-btn-red-sec-disabled text-text-btn-red-secondary',
+    'bg-bg-btn-red-sec-rest hover:bg-bg-btn-red-sec-hover active:bg-bg-btn-red-sec-pressed focus-visible:bg-bg-btn-red-sec-focus disabled:bg-bg-btn-red-sec-disabled border-border-btn-red-sec-rest hover:border-border-btn-red-sec-hover active:border-border-btn-red-sec-pressed focus-visible:border-transparent focus-visible:shadow-[0_0_0_1px_var(--border-btn-red-sec-focus)] disabled:border-border-btn-red-sec-disabled text-text-btn-red-secondary disabled:opacity-24',
   'red-tertiary':
-    'bg-bg-btn-red-tet-rest hover:bg-bg-btn-red-tet-hover active:bg-bg-btn-red-tet-pressed focus-visible:bg-bg-btn-red-tet-focus disabled:bg-bg-btn-red-tet-disabled border-border-btn-red-tet-rest hover:border-border-btn-red-tet-hover active:border-border-btn-red-tet-pressed focus-visible:border-border-btn-red-tet-focus disabled:border-border-btn-red-tet-disabled text-text-btn-red-tertiary',
+    'bg-bg-btn-red-tet-rest hover:bg-bg-btn-red-tet-hover active:bg-bg-btn-red-tet-pressed focus-visible:bg-bg-btn-red-tet-focus disabled:bg-bg-btn-red-tet-disabled border-border-btn-red-tet-rest hover:border-border-btn-red-tet-hover active:border-border-btn-red-tet-selected focus-visible:border-transparent focus-visible:shadow-[0_0_0_1px_var(--border-btn-red-tet-focus)] disabled:border-border-btn-red-tet-disabled text-text-btn-red-tertiary disabled:opacity-24',
 }
 
 function getColorClasses(variant: ButtonVariant, accent: ButtonAccent): string {
@@ -93,8 +95,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
     // Figma's 8px inset is measured from the edge, so 7px inside the 1px border.
     'inline-flex items-center justify-center font-medium rounded-sm-7 border',
     // Figma: hover dissolves in over 100ms (ease in) and out over 100ms (ease out); press takes 50ms.
-    'transition-colors duration-100 ease-out hover:ease-in active:duration-[50ms]',
-    'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bg-selection-controls-selected',
+    'transition-colors duration-100 ease-figma-out hover:ease-figma-in active:duration-[50ms] active:ease-figma-out',
+    // Focus is drawn by the colour classes (blue border, or a 1px ring), as in Figma. No extra outline.
+    'focus-visible:outline-none',
     'disabled:cursor-not-allowed aria-busy:cursor-wait',
     sizeClasses,
     getColorClasses(variant, accent),

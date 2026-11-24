@@ -120,7 +120,7 @@ Only disable a button when the reason is obvious, and point to it with `aria-des
 
 <ButtonStates />
 
-Hover fades in and out over 100ms and a press takes 50ms, as in the Figma prototype. Focus and disabled change instantly.
+Hover fades in over 100ms with Figma's ease-in curve and out over 100ms with its ease-out curve. A press takes 50ms. Focus and disabled change instantly, as in the Figma prototype.
 
 ## Usage
 
@@ -145,7 +145,7 @@ Hover fades in and out over 100ms and a press takes 50ms, as in the Figma protot
 ## Accessibility
 
 - **Keyboard:** Tab to reach it, Space or Enter to press it.
-- **Focus:** a 2px blue ring, 2px out from the edge.
+- **Focus:** as in Figma. Default buttons get a blue 1px border. Blue and red buttons swap their border for a 1px ring just outside the edge (blue on red buttons and on blue tertiary; on blue primary it matches the fill). Blue secondary gets a blue border.
 - **Disabled:** `disabled` removes it from the tab order. To keep it focusable so you can explain why, use `aria-disabled="true"` and block the click.
 - **Loading:** sets `aria-busy` and `aria-disabled` and keeps focus. Change the label so screen readers hear it.
 - **Colour:** red alone doesn't mean "danger". The label has to say it.

@@ -1,33 +1,30 @@
 import { Button, type ButtonAccent, type ButtonVariant } from '@/components/ui/button'
+import { BUTTON_FIGMA, type ButtonState } from '@/components/ui/button/button.figma'
 
-import { FOCUS_RING, StateTable } from './state-table'
+import { StateTable } from './state-table'
 
 import type { CSSProperties } from 'react'
 
 const ACCENTS: ButtonAccent[] = ['default', 'blue', 'red']
-const VARIANTS: { key: ButtonVariant; token: string }[] = [
-  { key: 'primary', token: 'pri' },
-  { key: 'secondary', token: 'sec' },
-  { key: 'tertiary', token: 'tet' },
-]
-const STATES = ['rest', 'hover', 'pressed', 'focus', 'disabled'] as const
+const VARIANTS: ButtonVariant[] = ['primary', 'secondary', 'tertiary']
+const STATES: ButtonState[] = ['rest', 'hover', 'pressed', 'focus', 'disabled']
+
+const cssVar = (name: string) => (name === 'transparent' ? 'transparent' : `var(--${name})`)
 
 /**
- * Pins a real Button to one state by applying that state's own tokens, so
- * every state can be compared side by side, as in Figma. The colours come
- * from the same CSS variables the component uses on hover, press and focus.
+ * Pins a real Button to one state using the Figma spec (button.figma.ts), the
+ * same file the component is tested against, so this grid can't drift from it.
  */
-function pinnedStyle(
-  accent: ButtonAccent,
-  token: string,
-  state: (typeof STATES)[number],
-): CSSProperties | undefined {
+function pinnedStyle(accent: ButtonAccent, variant: ButtonVariant, state: ButtonState) {
   if (state === 'rest' || state === 'disabled') return undefined
-  return {
-    backgroundColor: `var(--bg-btn-${accent}-${token}-${state})`,
-    borderColor: `var(--border-btn-${accent}-${token}-${state})`,
-    ...(state === 'focus' ? FOCUS_RING : {}),
+  const spec = BUTTON_FIGMA[`${accent}-${variant}`][state]
+  const style: CSSProperties = {
+    backgroundColor: cssVar(spec.bg),
+    borderColor: cssVar(spec.border),
+    color: cssVar(spec.text),
   }
+  if (spec.ring) style.boxShadow = `0 0 0 1px ${cssVar(spec.ring)}`
+  return style
 }
 
 /** Every variant, accent and state of Button in one grid. */
@@ -37,24 +34,24 @@ function ButtonStates() {
       columns={STATES}
       rows={ACCENTS.flatMap((accent) =>
         VARIANTS.map((variant, index) => ({
-          label: `${accent} · ${variant.key}`,
+          label: `${accent} · ${variant}`,
           divider: index === 0,
           cells: STATES.map((state) => (
             <Button
               key={state}
-              variant={variant.key}
+              variant={variant}
               accent={accent}
               disabled={state === 'disabled'}
               tabIndex={-1}
               aria-hidden
-              style={pinnedStyle(accent, variant.token, state)}
+              style={pinnedStyle(accent, variant, state)}
             >
               Button
             </Button>
           )),
         })),
       )}
-      caption="Each state is pinned using its own tokens. Hover, press or tab to the examples above to see the real transitions."
+      caption="Each state is pinned using Figma's tokens. Hover, press or tab to the examples above to see the real transitions."
     />
   )
 }

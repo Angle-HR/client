@@ -22,18 +22,18 @@ Match the text around it.
 
 <Example name="text-button/sizes" />
 
-| Size | Text | Left icon | Right icon | Use it for                    |
-| ---- | ---- | --------- | ---------- | ----------------------------- |
-| `xs` | 10px | 10px      | 10px       | Fine print and dense metadata |
-| `sm` | 12px | 10px      | 10px       | Captions, table cells, hints  |
-| `md` | 13px | 11px      | 10px       | Body copy (default)           |
-| `lg` | 14px | 12px      | 12px       | Larger body copy              |
+| Size | Text | Height                     | Left icon | Right icon | Use it for                    |
+| ---- | ---- | -------------------------- | --------- | ---------- | ----------------------------- |
+| `xs` | 10px | 10px                       | 10px      | 10px       | Fine print and dense metadata |
+| `sm` | 12px | 10px                       | 10px      | 10px       | Captions, table cells, hints  |
+| `md` | 13px | 11px (12px with an avatar) | 11px      | 10px       | Body copy (default)           |
+| `lg` | 14px | 12px                       | 12px      | 12px       | Larger body copy              |
 
-Icons and label sit 2px apart.
+Icons and label sit 2px apart. As in Figma, the label is trimmed to the height of its capital letters, so the button is only as tall as its icons. That makes it a small target: give it room, or use `wrapped` where it stands alone.
 
 ## Underline
 
-It's dark grey at rest and turns blue when pressed or focused. By default it underlines on hover, so it never relies on colour alone.
+It's dark grey at rest and turns blue when pressed or focused. By default it underlines on hover and press, so it never relies on colour alone. The underline sits 10% of the text size below the letters and never shows on focus or when disabled (except with `"always"`).
 
 <Example name="text-button/underline-bold" />
 
@@ -86,7 +86,9 @@ With `href`, it renders an `<a>`. For pages inside the app, pass Next.js `Link` 
 
 <TextButtonStates />
 
-Colour and underline fade over 100ms.
+Colour and underline fade in over 100ms on hover and press (Figma's ease in) and back out over 100ms (ease out).
+
+At `md` and `lg`, Figma keeps the left icon dark grey on press and focus while the label and right icon turn blue. At `xs` and `sm` the icon turns blue too. The code copies this; it may be a slip in Figma.
 
 ## Usage
 
@@ -105,7 +107,7 @@ Colour and underline fade over 100ms.
 ## Accessibility
 
 - **Keyboard:** Tab to reach it. Space or Enter presses a button; Enter follows a link.
-- **Focus:** a 2px blue ring, and the text turns blue.
+- **Focus:** the text turns blue, as in Figma. There's no ring, so focus is easy to miss on a busy page.
 - **Colour:** the hover underline means it doesn't rely on colour alone. With `underline="never"`, only use it where its position makes it clearly clickable.
 - **Icons and avatar:** decorative. The label has to make sense without them.
 

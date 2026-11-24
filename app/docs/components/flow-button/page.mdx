@@ -50,7 +50,7 @@ Padding is measured from the outer edge, as in Figma. Icons are 14px on the left
 
 ## Loading
 
-Set `loading` while the step submits. A spinner appears before the label, the label stays, and extra clicks are ignored. It keeps focus.
+Figma doesn't have this state yet; it's built in code only. Set `loading` while the step submits. A spinner appears before the label, the label stays, and extra clicks are ignored. It keeps focus.
 
 <Example name="flow-button/loading" caption="Click to see the loading state." />
 
@@ -58,7 +58,11 @@ Set `loading` while the step submits. A spinner appears before the label, the la
 
 <FlowButtonStates />
 
-Primary fades in over 100ms on hover; secondary and tertiary take 50ms. Fading out takes 100ms and a press takes 50ms.
+Hover fades in over 100ms for primary and for every variant at `md`; secondary and tertiary at `xs` and `sm` take 50ms (Figma's ease in). Fading out takes 100ms and a press takes 50ms (ease out).
+
+**Shadow.** As in Figma, the soft drop shadow sits on secondary in every state except disabled, on tertiary only at rest and on focus, and on primary only at `md`. Buttons joined to an input never have it.
+
+**Disabled.** Primary fades to 24% opacity. Secondary and tertiary turn their text and border light grey instead.
 
 ## Usage
 
@@ -82,7 +86,7 @@ Primary fades in over 100ms on hover; secondary and tertiary take 50ms. Fading o
 ## Accessibility
 
 - **Keyboard:** fields come first; the primary Flow Button is the last stop in each step.
-- **Focus:** a 2px blue ring.
+- **Focus:** as in Figma, a blue border on secondary and tertiary (with a light grey fill), and a solid blue fill on primary. There's no separate ring, so primary's focus looks almost the same as rest.
 - **Context:** point `aria-describedby` at the step heading so screen reader users know where they are.
 - **Blocked step:** if "Next" is disabled, show inline messages that say why.
 - **Loading:** sets `aria-busy` and `aria-disabled`. Change the label, like "Submitting…".

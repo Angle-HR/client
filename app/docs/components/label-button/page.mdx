@@ -39,6 +39,8 @@ Only add an icon when it makes the chip quicker to scan.
 
 Selected gets a light blue fill and a blue border. Focus gets a blue border too, as in Figma.
 
+Hover fades in over 100ms (Figma's ease in) and out over 100ms (ease out). Selecting fades over 50ms (ease out). Figma deselects instantly; in code it takes the 100ms hover fade, because CSS can't tell the two apart.
+
 ## Usage
 
 <DoDont>

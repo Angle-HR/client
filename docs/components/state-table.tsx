@@ -65,11 +65,5 @@ function StateTable({ columns, rows, caption }: StateTableProps) {
   )
 }
 
-/** The focus ring every button shares, for pinning the focus state. */
-const FOCUS_RING = {
-  outline: '2px solid var(--bg-selection-controls-selected)',
-  outlineOffset: '2px',
-} as const
-
-export { FOCUS_RING, StateTable }
+export { StateTable }
 export type { StateRow }
