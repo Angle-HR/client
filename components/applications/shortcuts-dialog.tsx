@@ -2,9 +2,10 @@
 
 import { Fragment, type ReactElement } from 'react'
 
+import { DashboardIcon } from '@/components/dashboard/nav-config'
 import { Modal } from '@/components/ui'
 
-/** Keys pressed together, e.g. ['Alt/⌥', 'J']. */
+/** Keys pressed together, e.g. ['Alt/⌥', 'J']. An `icon:` key is drawn with that design-system icon. */
 type Chord = string[]
 
 interface ShortcutRow {
@@ -26,12 +27,12 @@ const SECTIONS: ReadonlyArray<ShortcutSection> = [
     rows: [
       {
         label: 'Next candidate',
-        notTyping: [['J'], ['→']],
+        notTyping: [['J'], ['icon:arrow-right-solid']],
         whileTyping: [['Alt/⌥', 'J']],
       },
       {
         label: 'Previous candidate',
-        notTyping: [['K'], ['←']],
+        notTyping: [['K'], ['icon:arrow-left-solid']],
         whileTyping: [['Alt/⌥', 'K']],
       },
     ],
@@ -57,7 +58,7 @@ const SECTIONS: ReadonlyArray<ShortcutSection> = [
       {
         label: 'Save notes',
         notTyping: null,
-        whileTyping: [['Ctrl/⌘', 'Enter']],
+        whileTyping: [['Ctrl / ⌘', 'Enter']],
       },
       {
         label: 'Show shortcuts',
@@ -72,7 +73,7 @@ const SECTIONS: ReadonlyArray<ShortcutSection> = [
 function KeyChip({ label }: { label: string }): ReactElement {
   return (
     <kbd className="inline-flex h-[20px] min-w-[20px] items-center justify-center rounded-xs-4 border-[0.5px] border-border-transparent-medium bg-bg-transparent-light px-[5px] font-sans text-caption-m font-medium text-text-secondary">
-      {label}
+      {label.startsWith('icon:') ? <DashboardIcon name={label.slice(5)} size={10} /> : label}
     </kbd>
   )
 }
@@ -105,7 +106,7 @@ interface ShortcutsDialogProps {
 }
 
 /**
- * The Keyboard shortcuts dialog (03), opened by the panel's ⌘ Shortcuts button
+ * The Keyboard shortcuts dialog (03), opened by the panel's Shortcuts button
  * and by Ctrl/⌘ + /. The "Learn more" link has no destination designed yet, so it is drawn inert.
  */
 function ShortcutsDialog({ open, onClose }: ShortcutsDialogProps): ReactElement {
@@ -114,7 +115,7 @@ function ShortcutsDialog({ open, onClose }: ShortcutsDialogProps): ReactElement 
       open={open}
       title="Keyboard shortcuts"
       onClose={onClose}
-      icon={<span className="mr-[4px] text-caption-m text-text-tertiary">⌘</span>}
+      icon={<DashboardIcon name="cmd-solid" size={14} />}
     >
       <div className="flex flex-col gap-[20px]">
         {SECTIONS.map((section) => (
@@ -141,8 +142,9 @@ function ShortcutsDialog({ open, onClose }: ShortcutsDialogProps): ReactElement 
           </div>
         ))}
         <p>
-          <span className="text-caption-m font-medium text-text-blue-accent">
-            Learn more about shortcuts ↗
+          <span className="inline-flex items-center gap-[4px] text-caption-m font-medium text-text-blue-accent">
+            Learn more about shortcuts
+            <DashboardIcon name="arrow-top-right-on-square-solid" size={10} />
           </span>
         </p>
       </div>

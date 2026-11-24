@@ -177,9 +177,10 @@ function CandidatePanel({
             <button
               type="button"
               onClick={() => setShortcutsOpen(true)}
-              className="text-caption-m text-text-tertiary transition-colors hover:text-text-primary"
+              className="inline-flex items-center gap-[4px] text-caption-m text-text-tertiary transition-colors hover:text-text-primary"
             >
-              ⌘ Shortcuts
+              <DashboardIcon name="cmd-solid" size={10} />
+              Shortcuts
             </button>
             <IconButton
               variant="tertiary"
