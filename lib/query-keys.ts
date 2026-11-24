@@ -23,6 +23,8 @@ const queryKeys = {
     ['jobs', 'one', jobId, 'applications', 'list', query] as const,
   application: (jobId: string, appId: string) =>
     ['jobs', 'one', jobId, 'applications', 'one', appId] as const,
+  applicationFile: (jobId: string, appId: string, fileId: string) =>
+    ['jobs', 'one', jobId, 'applications', 'one', appId, 'file', fileId] as const,
   compliance: (id: string) => ['jobs', 'one', id, 'compliance'] as const,
   screeningRules: (id: string) => ['jobs', 'one', id, 'screening-rules'] as const,
   shareKit: (id: string) => ['jobs', 'one', id, 'share-kit'] as const,

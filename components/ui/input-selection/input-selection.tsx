@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  Fragment,
   useEffect,
   useId,
   useLayoutEffect,
@@ -30,6 +31,8 @@ interface SelectOption {
   chipIcon?: ReactNode
   /** Extra words a searchable field matches this option by, e.g. an abbreviation. */
   keywords?: string
+  /** A header drawn above the first option of this group, e.g. "Not a match". */
+  group?: string
 }
 
 interface InputSelectionProps {
@@ -224,6 +227,45 @@ function InputSelection({
     }
   }
 
+  function renderOption(opt: SelectOption) {
+    const isSelected = selectedArray.includes(opt.value)
+    // With chips, a chosen row is ticked at its right rather than
+    // carrying a tick box, and keeps its own visual (an avatar).
+    if (multiple && selectionStyle === 'chip') {
+      return (
+        <ListItemSelected
+          className="w-full!"
+          key={opt.value}
+          mainText={opt.label}
+          icon={opt.icon}
+          withIcon={Boolean(opt.icon)}
+          selected={isSelected}
+          onClick={() => selectOption(opt.value)}
+        />
+      )
+    }
+    return multiple ? (
+      <ListItemMultiSelect
+        key={opt.value}
+        mainText={opt.label}
+        selected={isSelected}
+        withCheckbox
+        onChange={() => selectOption(opt.value)}
+      />
+    ) : (
+      <ListItemDefault
+        className="w-full!"
+        key={opt.value}
+        mainText={opt.label}
+        withIcon={false}
+        leadingVisual={opt.icon}
+        state={isSelected ? 'hover' : 'rest'}
+        selected={isSelected}
+        onClick={() => selectOption(opt.value)}
+      />
+    )
+  }
+
   const triggerState = disabled
     ? 'disabled'
     : hasError
@@ -362,44 +404,19 @@ function InputSelection({
             aria-multiselectable={multiple || undefined}
             className="flex w-full flex-col gap-[2px]"
           >
-            {shownOptions.map((opt) => {
-              const isSelected = selectedArray.includes(opt.value)
-              // With chips, a chosen row is ticked at its right rather than
-              // carrying a tick box, and keeps its own visual (an avatar).
-              if (multiple && selectionStyle === 'chip') {
-                return (
-                  <ListItemSelected
-                    className="w-full!"
-                    key={opt.value}
-                    mainText={opt.label}
-                    icon={opt.icon}
-                    withIcon={Boolean(opt.icon)}
-                    selected={isSelected}
-                    onClick={() => selectOption(opt.value)}
-                  />
-                )
-              }
-              return multiple ? (
-                <ListItemMultiSelect
-                  key={opt.value}
-                  mainText={opt.label}
-                  selected={isSelected}
-                  withCheckbox
-                  onChange={() => selectOption(opt.value)}
-                />
-              ) : (
-                <ListItemDefault
-                  className="w-full!"
-                  key={opt.value}
-                  mainText={opt.label}
-                  withIcon={false}
-                  leadingVisual={opt.icon}
-                  state={isSelected ? 'hover' : 'rest'}
-                  selected={isSelected}
-                  onClick={() => selectOption(opt.value)}
-                />
-              )
-            })}
+            {shownOptions.map((opt, index) => (
+              <Fragment key={opt.value}>
+                {opt.group && opt.group !== shownOptions[index - 1]?.group ? (
+                  <li
+                    role="presentation"
+                    className="px-[6px] pt-[6px] pb-[2px] text-caption-m leading-17_6 text-text-tertiary"
+                  >
+                    {opt.group}
+                  </li>
+                ) : null}
+                {renderOption(opt)}
+              </Fragment>
+            ))}
             {customValue ? (
               <ListItemDefault
                 className="w-full!"

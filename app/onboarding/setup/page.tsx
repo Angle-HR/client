@@ -18,29 +18,24 @@ function OnboardingSetupPage() {
   const startedRef = useRef(false)
 
   useEffect(() => {
+    // Completing runs once. It is not cancelled on unmount: in development React
+    // mounts effects twice, and the first run is the only one that sends it.
     if (startedRef.current) return
     startedRef.current = true
-
-    let cancelled = false
 
     async function finalize() {
       try {
         const result = await requests.completeOnboarding()
-        if (cancelled) return
         clearOnboardingDraft()
         redirectRef.current = result.redirect_url || '/dashboard'
         setReadyToAnimate(true)
       } catch (err) {
-        if (cancelled) return
         setFallbackError(applyApiError(err))
       }
     }
 
     void finalize()
-    return () => {
-      cancelled = true
-    }
-  }, [router])
+  }, [])
 
   return (
     <AuthShell variant="centered">
