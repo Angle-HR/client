@@ -1,38 +1,67 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 interface Section {
   id: string
   title: string
+  /** First paragraph under the heading, shown in the preview card. */
+  excerpt: string
 }
 
 /** Offset from the top of the scroll area at which a heading counts as "current". */
 const ACTIVE_OFFSET = 96
 
+function headingText(h: HTMLElement) {
+  // Skip the "#" anchor link inside the heading.
+  return [...h.childNodes]
+    .filter((node) => !(node instanceof HTMLElement && node.classList.contains('docs-anchor')))
+    .map((node) => node.textContent)
+    .join('')
+    .trim()
+}
+
+function firstParagraph(h: HTMLElement) {
+  for (let el = h.nextElementSibling; el && el.tagName !== 'H2'; el = el.nextElementSibling) {
+    // Use the first paragraph, or the first bullet when a section opens with a list.
+    const text =
+      el.tagName === 'P'
+        ? el.textContent
+        : el.tagName === 'UL'
+          ? el.querySelector('li')?.textContent
+          : null
+    if (text?.trim()) return text.trim()
+  }
+  return ''
+}
+
 function readSections(): Section[] {
   return [...document.querySelectorAll<HTMLHeadingElement>('.docs-prose h2[id]')].map((h) => ({
     id: h.id,
-    // Skip the "#" anchor link inside the heading.
-    title: [...h.childNodes]
-      .filter((node) => !(node instanceof HTMLElement && node.classList.contains('docs-anchor')))
-      .map((node) => node.textContent)
-      .join('')
-      .trim(),
+    title: headingText(h),
+    excerpt: firstParagraph(h),
   }))
 }
 
 /**
  * "On this page" rail: one short line per section on the left edge, the
- * current one longer and darker. Hovering or tabbing into it opens a card with
- * the section names. Hidden below 1024px, where there's no room beside the text.
+ * current one longer and darker. Hovering (or tabbing to) a line shows a small
+ * preview of that section beside it, and the preview glides along as you move
+ * down the rail. Hidden below 1024px, where there's no room beside the text.
  */
 function PageToc() {
   const pathname = usePathname()
   const [sections, setSections] = useState<Section[]>([])
   const [active, setActive] = useState<string | null>(null)
-  const [open, setOpen] = useState(false)
+  // The section being previewed. `shown` keeps the last one so the card can
+  // fade out with its content still in it.
+  const [hovered, setHovered] = useState<string | null>(null)
+  const [shown, setShown] = useState<{ id: string; y: number } | null>(null)
+  // True for the first frame of a new hover, so the card appears in place
+  // instead of gliding in from wherever it was last time.
+  const [instant, setInstant] = useState(true)
+  const navRef = useRef<HTMLElement>(null)
 
   // Collect the headings after each navigation, and again whenever the page
   // content changes (client navigation, hot reload).
@@ -43,7 +72,12 @@ function PageToc() {
         const next = readSections()
         const same =
           next.length === previous.length &&
-          next.every((s, i) => s.id === previous[i]?.id && s.title === previous[i]?.title)
+          next.every(
+            (s, i) =>
+              s.id === previous[i]?.id &&
+              s.title === previous[i]?.title &&
+              s.excerpt === previous[i]?.excerpt,
+          )
         return same ? previous : next
       })
     refresh()
@@ -95,39 +129,67 @@ function PageToc() {
     setActive(id)
   }, [])
 
+  const preview = (id: string, target: HTMLElement) => {
+    const nav = navRef.current
+    if (!nav) return
+    const line = target.getBoundingClientRect()
+    const y = line.top + line.height / 2 - nav.getBoundingClientRect().top
+    setInstant(hovered === null)
+    setHovered(id)
+    setShown({ id, y })
+  }
+
+  // Let the "appear in place" frame render, then turn gliding back on.
+  useEffect(() => {
+    if (!instant || hovered === null) return
+    const frame = requestAnimationFrame(() => setInstant(false))
+    return () => cancelAnimationFrame(frame)
+  }, [instant, hovered])
+
   if (sections.length < 2) return null
+
+  const card = shown ? sections.find((s) => s.id === shown.id) : undefined
+  const open = hovered !== null && card !== undefined
 
   return (
     <nav
+      ref={navRef}
       aria-label="On this page"
       className="pointer-events-none absolute top-1/2 left-[18px] z-20 hidden -translate-y-1/2 lg:block"
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-      onFocus={() => setOpen(true)}
+      onMouseLeave={() => setHovered(null)}
       onBlur={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false)
+        if (!event.currentTarget.contains(event.relatedTarget)) setHovered(null)
       }}
     >
       {/* The rail. Each line is a real link, so keyboard and screen-reader users get the same list. */}
-      <ul className="pointer-events-auto flex flex-col items-start gap-[2px] py-[6px] pr-[12px]">
+      <ul className="pointer-events-auto flex flex-col items-start py-[6px] pr-[12px]">
         {sections.map((section) => {
           const isActive = section.id === active
+          const isHovered = section.id === hovered
           return (
             <li key={section.id}>
               <a
                 href={`#${section.id}`}
                 aria-label={section.title}
                 aria-current={isActive ? 'location' : undefined}
+                onMouseEnter={(event) => preview(section.id, event.currentTarget)}
+                onFocus={(event) => preview(section.id, event.currentTarget)}
                 onClick={(event) => {
                   event.preventDefault()
                   go(section.id)
                 }}
-                className="flex h-[8px] items-center justify-start rounded-xs-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bg-selection-controls-selected"
+                // 10px tall so the lines are easy to hit; the visible line is 1.5px.
+                className="flex h-[10px] w-[30px] items-center justify-start rounded-xs-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bg-selection-controls-selected"
               >
                 <span
                   className={[
                     'block h-[1.5px] rounded-full transition-[width,background-color] duration-150 ease-out motion-reduce:transition-none',
-                    isActive ? 'w-[18px] bg-text-primary' : 'w-[12px] bg-text-tertiary/60',
+                    isActive || isHovered ? 'w-[18px]' : 'w-[12px]',
+                    isActive
+                      ? 'bg-text-primary'
+                      : isHovered
+                        ? 'bg-text-secondary'
+                        : 'bg-text-tertiary/60',
                   ].join(' ')}
                 />
               </a>
@@ -136,46 +198,34 @@ function PageToc() {
         })}
       </ul>
 
-      {/* The card: section names, opened from the rail. Mouse-only shortcut; the rail links above carry the semantics. */}
+      {/* Preview of the hovered section. Decorative: the rail links carry the names. */}
       <div
         aria-hidden="true"
+        style={{ transform: `translateY(${shown?.y ?? 0}px) translateY(-50%)` }}
         className={[
-          'absolute top-1/2 left-[34px] w-[220px] origin-left -translate-y-1/2 rounded-lg-10 bg-bg-primary p-[6px] shadow-lg outline-[0.5px] -outline-offset-[0.5px] outline-border-transparent-medium',
-          'transition-[opacity,translate,scale] ease-out motion-reduce:transition-none',
-          open
-            ? 'pointer-events-auto translate-x-0 scale-100 opacity-100 duration-150'
-            : 'pointer-events-none -translate-x-[4px] scale-[0.98] opacity-0 duration-100',
+          'pointer-events-none absolute top-0 left-[26px] w-[240px]',
+          instant ? '' : 'transition-transform duration-200 ease-[cubic-bezier(0.22,1,0.36,1)]',
+          'motion-reduce:transition-none',
         ].join(' ')}
       >
-        <p className="px-[8px] pt-[4px] pb-[6px] body-xs-medium text-text-tertiary">On this page</p>
-        <ul className="flex flex-col">
-          {sections.map((section) => {
-            const isActive = section.id === active
-            return (
-              <li key={section.id}>
-                <button
-                  type="button"
-                  tabIndex={-1}
-                  onClick={() => go(section.id)}
-                  className={[
-                    'flex w-full items-center gap-[10px] rounded-sm-6 px-[8px] py-[5px] text-left body-s-regular transition-colors duration-100',
-                    'hover:bg-bg-transparent-light hover:text-text-primary',
-                    isActive ? 'text-text-primary' : 'text-text-secondary',
-                  ].join(' ')}
-                >
-                  <span
-                    aria-hidden="true"
-                    className={[
-                      'block h-[1.5px] shrink-0 rounded-full',
-                      isActive ? 'w-[14px] bg-text-primary' : 'w-[10px] bg-text-tertiary/60',
-                    ].join(' ')}
-                  />
-                  <span className="truncate">{section.title}</span>
-                </button>
-              </li>
-            )
-          })}
-        </ul>
+        <div
+          className={[
+            'rounded-lg-10 bg-bg-primary px-[12px] py-[10px] shadow-lg outline-[0.5px] -outline-offset-[0.5px] outline-border-transparent-medium',
+            'transition-[opacity,scale] ease-out motion-reduce:transition-none',
+            open ? 'scale-100 opacity-100 duration-150' : 'scale-[0.98] opacity-0 duration-150',
+          ].join(' ')}
+        >
+          {card && (
+            <>
+              <p className="truncate body-s-medium text-text-primary">{card.title}</p>
+              {card.excerpt && (
+                <p className="mt-[2px] line-clamp-3 body-xs-regular text-text-secondary">
+                  {card.excerpt}
+                </p>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </nav>
   )
