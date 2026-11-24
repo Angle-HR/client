@@ -20,7 +20,7 @@ interface ShortcutSection {
   rows: ShortcutRow[]
 }
 
-/** The rows of the Keyboard shortcuts dialog (03). Rows the app cannot do yet are kept as drawn. */
+/** The rows of the Keyboard shortcuts dialog. Rows the app cannot do yet are kept as drawn. */
 const SECTIONS: ReadonlyArray<ShortcutSection> = [
   {
     title: 'Navigating',
@@ -69,27 +69,27 @@ const SECTIONS: ReadonlyArray<ShortcutSection> = [
   },
 ]
 
-/** One key as a small chip, as the design draws them. */
+/** One key as a small chip, as the design draws them (18px, grey, 11px). */
 function KeyChip({ label }: { label: string }): ReactElement {
   return (
-    <kbd className="inline-flex h-[20px] min-w-[20px] items-center justify-center rounded-xs-4 border-[0.5px] border-border-transparent-medium bg-bg-transparent-light px-[5px] font-sans text-caption-m font-medium text-text-secondary">
-      {label.startsWith('icon:') ? <DashboardIcon name={label.slice(5)} size={10} /> : label}
+    <kbd className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-xs-4 border-[0.5px] border-border-transparent-medium bg-bg-avatar-grey px-[4px] font-sans text-caption-m font-medium text-text-primary">
+      {label.startsWith('icon:') ? <DashboardIcon name={label.slice(5)} size={13} /> : label}
     </kbd>
   )
 }
 
 /** A cell's chords, joined by "or" and with "+" between the keys of a chord. */
 function ChordList({ chords }: { chords: Chord[] | null }): ReactElement {
-  if (!chords) return <span className="text-body-xs text-text-tertiary">-</span>
+  if (!chords) return <span className="text-body-s text-text-primary">-</span>
   return (
     <span className="flex flex-wrap items-center gap-[6px]">
       {chords.map((chord, chordIndex) => (
         <Fragment key={chord.join('+')}>
-          {chordIndex > 0 ? <span className="text-caption-m text-text-tertiary">or</span> : null}
+          {chordIndex > 0 ? <span className="text-body-s text-text-primary">or</span> : null}
           <span className="flex items-center gap-[4px]">
             {chord.map((key, keyIndex) => (
               <Fragment key={key}>
-                {keyIndex > 0 ? <span className="text-caption-m text-text-tertiary">+</span> : null}
+                {keyIndex > 0 ? <span className="text-body-s text-text-primary">+</span> : null}
                 <KeyChip label={key} />
               </Fragment>
             ))}
@@ -106,8 +106,9 @@ interface ShortcutsDialogProps {
 }
 
 /**
- * The Keyboard shortcuts dialog (03), opened by the panel's Shortcuts button
- * and by Ctrl/⌘ + /. The "Learn more" link has no destination designed yet, so it is drawn inert.
+ * The Keyboard shortcuts dialog, opened by the panel's Shortcuts button and by
+ * Ctrl/⌘ + /. The "Learn more about shortcuts" link has no destination designed
+ * yet, so it is drawn inert.
  */
 function ShortcutsDialog({ open, onClose }: ShortcutsDialogProps): ReactElement {
   return (
@@ -115,34 +116,35 @@ function ShortcutsDialog({ open, onClose }: ShortcutsDialogProps): ReactElement 
       open={open}
       title="Keyboard shortcuts"
       onClose={onClose}
+      width={500}
       icon={<DashboardIcon name="cmd-solid" size={14} />}
     >
-      <div className="flex flex-col gap-[20px]">
+      <div className="flex flex-col gap-[14px]">
         {SECTIONS.map((section) => (
-          <div key={section.title} className="flex flex-col gap-[8px]">
-            <div className="grid grid-cols-[1fr_auto_auto] items-center gap-x-[24px] text-caption-m text-text-tertiary">
-              <span className="font-semibold text-text-primary">{section.title}</span>
-              <span className="w-[120px]">Not typing</span>
-              <span className="w-[120px]">While typing</span>
+          <div key={section.title} className="flex flex-col gap-[12px]">
+            <div className="grid grid-cols-[1fr_113px_113px] items-center text-body-xs leading-19_2 font-medium-550 text-text-secondary">
+              <span>{section.title}</span>
+              <span>Not typing</span>
+              <span>While typing</span>
             </div>
-            {section.rows.map((row) => (
-              <div
-                key={row.label}
-                className="grid grid-cols-[1fr_auto_auto] items-center gap-x-[24px] py-[2px]"
-              >
-                <span className="text-body-xs leading-19_2 text-text-primary">{row.label}</span>
-                <span className="w-[120px]">
-                  <ChordList chords={row.notTyping} />
-                </span>
-                <span className="w-[120px]">
-                  <ChordList chords={row.whileTyping} />
-                </span>
-              </div>
+            {section.rows.map((row, index) => (
+              <Fragment key={row.label}>
+                {index > 0 ? <div className="h-px bg-border-transparent-light" /> : null}
+                <div className="grid grid-cols-[1fr_113px_113px] items-center py-[2px]">
+                  <span className="text-body-s leading-19_5 text-text-primary">{row.label}</span>
+                  <span>
+                    <ChordList chords={row.notTyping} />
+                  </span>
+                  <span>
+                    <ChordList chords={row.whileTyping} />
+                  </span>
+                </div>
+              </Fragment>
             ))}
           </div>
         ))}
         <p>
-          <span className="inline-flex items-center gap-[4px] text-caption-m font-medium text-text-blue-accent">
+          <span className="inline-flex items-center gap-[4px] text-caption-s leading-16 text-text-secondary">
             Learn more about shortcuts
             <DashboardIcon name="arrow-top-right-on-square-solid" size={10} />
           </span>

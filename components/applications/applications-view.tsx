@@ -175,7 +175,7 @@ function ApplicationsView({ jobId }: ApplicationsViewProps): ReactElement {
   const details = view
     ? [view.job_code, preview?.team, preview?.workplace, preview?.location]
         .filter(Boolean)
-        .join(' · ')
+        .join(' ⋅ ')
     : ''
 
   const hiringPeople = people.data ?? []

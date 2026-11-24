@@ -162,22 +162,22 @@ function CandidatePanel({
         role="dialog"
         aria-modal="true"
         aria-label={name || 'Candidate'}
-        className="fixed inset-y-0 right-0 z-50 flex w-[min(915px,100%)] flex-col bg-bg-primary shadow-lg"
+        className="fixed inset-y-0 right-0 z-50 flex w-[min(910px,100%)] flex-col bg-bg-primary shadow-lg"
       >
-        <div className="flex h-[44px] shrink-0 items-center justify-between border-b-[0.5px] border-border-transparent-medium pr-[12px] pl-[16px]">
-          <p className="min-w-0 truncate text-body-xs leading-19_2 text-text-secondary">
+        <div className="flex h-[49px] shrink-0 items-center justify-between border-b-[0.5px] border-border-transparent-medium pr-[18px] pl-[18px]">
+          <p className="flex min-w-0 items-center gap-[4px] truncate text-body-xs leading-19_2 text-text-secondary">
             {index >= 0 && stage ? (
               <>
                 {index + 1} of {group.length} in{' '}
-                <span className="font-semibold text-text-primary">{stageLabel(stage)}</span> Stage
+                <span className="font-medium text-text-primary">{stageLabel(stage)}</span> Stage
               </>
             ) : null}
           </p>
-          <div className="flex items-center gap-[8px]">
+          <div className="flex items-center gap-[12px]">
             <button
               type="button"
               onClick={() => setShortcutsOpen(true)}
-              className="inline-flex items-center gap-[4px] text-caption-m text-text-tertiary transition-colors hover:text-text-primary"
+              className="inline-flex items-center gap-[4px] text-body-xs leading-19_2 text-text-secondary transition-colors hover:text-text-primary"
             >
               <DashboardIcon name="cmd-solid" size={10} />
               Shortcuts
@@ -186,67 +186,79 @@ function CandidatePanel({
               variant="tertiary"
               size="sm"
               aria-label="Expand"
-              icon={<DashboardIcon name="arrows-pointing-out-solid" size={11} />}
+              icon={<DashboardIcon name="arrows-pointing-out-solid" size={14} />}
             />
             <IconButton
               variant="tertiary"
               size="sm"
               aria-label="Close"
               onClick={onClose}
-              icon={<DashboardIcon name="x-mark-solid" size={12} />}
+              icon={<DashboardIcon name="x-mark-solid" size={14} />}
             />
           </div>
         </div>
 
-        <div className="flex shrink-0 items-center gap-[8px] border-b-[0.5px] border-border-transparent-medium px-[16px] py-[10px]">
+        <div className="flex shrink-0 items-center gap-[8px] border-b-[0.5px] border-border-transparent-medium px-[18px] py-[8px]">
           <IconButton
-            variant="tertiary"
+            variant="secondary"
             size="sm"
             aria-label="Previous candidate"
             disabled={!previousId}
             onClick={() => previousId && onOpen(previousId)}
-            icon={<DashboardIcon name="chevron-left-solid" size={10} />}
+            icon={<DashboardIcon name="chevron-left-solid" size={14} />}
           />
           <IconButton
-            variant="tertiary"
+            variant="secondary"
             size="sm"
             aria-label="Next candidate"
             disabled={!nextId}
             onClick={() => nextId && onOpen(nextId)}
-            icon={<DashboardIcon name="chevron-right-solid" size={10} />}
+            icon={<DashboardIcon name="chevron-right-solid" size={14} />}
           />
           {stage ? <StageChip stage={stage} /> : null}
           <div className="ml-auto flex items-center gap-[2px]">
-            {/* Drawn with no flow behind them yet. */}
+            {/* Drawn with no flow behind them yet. Their tooltips are the design's copy. */}
             <IconButton
               variant="tertiary"
-              size="sm"
-              aria-label="Email"
-              icon={<DashboardIcon name="envelope-solid" size={12} />}
+              size="md"
+              aria-label="Mail"
+              title="Mail"
+              icon={<DashboardIcon name="envelope-solid" size={14} />}
             />
             <IconButton
               variant="tertiary"
-              size="sm"
-              aria-label="Schedule"
-              icon={<DashboardIcon name="calendar-solid" size={12} />}
+              size="md"
+              aria-label="Schedule event"
+              title="Schedule event"
+              icon={<DashboardIcon name="calendar-days-solid" size={14} />}
             />
             <IconButton
               variant="tertiary"
-              size="sm"
-              aria-label="Comment"
-              icon={<DashboardIcon name="chat-bubble-left-ellipsis-solid" size={12} />}
+              size="md"
+              aria-label="Add comment"
+              title="Add comment"
+              icon={<DashboardIcon name="chat-bubble-oval-left-solid" size={14} />}
             />
             <IconButton
               variant="tertiary"
-              size="sm"
-              aria-label="Download"
-              icon={<DashboardIcon name="arrow-down-tray-solid" size={12} />}
+              size="md"
+              aria-label="Download CV"
+              title="Download CV"
+              icon={<DashboardIcon name="arrow-down-tray-outline" size={14} />}
             />
             <IconButton
               variant="tertiary"
-              size="sm"
+              size="md"
               aria-label="Star"
-              icon={<DashboardIcon name="star-solid" size={12} />}
+              title="Star"
+              icon={<DashboardIcon name="star-outline" size={14} />}
+            />
+            <IconButton
+              variant="tertiary"
+              size="md"
+              aria-label="More actions"
+              title="Add new stage"
+              icon={<DashboardIcon name="ellipsis-horizontal-solid" size={14} />}
             />
           </div>
           {/* A rejected candidate cannot be re-engaged: the server's status is final (18, 19). */}
@@ -256,7 +268,7 @@ function CandidatePanel({
               accent="default"
               size="sm"
               disabled
-              iconSuffix={<DashboardIcon name="chev-down-solid" size={10} />}
+              iconSuffix={<DashboardIcon name="chev-down-solid" size={14} />}
             >
               Re-engage
             </Button>
@@ -288,28 +300,28 @@ function CandidatePanel({
 
         <div className="flex min-h-0 flex-1 flex-col">
           <div className="flex shrink-0 flex-col gap-[12px] px-[24px] pt-[20px]">
-            <div className="flex items-start gap-[12px]">
-              <Avatar size={44} type="initials" colour="green" text={getInitials(name || '?')} />
-              <div className="flex min-w-0 flex-col gap-[4px] pt-[2px]">
-                <div className="flex items-center gap-[8px]">
-                  <h2 className="truncate text-body-m leading-21 font-semibold text-text-primary">
+            <div className="flex flex-col gap-[14px]">
+              <Avatar size={32} type="initials" colour="green" text={getInitials(name || '?')} />
+              <div className="flex flex-col gap-[8px]">
+                <div className="flex items-center gap-[6px]">
+                  <h2 className="truncate text-body-xl leading-24 font-semibold text-text-primary">
                     {name}
                   </h2>
                   {/* Drawn with no follow behind it yet. */}
-                  <span className="flex items-center gap-[2px] text-caption-m text-text-tertiary">
-                    <DashboardIcon name="star-outline" size={10} />
+                  <span className="flex shrink-0 items-center gap-[2px] px-[6px] py-[6px] text-body-s leading-19_5 text-text-secondary">
+                    <DashboardIcon name="user-plus-solid" size={11} />
                     Follow
                   </span>
                 </div>
                 {detail ? (
-                  <p className="flex items-center gap-[6px] text-caption-m leading-17_6 text-text-tertiary">
-                    <DashboardIcon name="clock-solid" size={10} />
+                  <p className="flex items-center gap-[4px] text-caption-m leading-17_6 text-text-secondary">
+                    <DashboardIcon name="clock-outline" size={10} />
                     Applied {formatDateTime(detail.submittedAt)}
                   </p>
                 ) : null}
                 {role.role || role.company ? (
-                  <p className="flex items-center gap-[6px] text-caption-m leading-17_6 text-text-tertiary">
-                    <DashboardIcon name="briefcase-solid" size={10} />
+                  <p className="flex items-center gap-[4px] text-caption-m leading-17_6 text-text-secondary">
+                    <DashboardIcon name="briefcase-outline" size={10} />
                     {[role.role, role.company].filter(Boolean).join(' · ')}
                   </p>
                 ) : null}

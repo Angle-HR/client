@@ -45,9 +45,10 @@ function findResume(files: ApplicantFile[]): ApplicantFile | undefined {
   )
 }
 
-function SectionTitle({ children }: { children: string }): ReactElement {
+function SectionTitle({ children, icon }: { children: string; icon?: string }): ReactElement {
   return (
-    <h3 className="text-caption-m leading-17_6 font-semibold tracking-wide text-text-tertiary uppercase">
+    <h3 className="flex items-center gap-[6px] text-body-s leading-19_5 font-medium text-text-secondary uppercase">
+      {icon ? <DashboardIcon name={icon} size={12} /> : null}
       {children}
     </h3>
   )
@@ -70,7 +71,7 @@ function Resume({ jobId, appId, file, onError }: ResumeProps): ReactElement {
   return (
     <section className="flex flex-col gap-[12px]">
       <div className="flex items-center justify-between gap-[12px]">
-        <SectionTitle>Applicant resume</SectionTitle>
+        <SectionTitle icon="document-text-solid">Applicant resume</SectionTitle>
         <div className="flex items-center gap-[8px]">
           <div className="flex rounded-sm-7 bg-bg-transparent-light p-[2px] text-caption-m">
             <span className="rounded-xs-5 bg-bg-primary px-[8px] py-[2px] text-text-primary">

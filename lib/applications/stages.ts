@@ -91,18 +91,30 @@ interface DisqualifyReason {
 }
 
 /**
- * The disqualification reasons drawn in the dialog and the panel popover
- * (04, 05, 12-14 of the Move to stage/Disqualify captures). The server has no
- * reason field, so the chosen reason goes into the note. "Location or work
- * arrangement doe..." is cut off in every capture, so it is not listed.
+ * The disqualification reasons, in the order of the DEV NOTE "List of reasons" in
+ * the Figma file (the dropdown shows only part of it). The first ten sit under
+ * "Not a match"; the rest have no header. The server has no reason field, so the
+ * chosen reason goes into the note.
  */
 const DISQUALIFY_REASONS: ReadonlyArray<DisqualifyReason> = [
-  { label: "Doesn't meet required qualifications", group: 'Not a match' },
+  { label: 'Doesn’t meet required qualifications', group: 'Not a match' },
   { label: 'Not enough relevant experience', group: 'Not a match' },
-  { label: "Skills don't match the role", group: 'Not a match' },
-  { label: "Didn't pass assessment", group: 'Not a match' },
-  { label: "Salary expectations don't align", group: 'Not a match' },
+  { label: 'Skills don’t match the role', group: 'Not a match' },
+  { label: 'Didn’t pass assessment', group: 'Not a match' },
+  { label: 'Didn’t pass interview', group: 'Not a match' },
+  { label: 'Salary expectations don’t align', group: 'Not a match' },
+  { label: 'Location or work arrangement doesn’t fit', group: 'Not a match' },
   { label: 'Not eligible to work in this location', group: 'Not a match' },
+  { label: 'Stronger candidate selected', group: 'Not a match' },
+  { label: 'Duplicate application', group: 'Not a match' },
+  { label: 'Withdrew' },
+  { label: 'Accepted another offer' },
+  { label: 'No longer interested' },
+  { label: 'Unresponsive' },
+  { label: 'Timing doesn’t work' },
+  { label: 'Role closed' },
+  { label: 'Position filled' },
+  { label: 'Position closed or on hold' },
   { label: 'Other (requires a note)', requiresNote: true },
 ]
 

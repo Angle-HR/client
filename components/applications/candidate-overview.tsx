@@ -29,18 +29,18 @@ function formatDateTime(value: string): string {
   return Number.isNaN(date.getTime()) ? '' : `${DATE_PART.format(date)} ${TIME_PART.format(date)}`
 }
 
-// Icons are unverified: there is no GitHub glyph, so a code mark stands in for it.
+/** The glyph of each link kind. The design has no X glyph for a website, so the globe stands for it. */
 const LINK_ICON: Record<CandidateLink['kind'], string> = {
   website: 'globe-alt-solid',
   linkedin: 'linkedln',
-  github: 'code-bracket-solid',
+  github: 'github',
 }
 
-/** A labelled group in the right-hand column. */
+/** A labelled group in the right-hand column, titled as the design's 11px captions. */
 function Block({ title, children }: { title: string; children?: ReactNode }): ReactElement {
   return (
     <section className="flex flex-col gap-[8px]">
-      <SectionTitle>{title}</SectionTitle>
+      <h3 className="text-caption-m leading-17_6 text-text-secondary">{title}</h3>
       {children}
     </section>
   )
@@ -48,9 +48,9 @@ function Block({ title, children }: { title: string; children?: ReactNode }): Re
 
 function ContactRow({ icon, children }: { icon: string; children: ReactNode }): ReactElement {
   return (
-    <p className="flex min-w-0 items-center gap-[8px] text-body-xs leading-19_2 text-text-primary">
-      <span className="inline-flex shrink-0 text-text-tertiary">
-        <DashboardIcon name={icon} size={12} />
+    <p className="flex min-w-0 items-center gap-[8px] text-body-s leading-19_5 text-text-secondary">
+      <span className="inline-flex shrink-0">
+        <DashboardIcon name={icon} size={14} />
       </span>
       <span className="min-w-0 truncate">{children}</span>
     </p>
@@ -75,14 +75,16 @@ function CandidateOverview({ jobId, detail, onError }: CandidateOverviewProps): 
   const contact = contactFromAnswers(detail.answers)
 
   return (
-    <div className="flex gap-[32px]">
+    <div className="flex gap-[72px]">
       <div className="flex min-w-0 flex-1 flex-col gap-[24px]">
         {screening.length > 0 ? (
-          <section className="flex flex-col gap-[16px]">
-            <SectionTitle>Screening questions</SectionTitle>
+          <section className="flex flex-col gap-[28px]">
+            <SectionTitle icon="question-mark-circle-solid">Screening questions</SectionTitle>
             {screening.map((answer) => (
-              <div key={answer.questionId} className="flex flex-col gap-[6px]">
-                <p className="text-body-xs leading-19_2 text-text-tertiary">{answer.label}</p>
+              <div key={answer.questionId} className="flex flex-col gap-[24px]">
+                <p className="text-body-xs leading-19_2 font-medium text-text-secondary">
+                  {answer.label}
+                </p>
                 {answer.fileId ? (
                   <TextButton
                     size="sm"
@@ -95,15 +97,15 @@ function CandidateOverview({ jobId, detail, onError }: CandidateOverviewProps): 
                     Download
                   </TextButton>
                 ) : (
-                  <p className="text-body-s leading-19_5 whitespace-pre-line text-text-primary">
+                  <p className="text-body-l leading-21 font-medium whitespace-pre-line text-text-primary">
                     {answer.text || '—'}
                   </p>
                 )}
               </div>
             ))}
             {detail.submittedAt ? (
-              <p className="flex items-center gap-[6px] text-caption-m leading-17_6 text-text-tertiary">
-                <DashboardIcon name="clock-solid" size={11} />
+              <p className="flex items-center gap-[4px] text-caption-m leading-17_6 text-text-tertiary">
+                <DashboardIcon name="clock-outline" size={10} />
                 Submitted {formatDateTime(detail.submittedAt)}
               </p>
             ) : null}
@@ -113,41 +115,61 @@ function CandidateOverview({ jobId, detail, onError }: CandidateOverviewProps): 
         <Attachments jobId={jobId} appId={detail.id} files={attachments} onError={onError} />
       </div>
 
-      <aside className="flex w-[220px] shrink-0 flex-col gap-[24px]">
+      <aside className="flex w-[265px] shrink-0 flex-col gap-[24px]">
         <Block title="Next up" />
         <Block title="Contact details">
           <div className="flex flex-col gap-[8px]">
             {detail.email ? <ContactRow icon="envelope-solid">{detail.email}</ContactRow> : null}
             {contact.phone ? <ContactRow icon="phone-solid">{contact.phone}</ContactRow> : null}
-            {contact.links.map((link) => (
-              <ContactRow key={link.url} icon={LINK_ICON[link.kind]}>
-                <a
-                  href={/^https?:\/\//i.test(link.url) ? link.url : `https://${link.url}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline"
-                >
-                  {link.url}
-                </a>
-              </ContactRow>
-            ))}
+            {contact.links
+              .filter((link) => link.kind === 'website')
+              .map((link) => (
+                <ContactRow key={link.url} icon={LINK_ICON[link.kind]}>
+                  <a
+                    href={/^https?:\/\//i.test(link.url) ? link.url : `https://${link.url}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline"
+                  >
+                    {link.url}
+                  </a>
+                </ContactRow>
+              ))}
+            {contact.links.some((link) => link.kind !== 'website') ? (
+              <div className="flex items-center gap-[2px]">
+                {contact.links
+                  .filter((link) => link.kind !== 'website')
+                  .map((link) => (
+                    <a
+                      key={link.url}
+                      href={/^https?:\/\//i.test(link.url) ? link.url : `https://${link.url}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={link.kind}
+                      className="inline-flex h-[32px] w-[32px] items-center justify-center rounded-sm-7 text-text-tertiary transition-colors hover:bg-bg-transparent-light hover:text-text-primary"
+                    >
+                      <DashboardIcon name={LINK_ICON[link.kind]} size={14} />
+                    </a>
+                  ))}
+              </div>
+            ) : null}
             <button
               type="button"
-              className="flex w-fit items-center gap-[4px] text-caption-m leading-17_6 text-text-secondary"
+              className="flex w-fit items-center gap-[2px] px-[6px] py-[6px] text-body-s leading-19_5 text-text-secondary"
             >
               Add more info
-              <DashboardIcon name="chev-down-solid" size={9} />
+              <DashboardIcon name="plus-solid" size={11} />
             </button>
           </div>
         </Block>
         {detail.country ? (
           <Block title="Location">
-            <ContactRow icon="map-pin-solid">{marketName(detail.country)}</ContactRow>
+            <ContactRow icon="location-pin-solid">{marketName(detail.country)}</ContactRow>
           </Block>
         ) : null}
         {contact.authorizedToWork ? (
-          <p className="flex items-center gap-[6px] text-body-xs leading-19_2 font-medium text-text-success">
-            <DashboardIcon name="check-circle-solid" size={12} />
+          <p className="flex items-center gap-[6px] text-body-xs leading-19_2 font-medium text-green-4">
+            <DashboardIcon name="check-badge-solid" size={14} />
             Authorized to work
           </p>
         ) : null}
