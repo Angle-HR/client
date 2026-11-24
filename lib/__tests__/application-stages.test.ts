@@ -98,24 +98,36 @@ describe('disqualifyPlan', () => {
 })
 
 describe('DISQUALIFY_REASONS', () => {
-  it('lists the reasons the captures draw, grouped under Not a match, with Other last', () => {
+  it('lists every reason of the DEV NOTE, grouped under Not a match, with Other last', () => {
     expect(DISQUALIFY_REASONS.map((reason) => reason.label)).toEqual([
-      "Doesn't meet required qualifications",
+      'Doesn’t meet required qualifications',
       'Not enough relevant experience',
-      "Skills don't match the role",
-      "Didn't pass assessment",
-      "Salary expectations don't align",
+      'Skills don’t match the role',
+      'Didn’t pass assessment',
+      'Didn’t pass interview',
+      'Salary expectations don’t align',
+      'Location or work arrangement doesn’t fit',
       'Not eligible to work in this location',
+      'Stronger candidate selected',
+      'Duplicate application',
+      'Withdrew',
+      'Accepted another offer',
+      'No longer interested',
+      'Unresponsive',
+      'Timing doesn’t work',
+      'Role closed',
+      'Position filled',
+      'Position closed or on hold',
       'Other (requires a note)',
     ])
-    expect(DISQUALIFY_REASONS.slice(0, 6).every((reason) => reason.group === 'Not a match')).toBe(
+    expect(DISQUALIFY_REASONS.slice(0, 10).every((reason) => reason.group === 'Not a match')).toBe(
       true,
     )
   })
 
   it('requires a note only for Other', () => {
     expect(reasonNeedsNote('Other (requires a note)')).toBe(true)
-    expect(reasonNeedsNote("Didn't pass assessment")).toBe(false)
+    expect(reasonNeedsNote('Didn’t pass assessment')).toBe(false)
     expect(reasonNeedsNote('')).toBe(false)
   })
 })
@@ -126,12 +138,12 @@ describe('disqualifyNote', () => {
   })
 
   it('sends the reason alone when there is no note', () => {
-    expect(disqualifyNote("Didn't pass assessment", '  ')).toBe("Didn't pass assessment")
+    expect(disqualifyNote('Didn’t pass assessment', '  ')).toBe('Didn’t pass assessment')
   })
 
   it('sends the reason and the trimmed note together', () => {
-    expect(disqualifyNote("Didn't pass assessment", ' Scored 40% ')).toBe(
-      "Didn't pass assessment — Scored 40%",
+    expect(disqualifyNote('Didn’t pass assessment', ' Scored 40% ')).toBe(
+      'Didn’t pass assessment — Scored 40%',
     )
   })
 })

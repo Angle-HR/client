@@ -4,6 +4,8 @@ import { type ReactElement } from 'react'
 
 import { CandidateRowMenu } from '@/components/applications/candidate-row-menu'
 import { StageChip } from '@/components/applications/stage-chip'
+import { DashboardIcon } from '@/components/dashboard/nav-config'
+import { Checkbox } from '@/components/ui'
 import { stageOfStatus, type DesignStage } from '@/lib/applications/stages'
 import { marketName } from '@/lib/markets'
 
@@ -19,17 +21,17 @@ function formatDate(value: string): string {
 const cellText = 'text-body-xs leading-19_2 font-medium text-text-secondary'
 
 /**
- * Column widths from the design. Experience, Company and Link have no data in
- * the list (rows carry no answers), so their cells stay empty.
+ * Column widths from the design (ATS/Candidate table). Experience, Company and
+ * Link have no data in the list (rows carry no answers), so their cells stay empty.
  */
 const COLUMNS = [
-  { label: 'Candidate', className: 'min-w-[200px] flex-1' },
-  { label: 'Stage', className: 'w-[140px]' },
+  { label: 'Candidate', className: 'min-w-[261px] flex-1' },
+  { label: 'Stage', className: 'w-[124px]' },
   { label: 'Applied on', className: 'w-[110px]' },
-  { label: 'Location', className: 'w-[120px]' },
-  { label: 'Experience', className: 'w-[100px]' },
-  { label: 'Company', className: 'w-[120px]' },
-  { label: 'Link', className: 'w-[140px]' },
+  { label: 'Location', className: 'w-[130px]' },
+  { label: 'Experience', className: 'w-[140px]' },
+  { label: 'Company', className: 'w-[100px]' },
+  { label: 'Link', className: 'w-[120px]' },
 ] as const
 
 interface CandidatesTableProps {
@@ -39,6 +41,8 @@ interface CandidatesTableProps {
   /** A stage picked from a row's menu. */
   onPick: (row: Applicant, stage: DesignStage) => void
   onDownloadCv: (row: Applicant) => void
+  /** Whether the signed-in person may move or disqualify this job's applications. */
+  canDecide: boolean
 }
 
 /** The applicants of the job: one row each, and a click on a row opens its overview. */
@@ -48,11 +52,25 @@ function CandidatesTable({
   onOpen,
   onPick,
   onDownloadCv,
+  canDecide,
 }: CandidatesTableProps): ReactElement {
   return (
-    <div role="table" aria-label="Candidates" className="flex min-w-[960px] flex-col">
-      <div role="row" className="flex h-[32px] items-center gap-[2px] px-[16px]">
-        {COLUMNS.map((column) => (
+    <div role="table" aria-label="Candidates" className="flex min-w-[1055px] flex-col">
+      <div
+        role="row"
+        className="flex h-[32px] items-center gap-[2px] border-y border-border-transparent-light bg-bg-transparent-lighter px-[12px]"
+      >
+        <span
+          role="columnheader"
+          className={`${COLUMNS[0].className} flex shrink-0 items-center gap-[8px] pl-[2px] ${cellText}`}
+        >
+          {/* The chevron is not drawn at rest (10670:729402); it only holds the column's indent. */}
+          <span className="invisible inline-flex" aria-hidden="true">
+            <DashboardIcon name="chev-down-solid" size={10} />
+          </span>
+          {COLUMNS[0].label}
+        </span>
+        {COLUMNS.slice(1).map((column) => (
           <span
             key={column.label}
             role="columnheader"
@@ -61,11 +79,14 @@ function CandidatesTable({
             {column.label}
           </span>
         ))}
-        <span className="w-[32px] shrink-0" />
+        <span role="columnheader" className="flex w-[32px] shrink-0 justify-center">
+          <DashboardIcon name="ellipsis-horizontal-solid" size={11} />
+        </span>
       </div>
       {rows.map((row) => {
         const stage = stageOfStatus(row.status)
         const selected = row.id === selectedId
+        const name = row.name || row.email
         return (
           <div
             key={row.id}
@@ -73,38 +94,51 @@ function CandidatesTable({
             aria-selected={selected}
             onClick={(event) => {
               // Controls inside the row keep their own clicks.
-              if ((event.target as HTMLElement).closest('button, a')) return
+              if ((event.target as HTMLElement).closest('button, a, input, label')) return
               onOpen(row.id)
             }}
-            className={`group flex h-[40px] shrink-0 cursor-pointer items-center gap-[2px] px-[16px] transition-colors ${selected ? 'bg-bg-transparent-light' : 'hover:bg-bg-transparent-lighter'}`}
+            className={`group flex h-[40px] shrink-0 cursor-pointer items-center gap-[2px] px-[12px] transition-colors ${selected ? 'bg-bg-transparent-light' : 'hover:bg-bg-transparent-light'}`}
           >
-            <div role="cell" className="flex min-w-[200px] flex-1 items-center px-[12px]">
+            <div role="cell" className="flex min-w-[261px] flex-1 items-center gap-[4px]">
+              {/* The checkbox shows on the hovered or open row only, as drawn. No bulk action
+                  exists yet, so it does nothing. */}
+              <span
+                className={`flex shrink-0 items-center px-[3px] ${selected ? 'visible' : 'invisible group-hover:visible'}`}
+              >
+                <Checkbox
+                  size="sm"
+                  aria-label={`Select ${name}`}
+                  checked={false}
+                  onChange={() => undefined}
+                />
+              </span>
               <button
                 type="button"
                 onClick={() => onOpen(row.id)}
                 className="min-w-0 truncate text-left text-body-s leading-19_5 font-medium text-text-primary"
               >
-                {row.name || row.email}
+                {name}
               </button>
             </div>
-            <div role="cell" className="flex w-[140px] shrink-0 items-center px-[12px]">
+            <div role="cell" className="flex w-[124px] shrink-0 items-center px-[10px]">
               {stage ? <StageChip stage={stage} /> : null}
             </div>
             <div role="cell" className={`w-[110px] shrink-0 px-[12px] ${cellText}`}>
               {formatDate(row.submittedAt)}
             </div>
-            <div role="cell" className={`w-[120px] shrink-0 truncate px-[12px] ${cellText}`}>
+            <div role="cell" className={`w-[130px] shrink-0 truncate px-[12px] ${cellText}`}>
               {row.country ? marketName(row.country) : null}
             </div>
+            <div role="cell" className={`w-[140px] shrink-0 px-[12px] ${cellText}`} />
             <div role="cell" className={`w-[100px] shrink-0 px-[12px] ${cellText}`} />
             <div role="cell" className={`w-[120px] shrink-0 px-[12px] ${cellText}`} />
-            <div role="cell" className={`w-[140px] shrink-0 px-[12px] ${cellText}`} />
             <div role="cell" className="flex w-[32px] shrink-0 items-center justify-center">
               <CandidateRowMenu
                 row={row}
                 onView={() => onOpen(row.id)}
                 onPick={(stage) => onPick(row, stage)}
                 onDownloadCv={() => onDownloadCv(row)}
+                canDecide={canDecide}
               />
             </div>
           </div>

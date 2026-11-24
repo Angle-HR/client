@@ -47,8 +47,12 @@ function CandidatesToolbar({
         trailing={
           <div className="flex items-center gap-[2px]">
             {/* The add-tab control is drawn after the tabs; it has no flow yet. */}
-            <button type="button" aria-label="Add tab" className={`${barAction} leading-none`}>
-              <DashboardIcon name="plus-solid" size={10} />
+            <button
+              type="button"
+              aria-label="Add new stage"
+              className="inline-flex h-[24px] w-[24px] items-center justify-center rounded-sm-6 text-text-secondary hover:bg-bg-transparent-light hover:text-text-primary"
+            >
+              <DashboardIcon name="plus-solid" size={14} />
             </button>
             <TextButton size="sm" className={barAction}>
               <span className="flex items-center gap-[2px] leading-none">
@@ -65,9 +69,11 @@ function CandidatesToolbar({
           </div>
         }
       />
-      <div className="max-w-[320px]">
+      <div className="w-[240px]">
         <TextInput
           placeholder="Search"
+          showPrefixIcon
+          prefixIcon={<DashboardIcon name="magnifying-glass-outline" size={14} />}
           value={search}
           onChange={(event) => onSearchChange(event.target.value)}
         />
