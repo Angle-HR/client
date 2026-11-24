@@ -1,8 +1,12 @@
+import createMDX from '@next/mdx'
+
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   // Self-contained server bundle (.next/standalone) for a small Docker image on Dokploy.
   output: 'standalone',
+  // The live design-system docs at /docs are written in MDX (app/docs/**/page.mdx).
+  pageExtensions: ['ts', 'tsx', 'mdx'],
   // Allow remote images when you connect to a CDN or API; add hostnames as needed.
   // images: {
   //   remotePatterns: [
@@ -40,4 +44,7 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default nextConfig
+// Plugins are named as strings so Turbopack can pass them to the MDX loader.
+const withMDX = createMDX({ options: { remarkPlugins: [['remark-gfm']] } })
+
+export default withMDX(nextConfig)

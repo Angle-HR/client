@@ -108,7 +108,7 @@ function DashboardErrorState({ kind, onContactSupport, onRetry }: DashboardError
             size="sm"
             bold
             // The design sets this in primary text, not the default link blue.
-            className="w-full justify-center text-text-primary!"
+            className="w-full justify-center"
             onClick={onContactSupport}
           >
             Contact support.

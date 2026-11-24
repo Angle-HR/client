@@ -240,7 +240,6 @@ function NewJobPage() {
           <div className="flex h-[24px] items-center justify-between">
             <TextButton
               size="md"
-              className="text-text-primary!"
               iconLeft={<DashboardIcon name="chevron-left-solid" size={11} />}
               onClick={() => router.push(backHref)}
             >

@@ -229,7 +229,6 @@ function StepVerify({ email, onEditEmail, onVerified }: StepVerifyProps) {
               type="button"
               size="md"
               bold
-              className="text-text-primary hover:text-text-primary"
               disabled={!canResend}
               onClick={() => void handleResend()}
             >

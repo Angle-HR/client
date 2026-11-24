@@ -1,0 +1,166 @@
+import { ButtonStates } from '@/docs/components/button-states'
+import { DoDont, Guideline } from '@/docs/components/do-dont'
+import { Example } from '@/docs/components/example'
+import { FigmaReference } from '@/docs/components/figma-reference'
+import { PropsTable } from '@/docs/components/props-table'
+
+export const metadata = { title: 'Button' }
+
+# Button
+
+Use a button when someone needs to do something: save a form, confirm a choice, move on. The label says what happens, like "Save changes", never "Click here".
+
+<Example name="button/overview" />
+
+```tsx
+import { Button } from '@/components/ui/button'
+```
+
+## Which button?
+
+There are five buttons, all in `@/components/ui/button`.
+
+| Component                                     | Use it for                                   |
+| --------------------------------------------- | -------------------------------------------- |
+| Button                                        | Most actions: save, confirm, create, cancel  |
+| [Icon Button](/docs/components/icon-button)   | Icon-only actions in toolbars and table rows |
+| [Text Button](/docs/components/text-button)   | Links and light actions in or near body copy |
+| [Flow Button](/docs/components/flow-button)   | Moving through a multi-step flow             |
+| [Label Button](/docs/components/label-button) | Filter chips that switch on and off          |
+
+Watch the icon props: Button and Flow Button use `iconPrefix` and `iconSuffix`, Text Button uses `iconLeft` and `iconRight`, and Icon Button uses `icon`.
+
+## Anatomy
+
+| Part      | Spec                                                                       |
+| --------- | -------------------------------------------------------------------------- |
+| Container | 24px (`sm`) or 32px (`md`) high, 1px border, 7px radius                    |
+| Spacing   | 8px from the outer edge, 4px between icon and label                        |
+| Label     | Inter Medium, 13px                                                         |
+| Icons     | Optional, 14×14px, before (`iconPrefix`) or after (`iconSuffix`) the label |
+
+## Variants
+
+`variant` sets how loud the button is; `accent` sets its colour. Any combination works.
+
+<Example name="button/variants" />
+
+| Variant     | Use it for                                               |
+| ----------- | -------------------------------------------------------- |
+| `primary`   | The one action that matters most in a view or section    |
+| `secondary` | Actions beside a primary, like "Cancel" next to "Save"   |
+| `tertiary`  | Quiet actions: optional steps, inline controls, toolbars |
+
+| Accent    | Use it for                                                 |
+| --------- | ---------------------------------------------------------- |
+| `default` | Most actions                                               |
+| `blue`    | Actions that confirm or move forward and need extra weight |
+| `red`     | Actions you can't undo: delete, remove, revoke             |
+
+## Sizes
+
+<Example name="button/sizes" />
+
+| Size | Height | Use it for                    |
+| ---- | ------ | ----------------------------- |
+| `sm` | 24px   | Tables, toolbars, filter bars |
+| `md` | 32px   | Everything else (default)     |
+
+Keep to one size within a group of buttons.
+
+## With icons
+
+Pass a 14px `MaskIcon` from `public/dashboard/icons`. Those files keep Figma's 16px frame, so the glyph sits in the box just as it does in Figma, and it takes the button's text colour.
+
+```tsx
+<Button iconPrefix={<MaskIcon src="/dashboard/icons/plus-outline.svg" size={14} />}>
+  Invite member
+</Button>
+```
+
+<Example name="button/with-icons" />
+
+Avoid the components in `@/components/ui/icons` here. Their padding is trimmed, so at 14px the glyph fills the box and looks too big.
+
+## Destructive actions
+
+Save red for things that can't be undone, and say exactly what will happen.
+
+<Example name="button/destructive" />
+
+## Loading
+
+Set `loading` while the action runs. A spinner replaces the left icon, the label stays, and extra clicks are ignored. Update the label to match, like "Saving…".
+
+The button keeps focus while it loads, so keyboard users don't lose their place. Figma doesn't have this state yet.
+
+<Example name="button/loading" caption="Click to see the loading state." />
+
+## Disabled
+
+Only disable a button when the reason is obvious, and point to it with `aria-describedby`.
+
+<Example name="button/disabled-reason" />
+
+## In context
+
+**Forms:** make the primary `type="submit"` so Enter works. Line buttons up with the left edge of the fields, primary first.
+
+<Example name="button/form-submit" />
+
+**Toolbars:** use `sm`, mostly tertiary.
+
+<Example name="button/toolbar" />
+
+**Modals:** primary on the right, Cancel to its left. In a destructive modal, the confirm button is primary and red.
+
+**Phones:** in a single column, buttons can fill the width with `className="w-full"`. Use `className` for layout only, never colour.
+
+## States
+
+<ButtonStates />
+
+Hover fades in and out over 100ms and a press takes 50ms, as in the Figma prototype. Focus and disabled change instantly.
+
+## Usage
+
+<DoDont>
+  <Guideline kind="do">Use one primary per area, for the action that matters most.</Guideline>
+  <Guideline kind="dont">Put two primaries side by side. Neither stands out.</Guideline>
+  <Guideline kind="do">Use red for actions that can't be undone.</Guideline>
+  <Guideline kind="dont">
+    Use red for anything reversible. It worries people for no reason.
+  </Guideline>
+  <Guideline kind="do">Show `loading` so people know their click landed.</Guideline>
+  <Guideline kind="dont">Quietly disable the button after a click.</Guideline>
+</DoDont>
+
+## Writing labels
+
+- Start with a verb: "Save", "Invite", "Export".
+- Be specific: "Save changes" beats "Save".
+- Sentence case, one to three words, no full stop.
+- While loading, say what's happening: "Saving…".
+
+## Accessibility
+
+- **Keyboard:** Tab to reach it, Space or Enter to press it.
+- **Focus:** a 2px blue ring, 2px out from the edge.
+- **Disabled:** `disabled` removes it from the tab order. To keep it focusable so you can explain why, use `aria-disabled="true"` and block the click.
+- **Loading:** sets `aria-busy` and `aria-disabled` and keeps focus. Change the label so screen readers hear it.
+- **Colour:** red alone doesn't mean "danger". The label has to say it.
+
+## Props
+
+<PropsTable of="Button" native="button" />
+
+Forwards `ref` to the `<button>`.
+
+## Figma
+
+<FigmaReference
+  src="/docs/figma/button.png"
+  href="https://www.figma.com/design/7jCMwDng7HF5g7F3tGXf0E/Open-HR?node-id=549-36986"
+  taken="23 Nov 2026"
+  alt="The Button component set in Figma: every variant, accent, size and state."
+/>

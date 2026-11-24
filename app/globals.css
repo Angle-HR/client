@@ -506,6 +506,7 @@ input:-webkit-autofill:active {
   --color-text-btn-default-secondary: var(--text-btn-default-secondary);
   --color-text-btn-default-tertiary: var(--text-btn-default-tertiary);
   --color-text-btn-default-disabled: var(--text-btn-default-disabled);
+  --color-text-btn-default-light: var(--text-btn-default-light);
 
   /* ── Text / Blue Button ── */
   --color-text-btn-blue-primary: var(--text-btn-blue-primary);

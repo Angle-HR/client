@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node scripts/copy-flags.mjs && next dev",
-    "build": "node scripts/copy-flags.mjs && next build",
+    "dev": "node scripts/copy-flags.mjs && node scripts/build-docs.mjs && next dev",
+    "build": "node scripts/copy-flags.mjs && node scripts/build-docs.mjs && next build",
     "copy-flags": "node scripts/copy-flags.mjs",
     "start": "next start",
     "lint": "eslint .",
@@ -18,7 +18,8 @@
     "prepare": "husky",
     "storybook": "node scripts/copy-flags.mjs && storybook dev -p 6006",
     "build-storybook": "node scripts/copy-flags.mjs && storybook build",
-    "build:landing": "node scripts/build-landing.mjs"
+    "build:landing": "node scripts/build-landing.mjs",
+    "docs:gen": "node scripts/build-docs.mjs"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,mjs,cjs}": [
@@ -34,6 +35,9 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",
+    "@mdx-js/loader": "3.1.1",
+    "@mdx-js/react": "3.1.1",
+    "@next/mdx": "16.2.10",
     "@next/third-parties": "^16.3.0",
     "@tanstack/react-query": "^5.101.2",
     "axios": "^1.18.1",
@@ -43,6 +47,7 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-hook-form": "^7.81.0",
+    "remark-gfm": "4.0.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -58,6 +63,7 @@
     "@tanstack/react-query-devtools": "^5.101.2",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
+    "@types/mdx": "2.0.14",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -73,7 +79,9 @@
     "lint-staged": "^16.4.0",
     "playwright": "^1.59.1",
     "prettier": "^3.8.1",
+    "react-docgen-typescript": "2.4.0",
     "sass": "^1.79.0",
+    "shiki": "4.0.1",
     "storybook": "^10.3.5",
     "tailwindcss": "^4",
     "typescript": "^5",

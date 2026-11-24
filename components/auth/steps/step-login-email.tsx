@@ -66,12 +66,7 @@ function StepLoginEmail({ defaultEmail = '', onContinue }: StepLoginEmailProps) 
 
           <p className="flex flex-wrap items-center justify-center gap-[2px] text-body-s font-medium leading-19_5 text-text-secondary">
             <span>Don&apos;t have an account?</span>
-            <TextButton
-              href="/signup"
-              size="md"
-              bold
-              className="text-text-primary hover:text-text-primary"
-            >
+            <TextButton href="/signup" size="md" bold>
               Signup →
             </TextButton>
           </p>
