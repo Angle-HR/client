@@ -134,13 +134,13 @@ const TextButton = forwardRef<HTMLElement, TextButtonProps>(function TextButton(
       )}
       {children && (
         // Figma trims the text to its cap height and never wraps it, so the button is as tall as
-        // its icons (10px at xs/sm, 12px at md/lg; 22–24px wrapped). A line
-        // height equal to the cap height (0.727em in Inter) does the same.
+        // its icons (10px at xs/sm, 12px at md/lg; 22–24px wrapped).
+        // text-trim-cap does the same, so icons centre exactly on the capitals.
         // The underline goes on the label only, so it never runs under the avatar or icons.
         // Figma: offset 10% of the font size; no underline on focus or when disabled.
         <span
           className={[
-            'leading-[0.727em] underline-offset-[10%] whitespace-nowrap',
+            'text-trim-cap underline-offset-[10%] whitespace-nowrap',
             underlineMode === 'hover' &&
               'group-[:hover:not(:disabled)]/text-button:underline group-[:active:not(:disabled)]/text-button:underline',
             underlineMode === 'always' && 'underline',

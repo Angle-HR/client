@@ -12,7 +12,7 @@ import {
 
 import { Avatar } from '../avatar/avatar'
 import { IconButton } from '../button/icon-button'
-import { ChevronRight, SidebarIcon } from '../icons'
+import { MaskIcon } from '../icons/mask-icon'
 import { ListItemDefault } from '../list/list-item-default'
 import { ListItemSelected } from '../list/list-item-selected'
 import { ListItemWithIcon } from '../list/list-item-with-icon'
@@ -150,7 +150,9 @@ function CompanySelector({
         <IconButton
           variant="tertiary"
           size="sm"
-          icon={onIconButtonIcon ?? <SidebarIcon />}
+          icon={
+            onIconButtonIcon ?? <MaskIcon src="/dashboard/icons/sidebar-outline.svg" size={14} />
+          }
           aria-label={iconButtonLabel}
           onClick={onIconButtonClick}
         />
@@ -217,7 +219,13 @@ function CompanySelector({
                       mainText={item.label}
                       icon={item.icon}
                       withIcon={!!item.icon}
-                      trailingIcon={<ChevronRight className="size-[14px] text-text-tertiary" />}
+                      trailingIcon={
+                        // The icon file keeps Figma's 16px frame: the arrow is
+                        // 5.5 × 9.9px in the 14px box, not stretched to fill it.
+                        <span className="inline-flex text-text-tertiary">
+                          <MaskIcon src="/dashboard/icons/chevron-right-outline.svg" size={14} />
+                        </span>
+                      }
                       state={isActive ? 'hover' : 'rest'}
                       onClick={handleClick}
                     />

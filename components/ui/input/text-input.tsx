@@ -4,6 +4,7 @@ import { forwardRef, useId, type ReactNode } from 'react'
 
 import { HelperText, type HelperTextState } from './helper-text'
 import { Input, type InputSize } from './input'
+import { LabelWrapper } from './label-wrapper'
 
 type TextInputSize = 'sm' | 'md'
 
@@ -80,21 +81,7 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>(function TextInpu
 
   return (
     <div className={`flex flex-col gap-[6px] ${className}`}>
-      {showLabel && label && (
-        <label
-          htmlFor={inputId}
-          // Centred in its cap-height box, like LabelWrapper; a bare 12px line would hang low.
-          className="flex h-[9px] items-center pl-[3px] text-body-xs leading-none font-medium-550 text-text-tertiary"
-        >
-          {label}
-          {required && (
-            <span className="text-text-error" aria-hidden="true">
-              {' '}
-              *
-            </span>
-          )}
-        </label>
-      )}
+      {showLabel && label && <LabelWrapper label={label} required={required} htmlFor={inputId} />}
       <Input
         ref={ref}
         id={inputId}
@@ -118,6 +105,7 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>(function TextInpu
         aria-label={props['aria-label']}
         aria-labelledby={props['aria-labelledby']}
         aria-invalid={hasError}
+        status={hasError ? 'error' : helperState === 'success' ? 'success' : undefined}
         aria-required={required}
         aria-describedby={showHelper || hasError ? helperId : props['aria-describedby']}
       />

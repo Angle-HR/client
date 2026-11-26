@@ -19,7 +19,10 @@ interface StateTableProps {
  */
 function StateTable({ columns, rows, caption }: StateTableProps) {
   return (
-    <figure className="not-prose my-[20px] overflow-x-auto rounded-lg-10 bg-bg-secondary outline-[0.5px] -outline-offset-[0.5px] outline-border-transparent-medium">
+    <figure
+      tabIndex={0}
+      className="docs-scroll-focus not-prose my-[20px] overflow-x-auto rounded-lg-10 bg-bg-secondary outline-[0.5px] -outline-offset-[0.5px] outline-border-transparent-medium"
+    >
       <table className="w-full min-w-[560px] border-collapse text-left">
         <thead>
           <tr className="body-l-medium text-text-primary">

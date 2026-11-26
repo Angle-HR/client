@@ -1,26 +1,27 @@
-type GroupInputRightTextSize = 'sm' | 'md' | 'lg'
+'use client'
+
+import { useGroupInput } from './group-input-context'
+import { HELPER_TEXT, PANEL_BASE, RIGHT_PANEL } from './group-input-panel'
+
+import type { GroupInputSize } from './group-input.figma'
+
+type GroupInputRightTextSize = GroupInputSize
 
 interface GroupInputRightTextProps {
+  /** Fixed text after the field, e.g. `yourdomain.com`. */
   text: string
-  height?: GroupInputRightTextSize
+  /** Inside a GroupInput, defaults to the group's size. */
+  size?: GroupInputRightTextSize
   className?: string
 }
 
-const sizeConfig: Record<GroupInputRightTextSize, { panel: string }> = {
-  sm: { panel: 'h-[25px]' },
-  md: { panel: 'h-[32px]' },
-  lg: { panel: 'h-[40px]' },
-}
-
-function GroupInputRightText({ text, height = 'md', className = '' }: GroupInputRightTextProps) {
-  const config = sizeConfig[height]
-
+/** Fixed text after the field. Figma: .Subcomponents/Group-input/Right/Text-helpers. */
+function GroupInputRightText({ text, size: sizeProp, className = '' }: GroupInputRightTextProps) {
+  const group = useGroupInput()
+  const size = sizeProp ?? group?.size ?? 'md'
   return (
-    <div
-      aria-hidden="true"
-      className={`inline-flex items-center gap-[3px] ${config.panel} px-[8px] bg-bg-input-placeholder border border-border-input-placeholder rounded-r-sm-7 rounded-l-none text-body-s text-text-secondary ${className}`}
-    >
-      <span className="h-[24px] flex items-center">{text}</span>
+    <div className={`${PANEL_BASE} ${RIGHT_PANEL[size]} ${HELPER_TEXT[size]} ${className}`}>
+      {text}
     </div>
   )
 }

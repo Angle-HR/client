@@ -115,6 +115,7 @@
   --color-green-alpha-1: #4cc38a33;
   --color-green-alpha-2: #4cc38a0f;
   --color-green-alpha-3: #18794e0d;
+  --color-green-alpha-4: #4cc38a4d;
 
   /* ---------- Purple ---------- */
   --color-purple-1: #2b0e44;
@@ -261,6 +262,7 @@
     --color-green-alpha-1: color(display-p3 0.298 0.7647 0.5412 / 0.20);
     --color-green-alpha-2: color(display-p3 0.298 0.7647 0.5412 / 0.06);
     --color-green-alpha-3: color(display-p3 0.0941 0.4745 0.3059 / 0.05);
+    --color-green-alpha-4: color(display-p3 0.298 0.7647 0.5412 / 0.30);
 
     /* ── Purple ── */
     --color-purple-1: color(display-p3 0.1686 0.0549 0.2667);

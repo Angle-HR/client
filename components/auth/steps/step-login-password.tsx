@@ -101,8 +101,8 @@ function StepLoginPassword({
                 suffixButton={
                   <IconButton
                     type="button"
-                    variant="tertiary"
-                    size="sm"
+                    variant="light"
+                    size="md"
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                     icon={showPassword ? <EyeOffIcon /> : <EyeIcon />}
                     onClick={() => setShowPassword((prev) => !prev)}

@@ -287,7 +287,7 @@ describe('TextButton', () => {
 
   it('wrapped trims the label to its cap height, as in Figma', () => {
     render(<TextButton wrapped>Link</TextButton>)
-    expect(screen.getByText('Link').className).toContain('leading-[0.727em]')
+    expect(screen.getByText('Link').className).toContain('text-trim-cap')
   })
 
   it('puts the avatar after the left icon', () => {

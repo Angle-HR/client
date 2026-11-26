@@ -62,7 +62,7 @@ describe('Text Button matches Figma', () => {
   it('trims the label to cap height at every size', () => {
     for (const size of Object.keys(TEXT_BUTTON_LAYOUT) as TextButtonSize[]) {
       const { unmount } = render(<TextButton size={size}>Link</TextButton>)
-      expect(screen.getByText('Link')).toHaveClass('leading-[0.727em]', 'whitespace-nowrap')
+      expect(screen.getByText('Link')).toHaveClass('text-trim-cap', 'whitespace-nowrap')
       expect(screen.getByRole('button')).toHaveClass('gap-[2px]')
       unmount()
     }

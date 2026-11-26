@@ -25,6 +25,18 @@
 }
 .docs-pre .docs-inline-code { padding: 0; background: none; white-space: pre; }
 
+/* Inline links: underlined, so they don't rely on colour (WCAG 1.4.1). In
+   dark, blue-9: the blue-accent token (blue-8) is 3.5:1 on the page. */
+.docs-link { color: var(--text-blue-accent); text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); }
+.docs-link:hover { text-decoration-color: currentColor; }
+:root[data-theme="dark"] .docs-link { color: var(--color-blue-9); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .docs-link { color: var(--color-blue-9); }
+}
+
+/* Areas that scroll sideways take keyboard focus; show it. */
+.docs-scroll-focus:focus-visible { outline: 1px solid var(--bg-selection-controls-selected); outline-offset: 2px; }
+
 .docs-anchor { opacity: 0; transition: opacity 0.1s; }
 .group:hover .docs-anchor, .docs-anchor:focus-visible { opacity: 1; }
 

@@ -79,7 +79,10 @@ function ColourTokens() {
       {filtered.map((group) => (
         <section key={group.name} aria-label={group.name}>
           <h3 className="mb-[8px] body-l-semibold text-text-primary">{group.name}</h3>
-          <div className="overflow-x-auto rounded-lg-10 outline-[0.5px] -outline-offset-[0.5px] outline-border-transparent-medium">
+          <div
+            tabIndex={0}
+            className="docs-scroll-focus overflow-x-auto rounded-lg-10 outline-[0.5px] -outline-offset-[0.5px] outline-border-transparent-medium"
+          >
             <table className="w-full min-w-[560px] border-collapse text-left">
               <thead>
                 <tr className="body-l-medium text-text-primary">

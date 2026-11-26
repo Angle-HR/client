@@ -6,6 +6,7 @@ import { DashboardIcon } from '@/components/dashboard/nav-config'
 import { Floating, clampLeft, toAnchor } from '@/components/jobs/floating'
 import { JOB_STATUS_META } from '@/components/jobs/job-status'
 import { PersonAvatar } from '@/components/jobs/person-avatar'
+import { AvatarStack } from '@/components/ui'
 import {
   FILTER_FIELDS,
   FILTER_FIELD_ORDER,
@@ -629,21 +630,13 @@ function FilterBar({
                     people show as a stack of two with a "more" tile. */}
                 {only ? <OptionVisual option={only} onChip /> : null}
                 {!only && people.length > 0 ? (
-                  <span className="inline-flex items-center">
-                    {people.slice(0, 2).map((person, i) => (
-                      <span
-                        key={person.value}
-                        className={i === 0 ? 'inline-flex' : '-ml-[4px] inline-flex'}
-                      >
-                        <OptionVisual option={person} onChip />
-                      </span>
+                  // Figma avatar/avatar-stack, 14px standard: two faces, then
+                  // the "more" tile when there are more people.
+                  <AvatarStack size={14} maxVisible={2}>
+                    {people.map((person) => (
+                      <OptionVisual key={person.value} option={person} onChip />
                     ))}
-                    {people.length > 2 ? (
-                      <span className="-ml-[4px] inline-flex size-[14px] items-center justify-center rounded-full bg-bg-avatar-blue text-text-avatar-blue outline-[0.5px] -outline-offset-[0.5px] outline-border-transparent-light">
-                        <DashboardIcon name="ellipsis-horizontal-solid" size={10} />
-                      </span>
-                    ) : null}
-                  </span>
+                  </AvatarStack>
                 ) : null}
                 {summariseValues(options, filter.values)}
               </button>

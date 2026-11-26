@@ -10,7 +10,6 @@ const meta: Meta<typeof Textarea> = {
     showHelper: { control: 'boolean' },
     showToolbar: { control: 'boolean' },
     showActionButton: { control: 'boolean' },
-    showSecondaryActions: { control: 'boolean' },
     disabled: { control: 'boolean' },
   },
   args: {
@@ -60,7 +59,6 @@ export const WithSecondaryActions: Story = {
     label: 'Comment',
     placeholder: 'Add a comment...',
     showActionButton: true,
-    showSecondaryActions: true,
     actionButtonLabel: 'Save',
   },
 }

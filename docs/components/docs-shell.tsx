@@ -1,15 +1,15 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { useEffect, useState, type ReactNode } from 'react'
+import { Fragment, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 
 import { IconButton } from '@/components/ui/button'
 import { MaskIcon } from '@/components/ui/icons'
-import { Overlay, Sidebar, SidebarItem } from '@/components/ui/sidebar'
+import { Divider } from '@/components/ui/notification/divider'
+import { Overlay, Sidebar, SidebarGroupItem, SidebarItem } from '@/components/ui/sidebar'
 import { DOCS_HOME, DOCS_NAV } from '@/docs/nav'
 import { useTheme } from '@/providers/theme'
 
-import { DocsNavGroup } from './docs-nav-group'
 import { PageToc } from './page-toc'
 
 import type { ThemePreference } from '@/lib/theme'
@@ -32,46 +32,133 @@ const THEMES: { key: ThemePreference; label: string; icon: ReactNode }[] = [
   },
 ]
 
+const CLOSED_KEY = 'docs-nav-closed'
+
+function readClosed(): string[] {
+  try {
+    const value = JSON.parse(localStorage.getItem(CLOSED_KEY) ?? '[]')
+    return Array.isArray(value) ? value : []
+  } catch {
+    return []
+  }
+}
+
+/**
+ * Which sidebar groups are closed. Remembered in this browser; the group
+ * holding the current page always opens.
+ */
+function useClosedGroups(pathname: string) {
+  const [closed, setClosed] = useState<string[]>([])
+  // False until the saved groups are applied: they close without animating.
+  const [restored, setRestored] = useState(false)
+  const current = DOCS_NAV.find((group) => group.items.some((item) => item.href === pathname))?.key
+
+  // Restore after hydration (so server and client render the same), but
+  // before the browser paints, so saved groups don't visibly snap shut.
+  useLayoutEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reading a saved preference after mount
+    setClosed(readClosed().filter((key) => key !== current))
+    // Turn the open/close animation on only after that first, silent restore.
+    const frame = requestAnimationFrame(() => setRestored(true))
+    return () => cancelAnimationFrame(frame)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Landing on a page in a closed group opens it (adjusted during render, not in an effect).
+  const [openedFor, setOpenedFor] = useState(current)
+  if (current !== openedFor) {
+    setOpenedFor(current)
+    if (current && closed.includes(current)) setClosed(closed.filter((k) => k !== current))
+  }
+
+  const toggle = (key: string, open: boolean) =>
+    setClosed((keys) => {
+      const next = open ? keys.filter((k) => k !== key) : [...keys, key]
+      try {
+        localStorage.setItem(CLOSED_KEY, JSON.stringify(next))
+      } catch {
+        // Storage blocked: the group still opens and closes, it just isn't remembered.
+      }
+      return next
+    })
+
+  const isOpen = (key: string) => !closed.includes(key)
+
+  return { isOpen, toggle, restored }
+}
+
 function DocsNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname()
+  const { isOpen, toggle, restored } = useClosedGroups(pathname)
+  const navRef = useRef<HTMLDivElement>(null)
+
+  // Keep the current page in view, e.g. after landing on a page far down the list.
+  useEffect(() => {
+    navRef.current?.querySelector('[aria-current="page"]')?.scrollIntoView({ block: 'nearest' })
+  }, [pathname])
+
   return (
-    <Sidebar
-      className="h-full"
-      companySelector={
-        <a
-          href="/docs"
-          onClick={onNavigate}
-          className="flex h-[32px] items-center gap-[8px] rounded-sm-7 px-[8px] body-s-semibold text-text-primary focus-visible:outline-2 focus-visible:outline-bg-selection-controls-selected"
-        >
-          Open HR <span className="body-s-regular text-text-tertiary">Design system</span>
-        </a>
-      }
-    >
-      <div className="flex flex-col gap-[2px]">
-        <SidebarItem
-          label={DOCS_HOME.label}
-          href={DOCS_HOME.href}
-          active={pathname === DOCS_HOME.href}
-          onClick={onNavigate}
-        />
-      </div>
-      <div className="flex flex-col gap-[12px]">
-        {DOCS_NAV.map((group) => (
-          <DocsNavGroup
-            key={group.key}
-            id={group.key}
-            title={group.title}
-            icon={group.icon}
-            onNavigate={onNavigate}
-            items={group.items.map((item) => ({
-              label: item.label,
-              href: item.href,
-              active: pathname === item.href,
-            }))}
-          />
-        ))}
-      </div>
-    </Sidebar>
+    <div ref={navRef} className={restored ? 'contents' : 'contents [&_*]:transition-none!'}>
+      <Sidebar
+        className="h-full"
+        companySelector={
+          <a
+            href="/docs"
+            onClick={onNavigate}
+            className="flex h-[32px] items-center gap-[8px] rounded-sm-7 px-[8px] body-s-semibold text-text-primary focus-visible:outline-2 focus-visible:outline-bg-selection-controls-selected"
+          >
+            Open HR <span className="body-s-regular text-text-secondary">Design system</span>
+          </a>
+        }
+      >
+        {DOCS_NAV.map((group, index) => {
+          const isComponents = group.key !== 'foundations'
+          const groupNode = (
+            <SidebarGroupItem
+              key={group.key}
+              title={group.title}
+              open={isOpen(group.key)}
+              onToggle={(open) => toggle(group.key, open)}
+              // Component pages sit one step in from their group's title.
+              className={isComponents ? '[&_ul]:pl-[16px]' : ''}
+              items={group.items.map((item) => ({
+                label: item.label,
+                href: item.href,
+                active: pathname === item.href,
+                onClick: onNavigate,
+              }))}
+            />
+          )
+          // Overview sits over Foundations, and "Components" over the first
+          // group after it, both 4px apart, with a divider between the two.
+          if (index === 0)
+            return (
+              <div key={group.key} className="flex w-full flex-col gap-[4px]">
+                <SidebarItem
+                  label={DOCS_HOME.label}
+                  href={DOCS_HOME.href}
+                  active={pathname === DOCS_HOME.href}
+                  onClick={onNavigate}
+                />
+                {groupNode}
+              </div>
+            )
+          if (index === 1)
+            return (
+              <Fragment key={group.key}>
+                <Divider padded />
+                <div className="flex w-full flex-col gap-[4px]">
+                  <p className="px-[8px] text-[11px] leading-[16px] font-medium tracking-[0.06em] text-text-primary uppercase">
+                    Components
+                  </p>
+                  {groupNode}
+                </div>
+              </Fragment>
+            )
+          return groupNode
+        })}
+      </Sidebar>
+    </div>
   )
 }
 
@@ -100,6 +187,16 @@ function ThemeSwitch() {
  * Sidebar on the shell surface, content in an inset card — so the docs look
  * like the product they describe. Under 768px the sidebar becomes a drawer.
  */
+/** The current page's name from the nav, shown in the top bar. */
+function pageTitle(pathname: string) {
+  if (pathname === DOCS_HOME.href) return DOCS_HOME.label
+  for (const group of DOCS_NAV) {
+    const item = group.items.find((i) => i.href === pathname)
+    if (item) return item.label
+  }
+  return 'Design system'
+}
+
 function DocsShell({ children }: { children: ReactNode }) {
   const pathname = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -119,6 +216,12 @@ function DocsShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex h-dvh w-full bg-bg-primary">
+      <a
+        href="#docs-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-[8px] focus:left-[8px] focus:z-[60] focus:rounded-sm-8 focus:bg-bg-light focus:px-[12px] focus:py-[8px] focus:body-s-medium focus:text-text-primary focus:shadow-sm"
+      >
+        Skip to content
+      </a>
       <div className="hidden md:flex">
         <DocsNav />
       </div>
@@ -163,12 +266,16 @@ function DocsShell({ children }: { children: ReactNode }) {
                   onClick={() => setMenuOpen(true)}
                 />
               </span>
-              <span className="body-s-medium text-text-secondary">Live docs</span>
+              <span className="body-s-medium text-text-secondary">{pageTitle(pathname)}</span>
             </div>
             <ThemeSwitch />
           </header>
           {/* Fixed column widths per breakpoint (padding included); full width below 1024px. */}
-          <article className="docs-prose mx-auto w-full px-[16px] pt-[32px] pb-[78px] md:px-[40px] lg:w-[680px] xl:w-[760px] 2xl:w-[800px]">
+          <article
+            id="docs-content"
+            tabIndex={-1}
+            className="docs-prose mx-auto outline-none w-full px-[16px] pt-[32px] pb-[78px] md:px-[40px] lg:w-[680px] xl:w-[760px] 2xl:w-[800px]"
+          >
             {children}
           </article>
         </div>

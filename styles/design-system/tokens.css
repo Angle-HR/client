@@ -18,6 +18,7 @@
   --bg-logo: var(--color-black);
   --bg-danger: var(--color-red-12);
   --bg-light: var(--color-white);
+  --bg-inverted: var(--color-dark-grey-4);
 
   /* ── Background / Transparent ── */
   --bg-transparent-light: var(--color-black-14);
@@ -27,6 +28,9 @@
   --bg-transparent-blue-accent-lighter: var(--color-blue-alpha-5);
   --bg-transparent-blue-accent-light: var(--color-blue-alpha-5);
   --bg-transparent-blue-accent-medium: var(--color-blue-alpha-4);
+  --bg-transparent-green-accent-lighter: var(--color-green-alpha-2);
+  --bg-transparent-green-accent-light: var(--color-green-alpha-1);
+  --bg-transparent-green-accent-medium: var(--color-green-alpha-4);
 
   /* ── Background / Default Button ── */
   --bg-btn-default-pri-rest: var(--color-light-grey-2);
@@ -130,7 +134,7 @@
   --bg-tags-red: var(--color-red-10);
   --bg-tags-grey: var(--color-light-grey-3);
   --bg-tags-teal: var(--color-teal-8);
-  --bg-tags-empty: var(--color-non);
+  --bg-tags-empty: var(--bg-non);
   --bg-tags-remove-btn: var(--color-black-15);
 
   /* ── Background / Gradient ── */
@@ -182,6 +186,7 @@
   --text-blue-accent: var(--color-blue-7);
   --text-success: var(--color-green-5);
   --text-inverted: var(--color-white);
+  --text-inverted-neutral: var(--color-white);
   --text-non: var(--color-white);
   --text-logo: var(--color-white);
 
@@ -228,6 +233,7 @@
   --text-input-hover: var(--color-light-grey-7);
   --text-input-placeholder: var(--color-light-grey-7);
   --text-input-sec-items: var(--color-dark-grey-9);
+  --text-input-with-tags-placeholder: var(--color-dark-grey-9);
   --text-input-disabled: var(--color-black-8);
   --text-input-focus-selected: var(--color-blue-7);
   --text-input-icon-rest: var(--color-dark-grey-4);
@@ -380,6 +386,7 @@
     --bg-logo: var(--color-non);
     --bg-danger: var(--color-red-alpha-1);
     --bg-light: var(--color-dark-grey-3);
+    --bg-inverted: var(--color-white);
 
     /* ── Background / Transparent ── */
     --bg-transparent-light: var(--color-white-13);
@@ -389,6 +396,9 @@
     --bg-transparent-blue-accent-lighter: var(--color-blue-alpha-5);
     --bg-transparent-blue-accent-light: var(--color-blue-alpha-4);
     --bg-transparent-blue-accent-medium: var(--color-blue-alpha-3);
+    --bg-transparent-green-accent-lighter: var(--color-green-alpha-2);
+    --bg-transparent-green-accent-light: var(--color-green-alpha-1);
+    --bg-transparent-green-accent-medium: var(--color-green-alpha-4);
 
     /* ── Background / Default Button ── */
     --bg-btn-default-pri-rest: var(--color-dark-grey-2);
@@ -492,7 +502,7 @@
     --bg-tags-red: var(--color-red-3);
     --bg-tags-grey: var(--color-dark-grey-2);
     --bg-tags-teal: var(--color-teal-1);
-    --bg-tags-empty: var(--color-non);
+    --bg-tags-empty: var(--bg-non);
     --bg-tags-remove-btn: var(--color-white-15);
 
     /* ── Background / Gradient ── */
@@ -544,6 +554,7 @@
     --text-blue-accent: var(--color-blue-8);
     --text-success: var(--color-green-5);
     --text-inverted: var(--color-white);
+    --text-inverted-neutral: var(--color-black);
     --text-non: var(--color-white);
     --text-logo: var(--color-white);
 
@@ -590,6 +601,7 @@
     --text-input-hover: var(--color-dark-grey-6);
     --text-input-placeholder: var(--color-dark-grey-6);
     --text-input-sec-items: var(--color-light-grey-7);
+    --text-input-with-tags-placeholder: var(--color-dark-grey-8);
     --text-input-disabled: var(--color-white-8);
     --text-input-focus-selected: var(--color-blue-8);
     --text-input-icon-rest: var(--color-light-grey-4);
@@ -741,6 +753,7 @@
     --bg-logo: var(--color-non);
     --bg-danger: var(--color-red-alpha-1);
     --bg-light: var(--color-dark-grey-3);
+    --bg-inverted: var(--color-white);
 
     /* ── Background / Transparent ── */
     --bg-transparent-light: var(--color-white-13);
@@ -750,6 +763,9 @@
     --bg-transparent-blue-accent-lighter: var(--color-blue-alpha-5);
     --bg-transparent-blue-accent-light: var(--color-blue-alpha-4);
     --bg-transparent-blue-accent-medium: var(--color-blue-alpha-3);
+    --bg-transparent-green-accent-lighter: var(--color-green-alpha-2);
+    --bg-transparent-green-accent-light: var(--color-green-alpha-1);
+    --bg-transparent-green-accent-medium: var(--color-green-alpha-4);
 
     /* ── Background / Default Button ── */
     --bg-btn-default-pri-rest: var(--color-dark-grey-2);
@@ -853,7 +869,7 @@
     --bg-tags-red: var(--color-red-3);
     --bg-tags-grey: var(--color-dark-grey-2);
     --bg-tags-teal: var(--color-teal-1);
-    --bg-tags-empty: var(--color-non);
+    --bg-tags-empty: var(--bg-non);
     --bg-tags-remove-btn: var(--color-white-15);
 
     /* ── Background / Gradient ── */
@@ -905,6 +921,7 @@
     --text-blue-accent: var(--color-blue-8);
     --text-success: var(--color-green-5);
     --text-inverted: var(--color-white);
+    --text-inverted-neutral: var(--color-black);
     --text-non: var(--color-white);
     --text-logo: var(--color-white);
 
@@ -951,6 +968,7 @@
     --text-input-hover: var(--color-dark-grey-6);
     --text-input-placeholder: var(--color-dark-grey-6);
     --text-input-sec-items: var(--color-light-grey-7);
+    --text-input-with-tags-placeholder: var(--color-dark-grey-8);
     --text-input-disabled: var(--color-white-8);
     --text-input-focus-selected: var(--color-blue-8);
     --text-input-icon-rest: var(--color-light-grey-4);

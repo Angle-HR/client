@@ -1,0 +1,109 @@
+import { DateInputStates } from '@/docs/components/date-input-states'
+import { DoDont, Guideline } from '@/docs/components/do-dont'
+import { Example } from '@/docs/components/example'
+import { FigmaReference } from '@/docs/components/figma-reference'
+import { PropsTable } from '@/docs/components/props-table'
+
+export const metadata = { title: 'Date input' }
+
+# Date input
+
+A date typed as day, month and year, with a calendar to pick from.
+
+<Example name="date-input/overview" />
+
+```tsx
+import { DateInput, EMPTY_DATE } from '@/components/ui/input'
+```
+
+The date can be typed straight into the three parts, DD ⋅ MM ⋅ YYYY, or picked from the calendar button. Each part only accepts digits.
+
+## Sizes
+
+<Example name="date-input/sizes" />
+
+| Size | Height | Text           | Left padding | Corners | Calendar button |
+| ---- | ------ | -------------- | ------------ | ------- | --------------- |
+| `lg` | 40px   | 14px, Body L   | 12px         | 10px    | 32px, 4px in    |
+| `md` | 32px   | 13.8px, Body M | 8px          | 8px     | 32px, flush     |
+| `sm` | 25px   | 13px, Body S   | 8px          | 7px     | 24px, 1px in    |
+
+The field is the [text input](/docs/components/text-input) with Figma's Calendar suffix: the Tertiary [icon button](/docs/components/icon-button) with a 14px calendar icon. Figma's Date Picker is the 32px size. The padding includes the 1px border.
+
+**Width:** the field fills its container. Figma draws it 178px wide at every height (202px in the Date Picker). It never gets narrower than its date, so the calendar button always stays inside the border; at 40px the empty DD ⋅ MM ⋅ YYYY needs about 157px.
+
+## States
+
+<DateInputStates />
+
+- **Placeholder** (empty): grey DD ⋅ MM ⋅ YYYY.
+- **Hover**: a darker border, only while empty. Fades in over 100ms, ease in.
+- **Focus** (typing in a part): a blue border. 100ms, ease out.
+- **Filled**: a slightly darker border and dark digits.
+- **Open**: while the calendar is open the field keeps Figma's Hover look. The calendar hangs 3px from the field, below it (Figma's Down) or above it (Up).
+
+### Where the calendar opens
+
+`calendarPosition` is `"auto"` by default:
+
+- **Below** the field when the calendar and its 3px gap fit between the field and the bottom of the window.
+- **Above** it when they don't fit below and there's more room above.
+- **Left edges aligned**, as in Figma, unless the calendar would run off the right of the window; then the right edges line up instead.
+- It decides when it opens, and again when the page scrolls or the window resizes. It doesn't move when you change month, so it doesn't jump about.
+
+`"down"` and `"up"` fix the side, for places that need it. The open calendar is pinned to the window at the field, so a scrolling panel, a table or a card that hides its overflow can't cut it off; it follows the field when anything scrolls.
+
+Not in Figma: Figma has only Down and Up, left-aligned. `"auto"` picks between them, and lining up the right edges is code only.
+
+- **Error** (`errorText`): a pink border, with the error under the field.
+- **Disabled**: a grey fill; digits at 20%. The field isn't faded.
+
+**Figma oddities, copied as they are:**
+
+- Open uses the Hover field, not Focus.
+- The calendar button keeps its Rest look when the field is disabled. It can't be clicked or reached with Tab.
+- The 32px field uses the date-range calendar icon; 25px and 40px use calendar-days.
+- Above the field (Up), the calendar covers the label.
+
+**Not in Figma, kept in code:**
+
+- Typing the date (the designer's note asks for it).
+- Error text under the field; Figma's Date Picker has none, so it uses the text input's error helper.
+- 16px text on small screens, so iOS doesn't zoom.
+
+## Labels
+
+<Example name="date-input/labels" />
+
+The label is the shared field label, as on the [text input](/docs/components/text-input#labels-and-helper-text). `required` adds Figma's red asterisk 2px after it and marks each part required; without it the date is optional.
+
+## Usage
+
+<DoDont>
+  <Guideline kind="do">Use it for one specific date, like a closing date.</Guideline>
+  <Guideline kind="dont">Use it for a range; there's no range picker yet.</Guideline>
+  <Guideline kind="do">
+    Set `min` when past dates aren't allowed, and say so in the error.
+  </Guideline>
+  <Guideline kind="dont">Leave the label out; the parts only say DD, MM and YYYY.</Guideline>
+</DoDont>
+
+## Accessibility
+
+- The three parts are a group named by the label, and each part is named Day, Month or Year.
+- The calendar button is named "Open calendar" and says whether it's open.
+- Opening moves focus to the chosen day (or today); the arrow keys move between days (see [Calendar](/docs/components/calendar#accessibility)). Picking a day or pressing Escape closes it and puts focus back on the button. Tabbing out of the field, or clicking outside, also closes it. Not in Figma.
+- The error is announced as it appears, and linked to each part.
+
+## Props
+
+<PropsTable of="DateInput" />
+
+## Figma
+
+<FigmaReference
+  src="/docs/figma/date-input.png"
+  href="https://www.figma.com/design/7jCMwDng7HF5g7F3tGXf0E/Open-HR?node-id=5042-53560"
+  taken="25 Nov 2026"
+  alt="The date picker in Figma: rest, filled, and open with the calendar below or above the field."
+/>

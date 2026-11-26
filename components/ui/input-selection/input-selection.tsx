@@ -12,6 +12,7 @@ import {
 } from 'react'
 
 import { HelperText, type HelperTextState } from '../input/helper-text'
+import { LabelWrapper } from '../input/label-wrapper'
 import { ListItemDefault } from '../list/list-item-default'
 import { ListItemMultiSelect } from '../list/list-item-multi-select'
 import { ListItemSelected } from '../list/list-item-selected'
@@ -21,6 +22,7 @@ import { Chip } from '../tags/chip'
 import { Tag } from '../tags/tag'
 
 import { SelectionField } from './selection-field'
+import { SELECTION_TAGS } from './selection-field.figma'
 
 interface SelectOption {
   value: string
@@ -42,7 +44,7 @@ interface InputSelectionProps {
   helperState?: HelperTextState
   showHelper?: boolean
   errorText?: string
-  size?: 'sm' | 'md'
+  size?: 'sm' | 'md' | 'lg'
   value?: string | string[]
   defaultValue?: string | string[]
   placeholder?: string
@@ -76,6 +78,12 @@ interface InputSelectionProps {
   listSearchPlaceholder?: string
   /** An action pinned under the options, e.g. "Create new team". */
   footerAction?: { label: string; icon?: ReactNode; onClick: () => void }
+  /** Inside a group input: Figma's ⛔ Position, which sets the field's corners. */
+  groupPosition?: 'left' | 'center' | 'right'
+  /** Red border without an error message here (a group shows its own). */
+  invalid?: boolean
+  /** Describes the field when the helper text lives outside it. */
+  'aria-describedby'?: string
 }
 
 function InputSelection({
@@ -105,6 +113,8 @@ function InputSelection({
   selectionStyle = 'tag',
   listSearchPlaceholder,
   footerAction,
+  groupPosition,
+  invalid = false,
   ...props
 }: InputSelectionProps) {
   const generatedId = useId()
@@ -126,7 +136,7 @@ function InputSelection({
   )
   const value = controlledValue ?? internalValue
 
-  const hasError = !!errorText
+  const hasError = !!errorText || invalid
   const displayHelperState: HelperTextState = hasError ? 'error' : helperState
   const displayHelperText = hasError ? errorText : helperText
 
@@ -287,20 +297,7 @@ function InputSelection({
       }}
     >
       {showLabel && label && (
-        <label
-          id={labelId}
-          htmlFor={fieldId}
-          // Centred in its cap-height box, like LabelWrapper; a bare 12px line would hang low.
-          className="flex h-[9px] items-center pl-[3px] text-body-xs leading-none font-medium-550 text-text-tertiary"
-        >
-          {label}
-          {required && (
-            <span className="text-text-error" aria-hidden="true">
-              {' '}
-              *
-            </span>
-          )}
-        </label>
+        <LabelWrapper label={label} required={required} htmlFor={fieldId} id={labelId} />
       )}
 
       <SelectionField
@@ -358,7 +355,13 @@ function InputSelection({
                     onRemove={() => selectOption(v)}
                   />
                 ) : (
-                  <Tag key={v} label={labelFor(v)} removable onRemove={() => selectOption(v)} />
+                  <Tag
+                    key={v}
+                    label={labelFor(v)}
+                    color={SELECTION_TAGS.colour}
+                    removable
+                    onRemove={() => selectOption(v)}
+                  />
                 )
               })
             : undefined
@@ -373,7 +376,11 @@ function InputSelection({
         aria-labelledby={showLabel && label ? labelId : props['aria-labelledby']}
         aria-invalid={hasError}
         aria-required={required}
-        aria-describedby={showHelper || hasError ? helperId : undefined}
+        aria-describedby={
+          props['aria-describedby'] ??
+          ((showHelper || hasError) && displayHelperText ? helperId : undefined)
+        }
+        groupPosition={groupPosition}
       />
 
       {mounted && (

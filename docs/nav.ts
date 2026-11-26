@@ -40,6 +40,48 @@ const DOCS_NAV: DocsNavGroup[] = [
       { label: 'Label Button', href: '/docs/components/label-button' },
     ],
   },
+  {
+    key: 'selection-controls',
+    title: 'Selection controls',
+    icon: 'check-circle',
+    items: [
+      { label: 'Checkbox', href: '/docs/components/checkbox' },
+      { label: 'Radio Button', href: '/docs/components/radio-button' },
+      { label: 'Toggle', href: '/docs/components/toggle' },
+    ],
+  },
+  {
+    key: 'tags',
+    title: 'Tags',
+    icon: 'tag',
+    items: [
+      { label: 'Tag', href: '/docs/components/tag' },
+      { label: 'Chip', href: '/docs/components/chip' },
+    ],
+  },
+  {
+    key: 'avatars',
+    title: 'Avatars',
+    icon: 'user-circle',
+    items: [
+      { label: 'Avatar', href: '/docs/components/avatar' },
+      { label: 'Avatar stack', href: '/docs/components/avatar-stack' },
+    ],
+  },
+  {
+    key: 'inputs',
+    title: 'Inputs',
+    icon: 'pencil-square',
+    items: [
+      { label: 'Text input', href: '/docs/components/text-input' },
+      { label: 'Text area', href: '/docs/components/text-area' },
+      { label: 'Group input', href: '/docs/components/group-input' },
+      { label: 'OTP input', href: '/docs/components/otp-input' },
+      { label: 'Selection', href: '/docs/components/selection' },
+      { label: 'Date input', href: '/docs/components/date-input' },
+      { label: 'Calendar', href: '/docs/components/calendar' },
+    ],
+  },
 ]
 
 export { DOCS_HOME, DOCS_NAV }

@@ -32,6 +32,16 @@ input:-webkit-autofill:active {
      shadow-sm  font-sans  text-body-l  leading-21
    ========================================================================== */
 
+/* Chip loading highlight (not in Figma); used by --animate-shimmer below. */
+@keyframes shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
 @theme inline {
   /* Bare `transition-colors` / `transition-all` etc. (no explicit duration-*)
      use this instead of Tailwind's 150ms default. */
@@ -41,6 +51,9 @@ input:-webkit-autofill:active {
      transition menu. Tailwind's own ease-in/ease-out curves are different. */
   --ease-figma-in: cubic-bezier(0.42, 0, 1, 1);
   --ease-figma-out: cubic-bezier(0, 0, 0.58, 1);
+
+  /* Not in Figma: a highlight sweeping across a loading skeleton (Chip). */
+  --animate-shimmer: shimmer 1.4s ease-in-out infinite;
 
   /* ══════════════════════════════════════════════════════════════════════════
      SPACING — unified scale for p-*, m-*, gap-*, w-*, h-*, inset-*, etc.
@@ -344,10 +357,14 @@ input:-webkit-autofill:active {
   --color-bg-transparent-light: var(--bg-transparent-light);
   --color-bg-transparent-lighter: var(--bg-transparent-lighter);
   --color-bg-transparent-medium: var(--bg-transparent-medium);
+  --color-bg-inverted: var(--bg-inverted);
   --color-bg-transparent-strong: var(--bg-transparent-strong);
   --color-bg-transparent-blue-accent-lighter: var(--bg-transparent-blue-accent-lighter);
   --color-bg-transparent-blue-accent-light: var(--bg-transparent-blue-accent-light);
   --color-bg-transparent-blue-accent-medium: var(--bg-transparent-blue-accent-medium);
+  --color-bg-transparent-green-accent-lighter: var(--bg-transparent-green-accent-lighter);
+  --color-bg-transparent-green-accent-light: var(--bg-transparent-green-accent-light);
+  --color-bg-transparent-green-accent-medium: var(--bg-transparent-green-accent-medium);
 
   /* ── Background / Default Button ── */
   --color-bg-btn-default-pri-rest: var(--bg-btn-default-pri-rest);
@@ -503,6 +520,7 @@ input:-webkit-autofill:active {
   --color-text-blue-accent: var(--text-blue-accent);
   --color-text-success: var(--text-success);
   --color-text-inverted: var(--text-inverted);
+  --color-text-inverted-neutral: var(--text-inverted-neutral);
   --color-text-non: var(--text-non);
   --color-text-logo: var(--text-logo);
 
@@ -549,6 +567,7 @@ input:-webkit-autofill:active {
   --color-text-input-hover: var(--text-input-hover);
   --color-text-input-placeholder: var(--text-input-placeholder);
   --color-text-input-sec-items: var(--text-input-sec-items);
+  --color-text-input-with-tags-placeholder: var(--text-input-with-tags-placeholder);
   --color-text-input-disabled: var(--text-input-disabled);
   --color-text-input-focus-selected: var(--text-input-focus-selected);
   --color-text-input-icon-rest: var(--text-input-icon-rest);
@@ -692,4 +711,15 @@ body {
   background: var(--bg-secondary);
   color: var(--text-primary);
   font-family: var(--font-sans);
+}
+
+/* Trims text to the top of its capitals and its baseline, as Figma does, so
+   icons centre on the letters. Browsers without text-box (Firefox) get a line
+   height equal to Inter's cap height instead, within half a pixel. */
+@utility text-trim-cap {
+  line-height: 0.727em;
+  @supports (text-box: trim-both cap alphabetic) {
+    line-height: normal;
+    text-box: trim-both cap alphabetic;
+  }
 }

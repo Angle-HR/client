@@ -10,8 +10,8 @@ interface PersonAvatarProps {
 }
 
 /**
- * A person as the jobs screens draw them: a square 4px-radius avatar with a
- * hairline edge, showing their photo when there is one and their initial when
+ * A person as the jobs screens draw them: a square avatar with a hairline
+ * edge, showing their photo when there is one and their initial when
  * there is not. Figma: avatar/avatar with Circular=no, or yes on filter chips.
  */
 function PersonAvatar({ person, size = 14, circular = false }: PersonAvatarProps) {
@@ -19,11 +19,11 @@ function PersonAvatar({ person, size = 14, circular = false }: PersonAvatarProps
     <Avatar
       size={size}
       circular={circular}
-      type={person.avatarUrl ? 'image' : 'initials'}
+      // Photos use Figma's "with border" image; initials have their own 0.5px edge.
+      type={person.avatarUrl ? 'image-border' : 'initials'}
       src={person.avatarUrl}
       text={person.name.charAt(0)}
       colour={person.colour}
-      className="outline-[0.5px] -outline-offset-[0.5px] outline-border-transparent-light"
     />
   )
 }

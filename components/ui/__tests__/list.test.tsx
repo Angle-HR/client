@@ -6,6 +6,7 @@ import { ListItemContent } from '../list/list-item-content'
 import { ListItemDefault } from '../list/list-item-default'
 import { ListItemLocation } from '../list/list-item-location'
 import { ListItemMultiSelect } from '../list/list-item-multi-select'
+import { ListItemPicker } from '../list/list-item-picker'
 import { ListItemSelected } from '../list/list-item-selected'
 import { ListItemToggle } from '../list/list-item-toggle'
 import { ListItemWithIcon } from '../list/list-item-with-icon'
@@ -214,5 +215,24 @@ describe('ListItemWithIcon', () => {
   it('sets aria-disabled when disabled', () => {
     render(<ListItemWithIcon mainText="Export" disabled />)
     expect(screen.getByText('Export').closest('li')).toHaveAttribute('aria-disabled', 'true')
+  })
+})
+
+describe('ListItemPicker vertical layout matches Figma (Picker, 1127:43938)', () => {
+  it('is a 188px row, left-aligned, with padding minus the 1px border', () => {
+    render(<ListItemPicker layout="vertical" title="Individual" subText="Just me" />)
+    const card = screen.getByRole('radio')
+    expect(card.className).toContain('w-[188px]')
+    expect(card.className).toContain('text-left')
+    expect(card.className).toContain('px-[17px] py-[13px]')
+    expect(card.className).toContain('duration-100 ease-figma-out')
+  })
+
+  it('trims the title and sub-text to cap height, sub-text at 19.2px', () => {
+    render(<ListItemPicker layout="vertical" title="Individual" subText="Just me" />)
+    expect(screen.getByText('Individual').className).toContain('text-trim-cap')
+    const sub = screen.getByText('Just me').className
+    expect(sub).toContain('leading-[19.2px]')
+    expect(sub).toContain('[text-box:trim-both_cap_alphabetic]')
   })
 })

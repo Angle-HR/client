@@ -1,0 +1,94 @@
+import { ChipStates } from '@/docs/components/chip-states'
+import { DoDont, Guideline } from '@/docs/components/do-dont'
+import { Example } from '@/docs/components/example'
+import { FigmaReference } from '@/docs/components/figma-reference'
+import { PropsTable } from '@/docs/components/props-table'
+
+export const metadata = { title: 'Chip' }
+
+# Chip
+
+A small pill for something someone picked: a person, a department, a filter. Unlike a tag, a chip can be removed or clicked.
+
+<Example name="chip/overview" />
+
+```tsx
+import { Chip } from '@/components/ui/tags'
+```
+
+## Fills
+
+<Example name="chip/fills" />
+
+| Fill          | Rest                         | Hover                         | Disabled                       |
+| ------------- | ---------------------------- | ----------------------------- | ------------------------------ |
+| `default`     | `bg/transparent/light`       | `bg/transparent/medium`       | `bg/transparent/lighter`       |
+| `accent`      | `bg/transparent/blue/light`  | `bg/transparent/blue/medium`  | `bg/transparent/blue/light`    |
+| `green`       | `bg/transparent/green/light` | `bg/transparent/green/medium` | `bg/transparent/green/lighter` |
+| `transparent` | none                         | none                          | none                           |
+
+The label is `text/primary`, Regular, or Medium with `boldText`. Hover fades in over 50ms (Figma's ease in) and out over 50ms (ease out); the text and icon don't change.
+
+## Layout
+
+20px tall with a 7px radius and 3px padding on the left. The icon is 14px with a 4px radius, then 3px of space, then the label (13px, Body S) with 1px before it and 4px after it. Pass any 14px avatar or glyph as `icon`; `withIcon={false}` drops it.
+
+## Removable
+
+<Example name="chip/removable" />
+
+`removable` adds a 20×20 remove button after the label (the label's right padding drops to 2px). Its 14px solid x is always visible, grey (`text/tertiary`) at rest. Hovering it fills it with `bg/transparent/light` and turns the x `text/secondary`, over 150ms (ease out). On an accent chip the x turns blue while the chip is hovered, and the button fills with the blue hover.
+
+## States
+
+<Example name="chip/states" />
+
+- **Placeholder:** keeps the rest fill, greys the label (`text/light`). Use it for an empty picker.
+- **Disabled:** lighter fill, grey label, no hover.
+- **Loading:** the whole chip becomes a 60×14 gradient bar (`bg/gradient/transparent/light` to `lighter`), 3px in from each side. Screen readers hear the label.
+- **Clickable:** pass `onClick` and the icon and label become a button. A clickable chip can also be removable: the remove button sits beside the main button, not inside it.
+
+<ChipStates />
+
+**Figma oddities, copied as they are:**
+
+- Removable accent chips show a grey x at rest and a blue x on hover.
+- Disabled accent keeps the rest fill; the other fills go lighter.
+- Placeholder accent and green (Regular text) have an extra 3px between icon and label.
+- Disabled with Medium text has no icon, but keeps its 14px space.
+- Removable chips only exist with Regular text in Figma.
+
+**Not in Figma, kept in code:**
+
+- `tone="secondary"`: a grey label, used for metadata on the jobs board.
+- A soft highlight sweeping across the loading bar every 1.4s. It stops when the system's reduce-motion setting is on.
+- `withText={false}`: icon only, with the label kept for screen readers.
+- A 1px blue focus ring on a clickable chip and on the remove button, like the selection controls.
+
+## Usage
+
+<DoDont>
+  <Guideline kind="do">Use chips for things someone picked and can take away.</Guideline>
+  <Guideline kind="dont">Use a chip for a fixed status. Use a tag.</Guideline>
+  <Guideline kind="do">Keep labels short: a name or one or two words.</Guideline>
+</DoDont>
+
+## Accessibility
+
+- **Remove button:** a real button named "Remove" plus the label, e.g. "Remove Alice Johnson".
+- **Clickable chip:** the icon and label are a real button; Tab to it, Enter or Space to activate. If it's also removable, Tab again reaches the remove button.
+- **Disabled:** `aria-disabled` on a static chip, `disabled` on a clickable one.
+- **Loading:** `role="status"` with the label as its name.
+
+## Props
+
+<PropsTable of="Chip" />
+
+## Figma
+
+<FigmaReference
+  src="/docs/figma/chip.png"
+  href="https://www.figma.com/design/7jCMwDng7HF5g7F3tGXf0E/Open-HR?node-id=2363-70402"
+  taken="24 Nov 2026"
+  alt="The Chips component set in Figma: default, accent, green and transparent fills in rest, hover, placeholder, disabled and loading, with and without a remove button."
+/>

@@ -21,7 +21,8 @@ const ContactUsButton = forwardRef<HTMLButtonElement, ContactUsButtonProps>(
         className={`inline-flex size-[48px] shrink-0 items-center justify-center rounded-full bg-bg-secondary p-[12px] text-text-tertiary shadow-slots-small transition-colors hover:text-text-secondary ${className}`}
         {...props}
       >
-        <ChatBubbleLeftRight className="size-[24px]" />
+        {/* Figma: the glyph is 21.6 × 19.2px, centred in the 24px icon frame. */}
+        <ChatBubbleLeftRight className="h-[19.2px] w-[21.6px]" />
       </button>
     )
   },

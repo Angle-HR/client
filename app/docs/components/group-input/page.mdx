@@ -1,0 +1,224 @@
+import { DoDont, Guideline } from '@/docs/components/do-dont'
+import { Example } from '@/docs/components/example'
+import { FigmaReference } from '@/docs/components/figma-reference'
+import {
+  GroupFieldStates,
+  GroupFieldSuffixes,
+  GroupPanelStates,
+  GroupSelectionStates,
+} from '@/docs/components/group-input-states'
+import { PropsTable } from '@/docs/components/props-table'
+
+export const metadata = { title: 'Group input' }
+
+# Group input
+
+A text field joined to fixed panels: a country or currency picker, or text such as `https://` before or after what's typed.
+
+<Example name="group-input/overview" />
+
+```tsx
+import {
+  GroupInput,
+  GroupInputField,
+  GroupInputLeftCurrency,
+  GroupInputLeftFlag,
+  GroupInputLeftText,
+  GroupInputRightText,
+} from '@/components/ui/group-input'
+```
+
+`GroupInput` holds the label, the row and the helper text. Put the panels and the field inside it, left to right. It passes its `size`, error and disabled state to them, and its label names the field.
+
+## Layouts
+
+<Example name="group-input/compositions" />
+
+Figma's ⛔ Position says where the field sits, and so which of its corners are round:
+
+| Position          | Layout                               | Field corners |
+| ----------------- | ------------------------------------ | ------------- |
+| `right` (default) | Panel, then field                    | Right         |
+| `center`          | Panel, field, panel                  | None          |
+| `left`            | Field, then a panel or a Flow Button | Left          |
+
+With a Flow Button, use `variant="primary"` and `position="right"` at the matching height (`xs`, `sm` or `md`).
+
+## Layout
+
+| Part                | 25px · `sm`         | 32px · `md`     | 40px · `lg`    |
+| ------------------- | ------------------- | --------------- | -------------- |
+| Field padding       | 8px                 | 8px             | 12px           |
+| Corner radius       | 7px                 | 8px             | 10px           |
+| Field text          | Body S, 13px        | Body M, 13.8px  | Body L, 14px   |
+| Field icons         | 12px                | 14px            | 14px           |
+| Suffix button       | 24px                | 32px            | 32px           |
+| Left panel padding  | 8px left, 4px right | 8px, 4px        | 12px, 6px      |
+| Right panel padding | 8px each side       | 8px             | 8px            |
+| Currency text       | Body xS, Medium     | Body xS, Medium | Body S, Medium |
+| Text panel text     | Body S, Medium      | Body S, Medium  | Body M, Medium |
+
+The field has a 4px gap and a 1px border. Panels have a 3px gap and no border on the side touching the field, so the border between them is 1px. Panel text and the chevron are `text/input/sec-items` (#999, #b3b3b3 dark).
+
+Below the `md` breakpoint the field's text is 16px, so iOS Safari doesn't zoom in (not in Figma).
+
+## States
+
+### Field
+
+<GroupFieldStates />
+
+The same states and colours as the [text input](/docs/components/text-input):
+
+- **Placeholder** (empty): grey text and prefix icon.
+- **Hover**: a darker border, only while the field is empty. 100ms, ease in.
+- **Focus**: a blue border, and the prefix icon turns dark. 100ms, ease out.
+- **Filled**: a slightly darker border once there's text.
+- **Error** (`errorText` or `aria-invalid`): a pink border; the suffix icon turns red.
+- **Disabled**: a grey fill and text at 20%. Nothing is faded.
+
+### Suffix
+
+<GroupFieldSuffixes />
+
+`suffix="icon"` shows `suffixIcon` in grey. `suffix="button"` shows the light Icon Button from `suffixButton`, with its icon in `text/btn-default/light`.
+
+### Validation
+
+<Example name="group-input/validation" />
+
+### Panels
+
+<GroupPanelStates />
+
+Every panel has a rest and a hover state: a faint grey fill and border, 100ms, ease out both ways. Currency and Flag are buttons, so open your list from their `onClick`.
+
+**Figma oddities, copied as they are or noted:**
+
+- The Left text panel is 43px tall at 40px in Figma. Here it's 40px, so it lines up with the field.
+- The text panels hover although they can't be clicked. Kept.
+- Panels hover with ease out on the way in; the field uses ease in.
+- Figma only has `left` without a suffix.
+
+**Not in Figma, kept in code:**
+
+- Keyboard focus on Currency and Flag: the selection controls' 1px blue ring.
+- `size` on `GroupInput`, passed down to the field and panels.
+- The 16px text on small screens.
+
+## Group selection
+
+A selection field in place of the text field, with the same panels around it. Figma: Inputs/Select Group input 🔽.
+
+<Example name="group-input/selection" />
+
+```tsx
+<GroupInput label="City" helperText="Where the role is based" helperInset={false}>
+  <GroupInputLeftFlag countryCode="NG" countryName="Nigeria" />
+  <GroupSelectionField options={cities} placeholder="Search for an option..." />
+</GroupInput>
+```
+
+`GroupSelectionField` is the [selection field](/docs/components/selection) and its list: it takes the same `options`, `multiple`, `searchable` and `onChange`. Its `position` sets the corners, as for the text field. Pass `helperInset={false}` to the `GroupInput`: this helper isn't inset in Figma.
+
+Figma has three layouts, at 32px and 25px:
+
+| Position          | Layout                     |
+| ----------------- | -------------------------- |
+| `right` (default) | Flag, then field           |
+| `center`          | Flag, field and Right text |
+| `left`            | Field, then Right text     |
+
+| Part          | 25px · `sm`  | 32px · `md`    | 40px · `lg`  |
+| ------------- | ------------ | -------------- | ------------ |
+| Padding       | 8px          | 8px            | 12px         |
+| Corner radius | 7px          | 8px            | 7px          |
+| Text          | Body S, 13px | Body M, 13.8px | Body L, 14px |
+| Icons         | 12px         | 14px           | 14px         |
+
+The field has a 4px gap and a 1px border, and a chevron-down at its right end.
+
+### States
+
+<GroupSelectionStates />
+
+The same colours as the selection field. Hover goes in and out with ease out, 100ms (the plain selection field hovers in with ease in). Open, the field takes the Focus state.
+
+### With selection
+
+<GroupSelectionStates withSelection />
+
+With `multiple`, the choices show as Large tags 2px apart, and the prefix icon goes. Empty, the placeholder is `text/input with tags/place-holder` (#999, #818181 dark), a step darker than the plain placeholder.
+
+**Figma oddities, copied as they are:**
+
+- The 40px field has 7px corners; the text field and the selection field use 10px.
+- The 25px height is called "24px" in Figma.
+- The helper isn't inset, unlike the text group input's.
+- The Small labelled variants use the 32px field resized to 25px.
+
+**Not in Figma, kept in code:** the open list, search and removable tags (the selection field's), and `size="lg"` in a labelled group (Figma only labels 32 and 25px).
+
+## Usage
+
+<DoDont>
+  <Guideline kind="do">
+    Use a panel for text people mustn't type, like `https://` or a domain.
+  </Guideline>
+  <Guideline kind="dont">Put an instruction in a panel. Use the helper text.</Guideline>
+  <Guideline kind="do">Say in the Flag's `countryName` which country it is.</Guideline>
+  <Guideline kind="dont">Mix heights in one group.</Guideline>
+</DoDont>
+
+## Accessibility
+
+- The row is a `group` named by the label. The label also names the field, and the helper or error describes it.
+- Errors set `aria-invalid` on the field and are announced as they appear; `required` sets `aria-required` and adds the asterisk.
+- Currency and Flag are buttons, named "Currency: NGN" or "Country: Nigeria". Add `aria-haspopup` and `aria-expanded` when they open a list.
+- Text panels are read out, so the field's context (`https://`) isn't lost.
+- `GroupSelectionField` is a combobox named by the group's label and described by its helper. An error sets `aria-invalid`.
+
+## Props
+
+<PropsTable of="GroupInput" />
+
+### GroupInputField
+
+<PropsTable of="GroupInputField" />
+
+### GroupSelectionField
+
+<PropsTable of="GroupSelectionField" />
+
+### Panels
+
+<PropsTable of="GroupInputLeftFlag" />
+
+<PropsTable of="GroupInputLeftCurrency" />
+
+<PropsTable of="GroupInputLeftText" />
+
+<PropsTable of="GroupInputRightText" />
+
+## Figma
+
+<FigmaReference
+  src="/docs/figma/group-input-field.png"
+  href="https://www.figma.com/design/7jCMwDng7HF5g7F3tGXf0E/Open-HR?node-id=991-22214"
+  taken="26 Nov 2026"
+  alt="The group input field in Figma: every state at three heights, with and without suffixes, in three positions."
+/>
+
+<FigmaReference
+  src="/docs/figma/group-input.png"
+  href="https://www.figma.com/design/7jCMwDng7HF5g7F3tGXf0E/Open-HR?node-id=1061-48573"
+  taken="26 Nov 2026"
+  alt="The labelled text group input in Figma: flag, field, text and Flow Button layouts at three heights."
+/>
+
+<FigmaReference
+  src="/docs/figma/group-selection.png"
+  href="https://www.figma.com/design/7jCMwDng7HF5g7F3tGXf0E/Open-HR?node-id=1066-50424"
+  taken="26 Nov 2026"
+  alt="The labelled group selection in Figma: flag and field, flag, field and text, and field and text, at 32 and 25px."
+/>

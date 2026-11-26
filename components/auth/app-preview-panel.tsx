@@ -1,5 +1,7 @@
 import Image from 'next/image'
 
+import { Avatar } from '@/components/ui'
+
 /**
  * The right-hand column of the split auth layout: a still preview of the app a
  * visitor is signing up for, drawn as a skeleton so it reads as "your workspace,
@@ -82,15 +84,12 @@ function AppPreviewPanel({ workspaceName }: AppPreviewPanelProps) {
             {/* Company selector */}
             <div className="flex w-[204px] items-center gap-[12px]">
               <div className="flex items-center gap-[8px] rounded-sm-8 p-[7px]">
-                <span
-                  className={`flex size-[16px] items-center justify-center rounded-xs-4 border-[0.5px] border-border-transparent-lighter text-[10px] leading-16 font-medium ${
-                    initial
-                      ? 'bg-bg-avatar-aqua text-text-avatar-aqua'
-                      : 'bg-bg-gradient-transparent-light text-transparent'
-                  }`}
-                >
-                  {initial}
-                </span>
+                {initial ? (
+                  <Avatar size={16} circular={false} colour="aqua" text={initial} />
+                ) : (
+                  // Before a name is typed: an empty skeleton tile the avatar's size.
+                  <span className="size-[16px] rounded-xs-4 border-[0.5px] border-border-transparent-lighter bg-bg-gradient-transparent-light" />
+                )}
                 <span className="flex items-center gap-[2px]">
                   <span className="text-body-s font-semibold leading-19_5 text-text-primary">
                     {name}

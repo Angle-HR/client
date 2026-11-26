@@ -19,7 +19,7 @@ function Anchor({ id }: { id: string }) {
       href={`#${id}`}
       aria-hidden="true"
       tabIndex={-1}
-      className="docs-anchor ml-[6px] text-text-tertiary no-underline"
+      className="docs-anchor -my-[6px] ml-[2px] inline-flex size-[24px] items-center justify-center align-middle text-text-tertiary no-underline"
     >
       #
     </a>
@@ -60,9 +60,7 @@ const components: MDXComponents = {
       {...props}
     />
   ),
-  a: (props) => (
-    <a className="text-text-blue-accent underline-offset-2 hover:underline" {...props} />
-  ),
+  a: (props) => <a className="docs-link underline underline-offset-2" {...props} />,
   ul: (props) => (
     <ul
       className="body-l-regular my-[10px] max-w-[68ch] list-disc pl-[20px] text-text-secondary marker:text-text-tertiary"
@@ -77,7 +75,8 @@ const components: MDXComponents = {
   ),
   li: (props) => <li className="my-[4px] pl-[2px] [&_strong]:text-text-primary" {...props} />,
   code: (props) => <code className="docs-inline-code" {...props} />,
-  pre: (props) => <pre className="docs-pre my-[16px]" {...props} />,
+  // Code scrolls sideways, so it takes keyboard focus (WCAG 2.1.1).
+  pre: (props) => <pre tabIndex={0} className="docs-pre docs-scroll-focus my-[16px]" {...props} />,
   hr: () => <hr className="my-[32px] border-border-transparent-medium" />,
   blockquote: (props) => (
     <blockquote
@@ -86,7 +85,10 @@ const components: MDXComponents = {
     />
   ),
   table: (props) => (
-    <div className="my-[16px] overflow-x-auto rounded-lg-10 outline-[0.5px] -outline-offset-[0.5px] outline-border-transparent-medium">
+    <div
+      tabIndex={0}
+      className="docs-scroll-focus my-[16px] overflow-x-auto rounded-lg-10 outline-[0.5px] -outline-offset-[0.5px] outline-border-transparent-medium"
+    >
       <table className="w-full min-w-[480px] border-collapse text-left" {...props} />
     </div>
   ),

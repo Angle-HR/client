@@ -55,10 +55,14 @@ const ListItemPicker = forwardRef<HTMLButtonElement, ListItemPickerProps>(functi
     layout === 'horizontal'
       ? // 17px + the 1px border = the design's 18px inset from a 74px card.
         'flex-col items-center text-center w-[120px] py-[17px] gap-[12px]'
-      : 'flex-row items-start w-[188px] px-[18px] py-[14px] gap-[8px]'
+      : // Figma's "vertical" layout is a row: icon left, text stacked and left-aligned
+        // (buttons centre text by default, so reset it). Padding is Figma's 18/14
+        // minus the 1px border, which Figma draws inside its padding.
+        'flex-row items-start text-left w-[188px] px-[17px] py-[13px] gap-[8px]'
 
   const classes = [
-    'inline-flex border rounded-lg-12 overflow-clip transition-colors',
+    // Figma: hover and select fade over 100ms, ease out.
+    'inline-flex border rounded-lg-12 overflow-clip transition-colors duration-100 ease-figma-out',
     layoutClasses,
     stateClasses[resolvedState],
     disabled ? '' : 'cursor-pointer',
@@ -85,19 +89,21 @@ const ListItemPicker = forwardRef<HTMLButtonElement, ListItemPickerProps>(functi
           {icon}
         </span>
       )}
-      {/* Stacked pickers trim the title to its 9px cap height, which is what
-          makes the card 74px tall in Figma. */}
+      {/* Figma trims text to its cap height: 9px for the title, which is what
+          makes the stacked card 74px tall and the row card 85px. */}
       <span className={`flex flex-col ${layout === 'vertical' ? 'gap-[12px] py-[4px]' : ''}`}>
         {showTitle && (
           <span
-            className={`body-xs-semibold ${layout === 'horizontal' ? 'flex h-[9px] items-center leading-none' : ''}`}
+            className={`body-xs-semibold ${layout === 'horizontal' ? 'flex h-[9px] items-center leading-none' : 'text-trim-cap'}`}
           >
             {title}
           </span>
         )}
         {layout === 'vertical' && showSubtext && subText && (
           <span
-            className={`text-body-xs w-[127px] font-regular ${
+            // Figma trims the text to its cap height (top and bottom) but keeps
+            // the 19.2px spacing between lines.
+            className={`text-body-xs w-[127px] font-regular leading-[19.2px] [text-box:trim-both_cap_alphabetic] ${
               resolvedState === 'selected' || resolvedState === 'selected-hover'
                 ? 'text-inherit'
                 : 'text-text-secondary'

@@ -8,10 +8,10 @@ import { AreaSearchField } from '@/components/jobs/create/area-search-field'
 import { CreateTeamModal } from '@/components/jobs/create/create-team-modal'
 import { DescriptionField } from '@/components/jobs/create/description-field'
 import {
+  Avatar,
   BannerInfo,
   Checkbox,
   Chip,
-  CountryFlag,
   DateInput,
   Divider,
   InputSelection,
@@ -167,11 +167,7 @@ const flagFor = (area: string) =>
 function AreaFlag({ area }: { area: string }) {
   const flag = flagFor(area)
   if (!flag) return null
-  return (
-    <span className="inline-flex size-[14px] shrink-0 overflow-hidden rounded-full outline-[0.5px] -outline-offset-[0.5px] outline-border-transparent-light">
-      <CountryFlag code={flag} decorative width={14} height={14} className="object-cover" />
-    </span>
-  )
+  return <Avatar size={14} type="country" countryCode={flag} aria-hidden="true" />
 }
 
 function JobDetailsForm({ draft, errors, onChange, ai, onToast }: JobDetailsFormProps) {

@@ -1,51 +1,43 @@
+import { Avatar } from './avatar'
+import { AVATAR_STACK_MORE, type StackDensity } from './avatar-stack.figma'
+
 import type { AvatarSize } from './avatar'
 import type { ReactNode } from 'react'
 
-type StackDensity = 'standard' | 'tight'
-
 interface AvatarStackProps {
+  /** Avatars at the stack's size, usually circular <Avatar>s. */
   children: ReactNode[]
   size?: AvatarSize
   density?: StackDensity
+  /** How many faces to show before the "more" tile. */
   maxVisible?: number
   showOverflow?: boolean
   className?: string
 }
 
-// Overlap (negative left margin) per size — exact Figma values from the doc's
-// Sizes table (standard density). 12 isn't in the table; extrapolated to -4.
-const negativeGapStandard: Record<AvatarSize, string> = {
-  12: '-ml-[4px]',
-  14: '-ml-[4px]',
-  16: '-ml-[4px]',
-  18: '-ml-[4px]',
-  20: '-ml-[6px]',
-  24: '-ml-[8px]',
-  32: '-ml-[14px]',
-  44: '-ml-[16px]',
-}
-
-// Tight density: a few px more overlap than standard (no exact Figma spec).
-const negativeGapTight: Record<AvatarSize, string> = {
-  12: '-ml-[6px]',
-  14: '-ml-[6px]',
-  16: '-ml-[6px]',
-  18: '-ml-[6px]',
-  20: '-ml-[8px]',
-  24: '-ml-[10px]',
-  32: '-ml-[16px]',
-  44: '-ml-[18px]',
-}
-
-const chipSizeMap: Record<AvatarSize, string> = {
-  12: 'h-[12px] w-[12px] text-[7px]',
-  14: 'h-[14px] w-[14px] text-[8px]',
-  16: 'h-[16px] w-[16px] text-[8px]',
-  18: 'h-[18px] w-[18px] text-[9px]',
-  20: 'h-[20px] w-[20px] text-[9px]',
-  24: 'h-[24px] w-[24px] text-[10px]',
-  32: 'h-[32px] w-[32px] text-body-xs',
-  44: 'h-[44px] w-[44px] text-body-s',
+// Overlap per size and density, from AVATAR_STACK_OVERLAP (Figma 709:48349).
+// Spelled out so Tailwind can see the classes.
+const overlap: Record<StackDensity, Record<AvatarSize, string>> = {
+  standard: {
+    12: '-ml-[4px]',
+    14: '-ml-[4px]',
+    16: '-ml-[4px]',
+    18: '-ml-[4px]',
+    20: '-ml-[6px]',
+    24: '-ml-[8px]',
+    32: '-ml-[14px]',
+    44: '-ml-[16px]',
+  },
+  tight: {
+    12: '-ml-[6px]',
+    14: '-ml-[6px]',
+    16: '-ml-[8px]',
+    18: '-ml-[8px]',
+    20: '-ml-[10px]',
+    24: '-ml-[12px]',
+    32: '-ml-[16px]',
+    44: '-ml-[24px]',
+  },
 }
 
 function AvatarStack({
@@ -58,26 +50,38 @@ function AvatarStack({
 }: AvatarStackProps) {
   const items = Array.isArray(children) ? children : [children]
   const visible = items.slice(0, maxVisible)
-  const overflowCount = items.length - maxVisible
-  const gap = density === 'tight' ? negativeGapTight[size] : negativeGapStandard[size]
+  const hidden = items.length - visible.length
+  const withMore = showOverflow && hidden > 0
+  const gap = overlap[density][size]
 
   return (
     <span className={`inline-flex items-center ${className}`}>
       {visible.map((child, i) => (
         <span
           key={i}
-          className={`relative inline-flex ring-2 ring-bg-secondary rounded-full ${i > 0 ? gap : ''}`}
-          style={{ zIndex: visible.length - i }}
+          className={`relative inline-flex ${i > 0 ? gap : ''}`}
+          // Figma: with the "more" tile each later face sits on top; without
+          // it, the first face is on top.
+          style={{ zIndex: withMore ? i + 1 : visible.length - i }}
         >
           {child}
         </span>
       ))}
-      {showOverflow && overflowCount > 0 && (
+      {withMore && (
         <span
-          className={`${gap} relative inline-flex items-center justify-center rounded-full bg-bg-transparent-light ${chipSizeMap[size]} font-medium text-text-secondary ring-2 ring-bg-secondary`}
-          style={{ zIndex: 0 }}
+          role="img"
+          aria-label={`${hidden} more`}
+          data-avatar-stack-more=""
+          className={`relative inline-flex ${visible.length > 0 ? gap : ''}`}
+          style={{ zIndex: visible.length + 1 }}
         >
-          +{overflowCount}
+          <Avatar
+            size={size}
+            type={AVATAR_STACK_MORE.type}
+            colour={AVATAR_STACK_MORE.colour}
+            circular={AVATAR_STACK_MORE.circular}
+            aria-hidden="true"
+          />
         </span>
       )}
     </span>

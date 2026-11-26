@@ -1,0 +1,127 @@
+import { DoDont, Guideline } from '@/docs/components/do-dont'
+import { Example } from '@/docs/components/example'
+import { FigmaReference } from '@/docs/components/figma-reference'
+import { InputStates, InputSuffixStates } from '@/docs/components/input-states'
+import { LabelStates } from '@/docs/components/label-states'
+import { PropsTable } from '@/docs/components/props-table'
+
+export const metadata = { title: 'Text input' }
+
+# Text input
+
+A single line of text, with an optional label, helper text and icons.
+
+<Example name="text-input/overview" />
+
+```tsx
+import { Input, TextInput } from '@/components/ui/input'
+```
+
+`TextInput` is the labelled field most forms use. `Input` is the bare field, for places that bring their own label.
+
+## Sizes
+
+<Example name="text-input/sizes" />
+
+| Size | Height | Text           | Side padding | Corners | Icons |
+| ---- | ------ | -------------- | ------------ | ------- | ----- |
+| `lg` | 40px   | 14px, Body L   | 12px         | 10px    | 14px  |
+| `md` | 32px   | 13.8px, Body M | 8px          | 8px     | 14px  |
+| `sm` | 25px   | 13px, Body S   | 8px          | 7px     | 12px  |
+
+The padding includes the 1px border, as in Figma. Below the `md` breakpoint the text is 16px, so iOS Safari doesn't zoom in when the field is tapped (not in Figma). `TextInput` comes in `md` and `sm`, the two heights Figma labels.
+
+## States
+
+<InputStates />
+
+- **Placeholder** (empty): grey placeholder text and prefix icon.
+- **Hover**: a darker border, only while the field is empty. Fades in over 100ms, ease in.
+- **Focus**: a blue border, and the prefix icon darkens. 100ms, ease out.
+- **Filled**: once there is text, a slightly darker border and dark prefix icon.
+- **Error** (`errorText`, `aria-invalid` or `status="error"`): a pink border and red suffix icon.
+- **Success** (`helperState="success"` or `status="success"`): a green border and green suffix icon.
+- **Disabled**: a grey fill; text and prefix icon at 20%. The field itself isn't faded.
+
+### Validation
+
+<Example name="text-input/validation" />
+
+## Suffixes
+
+<InputSuffixStates />
+
+A suffix is an icon (`suffix="icon"`) or a button (`suffix="button"`). Figma's button is the light Icon Button at `md` (32px) in the 32px and 40px fields and `sm` (24px) in the 25px field, placed against the right edge.
+
+<Example name="text-input/password" />
+
+## Labels and helper text
+
+<Example name="text-input/labels" />
+
+The label is 12px, weight 550, in `text/tertiary`, inset 3px. Label, field and helper sit 6px apart.
+
+**Required or optional.** `required` adds Figma's Required mark: a red asterisk, 9px, 2px after the label. Screen readers don't read the asterisk; they hear "required" from the field itself. Fields without it are optional, and Figma has no "optional" mark; say so in the helper text when it helps.
+
+The same label sits above every input (selection, date, text area and so on), as `LabelWrapper`:
+
+<LabelStates />
+
+**Prod** (`prod`) is the darker label Figma uses for questions in forms candidates fill in, with optional subtext 8px below it. Helper text is 12px, inset 3px: grey when neutral, red for errors, secondary for info, and secondary with a green check-circle (10px) for success.
+
+**Figma oddities, copied as they are:**
+
+- The success field uses the error text colour and fill tokens. They're the same colours as filled, so only the green border shows.
+- Hover has no effect once the field has text.
+
+**Not in Figma, kept in code:**
+
+- The 16px text on small screens.
+- `readOnly`.
+
+## Usage
+
+<DoDont>
+  <Guideline kind="do">
+    Use `TextInput` so the label, field and helper stay linked for screen readers.
+  </Guideline>
+  <Guideline kind="dont">Use the placeholder as the only label.</Guideline>
+  <Guideline kind="do">Say what's wrong and how to fix it in the error text.</Guideline>
+  <Guideline kind="dont">
+    Show success on every field; keep it for checks people wait on, like a free username.
+  </Guideline>
+</DoDont>
+
+## Accessibility
+
+- `TextInput` links its label with `htmlFor` and its helper or error with `aria-describedby`.
+- Errors set `aria-invalid`; `required` sets `aria-required` and adds a visual asterisk.
+- An icon-only suffix button needs an `aria-label`, such as "Show password".
+
+## Props
+
+<PropsTable of="TextInput" />
+
+### Input
+
+<PropsTable of="Input" />
+
+### LabelWrapper
+
+<PropsTable of="LabelWrapper" />
+
+## Figma
+
+<FigmaReference
+  src="/docs/figma/input-field.png"
+  href="https://www.figma.com/design/7jCMwDng7HF5g7F3tGXf0E/Open-HR?node-id=840-39704"
+  taken="24 Nov 2026"
+  alt="The text input field in Figma: seven states at 40, 32 and 25px, with icon, button, plain, calendar and selection suffixes."
+/>
+
+<FigmaReference
+  src="/docs/figma/text-input.png"
+  href="https://www.figma.com/design/7jCMwDng7HF5g7F3tGXf0E/Open-HR?node-id=1053-47802"
+  taken="24 Nov 2026"
+  alt="The labelled text input in Figma: label, field and helper text in seven states at 32 and 25px."
+/>

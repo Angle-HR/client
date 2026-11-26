@@ -1,3 +1,5 @@
+import { Avatar } from '../avatar/avatar'
+
 import { TextButton } from './text-button'
 
 import type { Meta, StoryObj } from '@storybook/nextjs-vite'
@@ -60,9 +62,7 @@ export const WithAvatar: Story = {
       <TextButton
         size="md"
         avatar={
-          <span className="h-[14px] w-[14px] rounded-full bg-bg-avatar-blue text-text-avatar-blue text-[7px] flex items-center justify-center font-medium">
-            JD
-          </span>
+<Avatar size={14} colour="blue" text="JD" />
         }
       >
         John Doe
@@ -70,9 +70,7 @@ export const WithAvatar: Story = {
       <TextButton
         size="sm"
         avatar={
-          <span className="h-[14px] w-[14px] rounded-full bg-bg-avatar-blue text-text-avatar-blue text-[7px] flex items-center justify-center font-medium">
-            JD
-          </span>
+<Avatar size={14} colour="blue" text="JD" />
         }
       >
         Hidden at sm

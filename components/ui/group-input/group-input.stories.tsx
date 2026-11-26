@@ -101,9 +101,9 @@ export const Sizes: Story = {
   render: () => (
     <div className="flex flex-col gap-[16px]">
       {(['sm', 'md', 'lg'] as const).map((size) => (
-        <GroupInput key={size} label={`Size: ${size}`}>
-          <GroupInputLeftFlag countryCode="NG" height={size} />
-          <GroupInputField size={size} placeholder="Enter phone" />
+        <GroupInput key={size} size={size} label={`Size: ${size}`}>
+          <GroupInputLeftFlag countryCode="NG" />
+          <GroupInputField placeholder="Enter phone" />
         </GroupInput>
       ))}
     </div>

@@ -1,6 +1,6 @@
 import { DashboardIcon } from '@/components/dashboard/nav-config'
 import { PersonAvatar } from '@/components/jobs/person-avatar'
-import { Chip } from '@/components/ui'
+import { Avatar, Chip } from '@/components/ui'
 import { listNames } from '@/lib/jobs/people'
 
 import type { JobManager } from '@/lib/jobs/types'
@@ -43,12 +43,20 @@ function ManagersChip({ managers }: { managers: JobManager[] }) {
           <PersonAvatar person={manager} />
         </span>
       ))}
-      <span className="-ml-[4px] inline-flex size-[14px] items-center justify-center rounded-xs-4 bg-bg-avatar-blue text-text-avatar-blue outline-[0.5px] -outline-offset-[0.5px] outline-border-transparent-light">
-        <DashboardIcon
-          name={managers.length > 3 ? 'ellipsis-horizontal-solid' : 'plus-solid'}
-          size={10}
-        />
-      </span>
+      {/* Figma: avatar/avatar, Icon, Blue, 14px square, with a plus or ellipsis. */}
+      <Avatar
+        size={14}
+        circular={false}
+        type="icon"
+        colour="blue"
+        className="-ml-[4px]"
+        icon={
+          <DashboardIcon
+            name={managers.length > 3 ? 'ellipsis-horizontal-solid' : 'plus-solid'}
+            size={10}
+          />
+        }
+      />
     </span>
   )
 }
