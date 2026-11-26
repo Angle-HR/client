@@ -61,8 +61,8 @@ const ListItemPicker = forwardRef<HTMLButtonElement, ListItemPickerProps>(functi
         'flex-row items-start text-left w-[188px] px-[17px] py-[13px] gap-[8px]'
 
   const classes = [
-    // Figma: hover and select fade over 100ms with its "Ease out" curve.
-    'inline-flex border rounded-lg-12 overflow-clip transition-colors duration-100 ease-[cubic-bezier(0,0,0.58,1)]',
+    // Figma: hover and select fade over 100ms, ease out.
+    'inline-flex border rounded-lg-12 overflow-clip transition-colors duration-100 ease-figma-out',
     layoutClasses,
     stateClasses[resolvedState],
     disabled ? '' : 'cursor-pointer',
@@ -94,7 +94,7 @@ const ListItemPicker = forwardRef<HTMLButtonElement, ListItemPickerProps>(functi
       <span className={`flex flex-col ${layout === 'vertical' ? 'gap-[12px] py-[4px]' : ''}`}>
         {showTitle && (
           <span
-            className={`body-xs-semibold ${layout === 'horizontal' ? 'flex h-[9px] items-center leading-none' : '[text-box:trim-both_cap_alphabetic]'}`}
+            className={`body-xs-semibold ${layout === 'horizontal' ? 'flex h-[9px] items-center leading-none' : 'text-trim-cap'}`}
           >
             {title}
           </span>

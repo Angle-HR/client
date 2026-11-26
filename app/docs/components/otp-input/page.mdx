@@ -1,0 +1,112 @@
+import { DoDont, Guideline } from '@/docs/components/do-dont'
+import { Example } from '@/docs/components/example'
+import { FigmaReference } from '@/docs/components/figma-reference'
+import { OTPCellStates, OTPGroupStates } from '@/docs/components/otp-input-states'
+import { PropsTable } from '@/docs/components/props-table'
+
+export const metadata = { title: 'OTP input' }
+
+# OTP input
+
+A row of one-character boxes for a code sent by email or text, such as a verification or two-factor code.
+
+<Example name="otp-input/overview" />
+
+```tsx
+import { OTPInput } from '@/components/ui/otp-input'
+```
+
+Typing moves to the next box, Backspace on an empty box goes back, and pasting a code fills every box. The browser can fill the code from a text message (`autocomplete="one-time-code"` on the first box). When every box is filled, `onComplete` gets the code.
+
+## Layout
+
+| Part    | Value                                                  |
+| ------- | ------------------------------------------------------ |
+| Box     | 38 × 42px, 12px padding each side, 8px corners         |
+| Border  | 1px                                                    |
+| Text    | Body L, 14px, centred; an empty box shows a grey `-`   |
+| Boxes   | 6 by default, 4px apart                                |
+| Group   | Label, boxes and helper 6px apart; the helper is inset |
+| Success | A 24px solid check badge, 4px after the last box       |
+
+Below the `md` breakpoint the text is 16px, so iOS Safari doesn't zoom in (not in Figma).
+
+## States
+
+### Box
+
+<OTPCellStates />
+
+The same colours as the [text input](/docs/components/text-input):
+
+- **Placeholder** (empty): a grey `-`.
+- **Hover**: a darker border, only while the box is empty. 100ms, ease in.
+- **Focus**: a blue border. The `-` turns dark. 100ms, ease out.
+- **Filled**: a slightly darker border once there's a digit.
+- **Error**: a pink border.
+- **Success**: a green border.
+- **Disabled**: a grey fill, and text at 20%. Nothing is faded.
+
+### Group
+
+<OTPGroupStates />
+
+<Example name="otp-input/validation" />
+
+Set `state="error"` or pass `errorText` when a code is wrong, and `state="success"` when it's right. Success adds the green badge. The helper text stays grey.
+
+**Figma oddities, copied as they are:**
+
+- While any box has focus, every box shows Focus (Figma's All Focused). The caret shows which box you're typing in.
+- Success uses the error fill and text tokens; they're the same colours as the other states.
+- A focused empty box's `-` is dark, not grey.
+- Figma spells the state "Sucess".
+
+**Not in Figma, kept in code:**
+
+- Error and success boxes don't change on hover or focus.
+- The success badge sits outside the row's width, so nothing moves when it appears.
+- Paste, Backspace and moving to the next box.
+- The 16px text on small screens.
+
+## Usage
+
+<DoDont>
+  <Guideline kind="do">Say where the code was sent in the helper text.</Guideline>
+  <Guideline kind="dont">
+    Clear the boxes as soon as a code is wrong. Let people see and fix it.
+  </Guideline>
+  <Guideline kind="do">Match `length` to the code you send.</Guideline>
+  <Guideline kind="dont">Use it for anything but a short code. Use a text input.</Guideline>
+</DoDont>
+
+## Accessibility
+
+- The boxes are a `group` named by the label and described by the helper. Each box is named "Digit 1", "Digit 2" and so on.
+- An error sets `aria-invalid` on every box and is announced as it appears.
+- The success badge is named "Code accepted", so the result isn't shown by colour alone.
+- Boxes take numbers on mobile keyboards (`inputmode="numeric"`).
+
+## Props
+
+<PropsTable of="OTPInput" />
+
+### OTPCell
+
+<PropsTable of="OTPCell" />
+
+## Figma
+
+<FigmaReference
+  src="/docs/figma/otp-cell.png"
+  href="https://www.figma.com/design/7jCMwDng7HF5g7F3tGXf0E/Open-HR?node-id=2711-39040"
+  taken="26 Nov 2026"
+  alt="The OTP box in Figma: placeholder, hover, filled, focus, disabled, error and success."
+/>
+
+<FigmaReference
+  src="/docs/figma/otp-input.png"
+  href="https://www.figma.com/design/7jCMwDng7HF5g7F3tGXf0E/Open-HR?node-id=2765-34486"
+  taken="26 Nov 2026"
+  alt="The labelled OTP input in Figma: rest, error, all focused and success, with six boxes."
+/>

@@ -27,7 +27,7 @@ There's no visible label, so `aria-label` is required.
 | `primary`       | The main icon action in a view                                   |
 | `secondary`     | Icon actions beside a primary, or secondary toolbar controls     |
 | `tertiary`      | Quiet actions in table rows and dense layouts                    |
-| `light`         | The quietest: a grey icon that never gets a fill                 |
+| `light`         | The quietest: a light grey icon that never gets a fill           |
 | `light-w-hover` | Like `light`, with a faint fill on hover so it reads as a target |
 | `error`         | Destructive actions like delete. Red icon, light red on hover    |
 
@@ -41,7 +41,9 @@ There's no visible label, so `aria-label` is required.
 | `sm` | 24×24px | 14px | 7px    | Toolbars and table rows                    |
 | `md` | 32×32px | 14px | 7px    | Everything else (default)                  |
 
-The icon is centred, with 5px of padding at `xs` and `sm`. Pass it as a `MaskIcon` at the icon size, as on the [Button page](/docs/components/button#with-icons).
+The icon is centred, with 5px of padding at `xs` and `sm`. Pass it as a `MaskIcon` at the icon size, as on the [Button page](/docs/components/button#with-icons). Primary, secondary and tertiary icons are mid grey; `light` is lighter; `error` is red.
+
+`light-w-hover` at `sm` is 6px round, not 7px, as in Figma. Its fill only shows on hover and press.
 
 Keep to one size within a toolbar. `xs` is far too small to tap, so keep it to desktop-only extras.
 
@@ -51,11 +53,17 @@ A small blue badge over the top-left corner, for a count tied to the action. It 
 
 <Example name="icon-button/counter" />
 
+## Tooltip
+
+Figma's Icon Button has a tooltip option: a small dark label above the button. It isn't built in code yet, so there's no `tooltip` prop. Until it is, use `title` for a plain browser tooltip.
+
 ## States
 
 <IconButtonStates />
 
-Hover fades in and out over 100ms; a press takes 50ms. `light` doesn't change on hover or press. Figma has no focus state for the two light variants, but every variant gets the blue focus ring for keyboard users.
+Hover fades in over 100ms with Figma's ease-in curve and out over 100ms with its ease-out curve; a press takes 50ms. `light` doesn't change on hover or press.
+
+Focus is a blue border on a white fill, as in Figma. Figma has no focus state for `light` or `light-w-hover`, so they show no focus style. Only use them next to something else that shows where focus is.
 
 ## Usage
 
@@ -78,7 +86,7 @@ Hover fades in and out over 100ms; a press takes 50ms. `light` doesn't change on
 
 - **Name:** `aria-label` is required, and TypeScript checks it.
 - **Keyboard:** Tab to reach it, Space or Enter to press it.
-- **Focus:** a 2px blue ring on every variant.
+- **Focus:** a blue border, as in Figma. `light` and `light-w-hover` have no focus style in Figma, so keyboard users can't see them focused. Prefer `tertiary` where keyboard use matters.
 - **Changing counts:** a new `aria-label` isn't announced on its own. Add a hidden `aria-live="polite"` region.
 - **Disabled:** to keep it focusable so a tooltip can explain why, use `aria-disabled="true"` and block the click.
 

@@ -82,14 +82,14 @@ const TextButton = forwardRef<HTMLElement, TextButtonProps>(function TextButton(
   const classes = [
     'group/text-button inline-flex items-center',
     // Figma: hover and press fade in over 100ms (ease in), out over 100ms (ease out).
-    'transition-[color,text-decoration-color,background-color] duration-100 ease-out hover:ease-in',
+    'transition-[color,text-decoration-color,background-color] duration-100 ease-figma-out hover:ease-figma-in active:ease-figma-in',
     // Figma: grey at rest, darker grey on hover, blue accent on press and focus.
     underlineMode === 'never' ? 'text-text-secondary' : 'text-text-primary',
     'hover:text-text-primary active:text-text-blue-accent focus-visible:text-text-blue-accent',
-    'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bg-selection-controls-selected',
-    wrapped
-      ? 'p-[6px] rounded-xs-4 hover:bg-bg-transparent-light active:bg-transparent'
-      : 'rounded-xs-2',
+    // Figma's focus is the blue text alone: no ring or outline.
+    'focus-visible:outline-none',
+    // Figma: 6px padding; a faint 4px-round fill on hover only.
+    wrapped && 'p-[6px] rounded-xs-4 hover:bg-bg-transparent-light active:bg-transparent',
     'disabled:text-text-light disabled:cursor-not-allowed disabled:bg-transparent',
     sizeClasses[size],
     bold ? 'font-medium' : 'font-regular',
@@ -112,7 +112,17 @@ const TextButton = forwardRef<HTMLElement, TextButtonProps>(function TextButton(
   return (
     <Component {...componentProps}>
       {iconLeft && (
-        <span className={`inline-flex ${leftIconSize[size]} items-center justify-center shrink-0`}>
+        <span
+          className={[
+            'inline-flex items-center justify-center shrink-0',
+            leftIconSize[size],
+            // Figma oddity kept: at md and lg the left icon stays primary grey on press and focus.
+            (size === 'md' || size === 'lg') &&
+              'group-active/text-button:text-text-primary group-focus-visible/text-button:text-text-primary',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+        >
           {iconLeft}
         </span>
       )}
@@ -123,17 +133,17 @@ const TextButton = forwardRef<HTMLElement, TextButtonProps>(function TextButton(
         </span>
       )}
       {children && (
-        // Wrapped: Figma pads the text's cap height, not its line box. A line
-        // height equal to the cap height (0.727em in Inter) keeps the glyphs
-        // centred and gives Figma's 22–24px total height.
+        // Figma trims the text to its cap height and never wraps it, so the button is as tall as
+        // its icons (10px at xs/sm, 12px at md/lg; 22–24px wrapped).
+        // text-trim-cap does the same, so icons centre exactly on the capitals.
         // The underline goes on the label only, so it never runs under the avatar or icons.
+        // Figma: offset 10% of the font size; no underline on focus or when disabled.
         <span
           className={[
-            'underline-offset-2',
+            'text-trim-cap underline-offset-[10%] whitespace-nowrap',
             underlineMode === 'hover' &&
-              'group-hover/text-button:underline group-active/text-button:underline',
+              'group-[:hover:not(:disabled)]/text-button:underline group-[:active:not(:disabled)]/text-button:underline',
             underlineMode === 'always' && 'underline',
-            wrapped && 'leading-[0.727em]',
           ]
             .filter(Boolean)
             .join(' ')}

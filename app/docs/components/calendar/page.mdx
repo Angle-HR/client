@@ -1,0 +1,194 @@
+import { CalendarStates } from '@/docs/components/calendar-states'
+import { DoDont, Guideline } from '@/docs/components/do-dont'
+import { Example } from '@/docs/components/example'
+import { FigmaReference } from '@/docs/components/figma-reference'
+import { PropsTable } from '@/docs/components/props-table'
+
+export const metadata = { title: 'Calendar' }
+
+# Calendar
+
+A month of days to pick one from. It opens from the [date input](/docs/components/date-input), and can be used on its own.
+
+<Example name="calendar/overview" />
+
+```tsx
+import { Calendar } from '@/components/ui/input'
+```
+
+## Layout
+
+| Variant            | Width | Columns apart |
+| ------------------ | ----- | ------------- |
+| Loose, wrapped     | 264px | 8px           |
+| Loose, not wrapped | 256px | 8px           |
+| Tight, wrapped     | 228px | 2px           |
+| Tight, not wrapped | 220px | 2px           |
+
+`spacing` picks loose or tight; `wrapped={false}` drops the card, for a calendar that sits inside another surface. Weeks start on Monday, and a month shows only the weeks it needs (4 to 6 rows), so the height changes from month to month.
+
+## Parts
+
+Each part is its own Figma component. The values below are Figma's, measured again in the browser.
+
+### Card (wrapped)
+
+Figma: 🦄 Slots, light, 4px padding, extra-small shadow.
+
+| Property | Value                                     |
+| -------- | ----------------------------------------- |
+| Fill     | `bg/light` (white; #222 in dark)          |
+| Border   | 0.5px `border/transparent/medium`, inside |
+| Corners  | 10px                                      |
+| Padding  | 4px all round                             |
+| Shadow   | extra-small (`shadow-slots-xsmall`)       |
+
+### Header: year and month buttons
+
+Figma: year-and-month_wrapper, a 32px row with 4px above and below, the two buttons 8px apart. Each is the [button](/docs/components/button) at 24px, Tertiary, Rest.
+
+| Property     | Value                                                                                        |
+| ------------ | -------------------------------------------------------------------------------------------- |
+| Size         | 24px tall, hugging its text (67px for "2026", 65px for "June")                               |
+| Padding      | 8px left and right, including the 1px border                                                 |
+| Corners      | 7px                                                                                          |
+| Fill, border | `bg/btn-default/tet-rest` and its border, both transparent at Rest                           |
+| Label        | Body S Medium, 13px on a 19.5px line, trimmed to the capitals (9px), `text/tertiary`         |
+| Icon         | chevron-down, solid, in a 14px box (the arrow 7 × 4px), `text/tertiary`, 4px after the label |
+| Hover, press | the Tertiary button's own states                                                             |
+
+### Weekday letters
+
+Figma: .Subcomponents/Calendar 🗓️/ Days, seven of them: M T W T F S S.
+
+| Property | Value                                                                   |
+| -------- | ----------------------------------------------------------------------- |
+| Size     | 28 × 13px, 2px above and below the letter                               |
+| Text     | Body S Medium, 13px, trimmed to the capitals (9px), centred             |
+| Colour   | `text/tertiary`                                                         |
+| Spacing  | as the days: 8px apart (loose) or 2px (tight), 4px above the first week |
+
+### Day
+
+Figma: .Subcomponents/Calendar 🗓️/Day selector, 5 states.
+
+| Property | Value                                                                                                     |
+| -------- | --------------------------------------------------------------------------------------------------------- |
+| Size     | 28 × 26px, 8px above and below the number                                                                 |
+| Text     | Body M Medium, 13.8px on a 21px line, trimmed to the capitals (10px), centred                             |
+| Corners  | round (99px) when it has a fill                                                                           |
+| Grid     | weeks 4px apart; the dates sit 4px below the letters, 6px in from the sides, with 8px below the last week |
+
+## States
+
+<CalendarStates />
+
+| Day      | Fill                                                  | Text                                                        | Other                                                                                     |
+| -------- | ----------------------------------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Rest     | none                                                  | `text/primary`, Medium                                      |                                                                                           |
+| Hover    | `bg/transparent/medium` (8% black; 10% white in dark) | `text/primary`, Medium                                      | fades in over 50ms ease out, out over 50ms ease in                                        |
+| Selected | `bg/inverted` (#333; white in dark)                   | `text/inverted_neutral` (white; #141414 in dark), Semi Bold | a 1px `border/transparent/medium` inside; no hover                                        |
+| Today    | none                                                  | `text/blue-accent`, Medium                                  | a 3px round dot in `text/blue-accent`, 13px from the left and 21px from the top; no hover |
+| Disabled | none                                                  | `text/light`, Medium                                        | days from the months either side, and days before `min`; can't be clicked                 |
+
+### Year and month lists
+
+Clicking the year or the month opens its list. The button itself doesn't change.
+
+| Property  | Value                                                                                                              |
+| --------- | ------------------------------------------------------------------------------------------------------------------ |
+| Card      | 🦄 Slots, light, 100 × 227px, 4px padding, 10px corners, 0.5px border, small shadow                                |
+| Position  | 46px above the calendar's top edge, over the header                                                                |
+| Left edge | year: 0. Month: 68px (loose, wrapped), 79px (loose, not wrapped), 50px (tight, wrapped), 61px (tight, not wrapped) |
+| Years     | 14: nine years back to four ahead (2017 to 2030 in Figma), or from `min`'s year                                    |
+| Months    | January to December                                                                                                |
+| Scroll    | the year list opens at its end, the month list at the top                                                          |
+
+Each entry is Figma's 🖱️ List Item (the 32px one, set to 24px):
+
+| Property | Value                                                                                           |
+| -------- | ----------------------------------------------------------------------------------------------- |
+| Size     | full width (92px), 24px tall                                                                    |
+| Padding  | 6px left, 8px right                                                                             |
+| Corners  | 8px                                                                                             |
+| Text     | Body S Regular, 13px on a 19.5px line, `text/secondary`                                         |
+| Hover    | a 4% fill (`bg/transparent/light`); the text doesn't change. 100ms, ease in; back with ease out |
+| Current  | not marked (Figma marks none)                                                                   |
+
+Both lists scroll with Figma's scrollbar (🖱️ List Item/.Subcomponents/scrollbar), laid over the card's right edge:
+
+| Property    | Rest                                                                  | Hover or dragging                                   |
+| ----------- | --------------------------------------------------------------------- | --------------------------------------------------- |
+| Track       | 12px wide, full height, no fill                                       | `bg/transparent/light` (4% black; 6% white in dark) |
+| Thumb       | 2px, round, `text/input/hover` (#b3b3b3; #4c4c4c in dark)             | 4px, `text/light` (#b3b3b3; #666 in dark)           |
+| Thumb inset | 6px from the top and bottom, 4px from the right; it grows to the left | the same                                            |
+| Motion      | back to rest over 50ms, ease in                                       | in over 100ms, ease in                              |
+
+The thumb's length follows the content (at least 24px). The browser's own scrollbar is hidden; the wheel, keyboard and touch still scroll as usual, and the thumb can be dragged or the track clicked.
+
+<Example name="calendar/min" />
+
+With `min`, earlier days are disabled and the year list starts at `min`'s year.
+
+**Figma oddities, copied as they are:**
+
+- Hover comes in with ease out and leaves with ease in, the reverse of other components.
+- Today has no hover.
+- The year and month buttons stay at Rest while their list is open, and no item in the list is marked as the current one.
+- The lists cover the header.
+- The month list's left edge is different in every variant (68, 79, 50, 61px).
+- The list entries are the 32px List Item squashed to 24px.
+- A day at Rest has square corners; only the filled states are round, so it never shows.
+
+**Not in Figma, kept in code:**
+
+- `min`, which disables earlier days.
+- Keyboard focus: a 1px blue ring round a day (the selection controls' ring), and on a list entry the hover fill plus the ring. Figma has no focus state.
+- The keyboard support below.
+- When the shown year or month is out of view, its list opens with it in the middle (Figma only shows this year and June).
+- The lists show Figma's scrollbar; Figma's calendar lists only have the scroll hint.
+- The list's scroll hint is the Slots fade. Figma's is a 28px fade with a 10px chevron in `text/light`, at the top once scrolled and at the bottom while there's more; it comes with the Slots audit.
+
+## Usage
+
+<DoDont>
+  <Guideline kind="do">Open it from a date input, so people can also type the date.</Guideline>
+  <Guideline kind="dont">
+    Use it on its own for dates far in the past, like a birth date; typing is quicker.
+  </Guideline>
+  <Guideline kind="do">Set `min` when past dates aren't allowed.</Guideline>
+  <Guideline kind="dont">Squeeze it below 228px; use `spacing="tight"` instead.</Guideline>
+</DoDont>
+
+## Accessibility
+
+- It's a dialog named "Choose a date", with the days in a grid named by the month and year.
+- Each day is a button named by its full date ("10 June 2026"); today is marked as the current date and the chosen day as selected.
+- The year and month buttons say whether their list is open, and the lists are listboxes.
+
+**Keyboard** (not in Figma):
+
+| Key | Does |
+| --- | --- |
+| Tab | Reaches one day: the chosen day, else today, else the month's first day that can be picked |
+| ← → | Previous or next day, into the next month when needed |
+| ↑ ↓ | Same day of the previous or next week |
+| Home, End | Monday or Sunday of that week |
+| Page Up, Page Down | Same day of the previous or next month; with Shift, a year |
+| Enter, Space | Picks the day |
+| In a year or month list | ↑ ↓ Home End move, Enter picks, Escape closes the list and goes back to its button |
+
+Days before `min` can't be reached with the arrows.
+
+## Props
+
+<PropsTable of="Calendar" />
+
+## Figma
+
+<FigmaReference
+  src="/docs/figma/calendar.png"
+  href="https://www.figma.com/design/7jCMwDng7HF5g7F3tGXf0E/Open-HR?node-id=5042-50086"
+  taken="25 Nov 2026"
+  alt="The calendar in Figma: rest, selected, and with the year or month list open, wrapped and not, at loose and tight spacing."
+/>

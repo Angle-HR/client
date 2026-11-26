@@ -78,8 +78,8 @@ function StepResetPassword({
             suffixButton={
               <IconButton
                 type="button"
-                variant="tertiary"
-                size="sm"
+                variant="light"
+                size="md"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
                 icon={showPassword ? <EyeOffIcon /> : <EyeIcon />}
                 onClick={() => setShowPassword((prev) => !prev)}
@@ -97,8 +97,8 @@ function StepResetPassword({
             suffixButton={
               <IconButton
                 type="button"
-                variant="tertiary"
-                size="sm"
+                variant="light"
+                size="md"
                 aria-label={showConfirm ? 'Hide password' : 'Show password'}
                 icon={showConfirm ? <EyeOffIcon /> : <EyeIcon />}
                 onClick={() => setShowConfirm((prev) => !prev)}

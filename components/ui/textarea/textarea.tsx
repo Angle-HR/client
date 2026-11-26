@@ -4,27 +4,38 @@ import { forwardRef, useId } from 'react'
 
 import { Button } from '../button/button'
 import { HelperText, type HelperTextState } from '../input/helper-text'
+import { LabelWrapper } from '../input/label-wrapper'
 
 import { TextareaField } from './textarea-field'
 
 interface TextareaProps {
   label?: string
+  /** Figma's Show Label 🏷️. */
   showLabel?: boolean
   helperText?: string
   helperState?: HelperTextState
+  /** Figma's Show Helper 💬. */
   showHelper?: boolean
+  /** Shown under the field in red, and turns its border red. */
   errorText?: string
   value?: string
   defaultValue?: string
   placeholder?: string
   onChange?: React.ChangeEventHandler<HTMLTextAreaElement>
   onBlur?: React.FocusEventHandler<HTMLTextAreaElement>
+  /** The text as it changes: plain text, or HTML when the toolbar is on. */
+  onValueChange?: (value: string) => void
+  /**
+   * Figma's labelled Text Area has the toolbar off. Turning it on makes the
+   * field a rich-text editor whose value is HTML (use `onValueChange`).
+   */
   showToolbar?: boolean
+  /** Figma's ✨ show-sec_actions: a Tertiary Blue button in the field's top right. */
   showActionButton?: boolean
   actionButtonLabel?: string
   onAction?: () => void
-  showSecondaryActions?: boolean
   maxLength?: number
+  /** Lines shown before typing, in browsers that can't size the field to its text. */
   rows?: number
   disabled?: boolean
   readOnly?: boolean
@@ -36,6 +47,12 @@ interface TextareaProps {
   className?: string
 }
 
+/**
+ * A labelled text area. Figma: Inputs/Text Area 📝.
+ *
+ * Label, field and helper sit 6px apart; the helper isn't inset (Figma's
+ * Helper-Text without padding). All values from textarea.figma.ts.
+ */
 const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function Textarea(
   {
     label,
@@ -44,22 +61,11 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function Textare
     helperState = 'neutral',
     showHelper = true,
     errorText,
-    value,
-    defaultValue,
-    placeholder,
-    onChange,
-    onBlur,
-    showToolbar = true,
+    showToolbar = false,
     showActionButton = false,
     actionButtonLabel,
     onAction,
-    showSecondaryActions = false,
-    maxLength,
-    rows = 4,
-    disabled,
-    readOnly,
     required,
-    name,
     id: externalId,
     className = '',
     ...props
@@ -69,68 +75,40 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function Textare
   const generatedId = useId()
   const fieldId = externalId || generatedId
   const helperId = `${fieldId}-helper`
+  const labelId = `${fieldId}-label`
   const hasError = !!errorText
-  const displayHelperState: HelperTextState = hasError ? 'error' : helperState
-  const displayHelperText = hasError ? errorText : helperText
+  const helper = hasError ? errorText : showHelper ? helperText : undefined
 
   return (
     <div className={`flex flex-col gap-[6px] ${className}`}>
-      {showLabel && label && (
-        <label
-          htmlFor={fieldId}
-          // The same label as every other field: tertiary, inset 3px and centred
-          // in its cap-height box.
-          className="flex h-[9px] items-center pl-[3px] text-body-xs leading-none font-medium-550 text-text-tertiary"
-        >
-          {label}
-          {required && (
-            <span className="text-text-error" aria-hidden="true">
-              {' '}
-              *
-            </span>
-          )}
-        </label>
-      )}
+      {showLabel && label ? (
+        <LabelWrapper label={label} required={required} htmlFor={fieldId} id={labelId} />
+      ) : null}
       <TextareaField
         ref={ref}
         id={fieldId}
-        name={name}
-        value={value}
-        defaultValue={defaultValue}
-        placeholder={placeholder}
-        onChange={onChange}
-        onBlur={onBlur}
         showToolbar={showToolbar}
-        showActionButton={showActionButton}
-        actionButton={
-          showActionButton ? (
-            <>
-              {showSecondaryActions && (
-                <Button variant="secondary" size="sm" onClick={onAction}>
-                  Cancel
-                </Button>
-              )}
-              <Button variant="primary" size="sm" onClick={onAction}>
-                {actionButtonLabel}
-              </Button>
-            </>
+        action={
+          showActionButton && actionButtonLabel ? (
+            <Button variant="tertiary" accent="blue" size="sm" onClick={onAction}>
+              {actionButtonLabel}
+            </Button>
           ) : undefined
         }
-        maxLength={maxLength}
-        rows={rows}
-        disabled={disabled}
-        readOnly={readOnly}
-        aria-label={props['aria-label']}
-        aria-labelledby={props['aria-labelledby']}
-        aria-invalid={hasError}
-        aria-required={required}
-        aria-describedby={showHelper || hasError ? helperId : undefined}
+        // The rich editor is a div, which a <label for> doesn't name.
+        aria-labelledby={showLabel && label ? labelId : undefined}
+        aria-invalid={hasError || undefined}
+        aria-required={required || undefined}
+        aria-describedby={helper ? helperId : undefined}
+        {...props}
       />
-      {(showHelper || hasError) && displayHelperText && (
-        <HelperText id={helperId} state={displayHelperState}>
-          {displayHelperText}
-        </HelperText>
-      )}
+      {helper ? (
+        <div role={hasError ? 'alert' : undefined} className="flex">
+          <HelperText id={helperId} state={hasError ? 'error' : helperState} inset={false}>
+            {helper}
+          </HelperText>
+        </div>
+      ) : null}
     </div>
   )
 })

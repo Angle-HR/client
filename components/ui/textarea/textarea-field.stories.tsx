@@ -13,7 +13,6 @@ const meta: Meta<typeof TextareaField> = {
       options: ['placeholder', 'hover', 'focus', 'selected', 'filled', 'error', 'disabled'],
     },
     showToolbar: { control: 'boolean' },
-    showActionButton: { control: 'boolean' },
     disabled: { control: 'boolean' },
   },
   args: {
@@ -44,29 +43,12 @@ export const WithoutToolbar: Story = {
   args: { showToolbar: false },
 }
 
-export const WithActionButton: Story = {
+export const WithAction: Story = {
   args: {
-    showActionButton: true,
-    actionButton: (
-      <Button variant="primary" size="sm">
-        Post
+    action: (
+      <Button variant="tertiary" accent="blue" size="sm">
+        Generate
       </Button>
-    ),
-  },
-}
-
-export const WithSecondaryActions: Story = {
-  args: {
-    showActionButton: true,
-    actionButton: (
-      <>
-        <Button variant="secondary" size="sm">
-          Cancel
-        </Button>
-        <Button variant="primary" size="sm">
-          Save
-        </Button>
-      </>
     ),
   },
 }

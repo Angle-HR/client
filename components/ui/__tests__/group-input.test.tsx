@@ -79,7 +79,7 @@ describe('GroupInputField', () => {
 describe('GroupInputLeftFlag', () => {
   it('renders as button', () => {
     render(<GroupInputLeftFlag countryCode="NG" />)
-    expect(screen.getByRole('button', { name: 'Select country' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Country: NG' })).toBeInTheDocument()
   })
 
   it('supports custom aria-label', () => {
@@ -96,7 +96,7 @@ describe('GroupInputLeftCurrency', () => {
 
   it('renders as button', () => {
     render(<GroupInputLeftCurrency value="USD" />)
-    expect(screen.getByRole('button', { name: 'Select currency' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Currency: USD' })).toBeInTheDocument()
   })
 })
 
@@ -106,9 +106,9 @@ describe('GroupInputLeftText', () => {
     expect(screen.getByText('https://')).toBeInTheDocument()
   })
 
-  it('is aria-hidden', () => {
+  it('is read out, so the field has its context', () => {
     const { container } = render(<GroupInputLeftText text="https://" />)
-    expect(container.querySelector('[aria-hidden="true"]')).toBeInTheDocument()
+    expect(container.querySelector('[aria-hidden="true"]')).toBeNull()
   })
 })
 
@@ -118,8 +118,8 @@ describe('GroupInputRightText', () => {
     expect(screen.getByText('.com')).toBeInTheDocument()
   })
 
-  it('is aria-hidden', () => {
+  it('is read out, so the field has its context', () => {
     const { container } = render(<GroupInputRightText text=".com" />)
-    expect(container.querySelector('[aria-hidden="true"]')).toBeInTheDocument()
+    expect(container.querySelector('[aria-hidden="true"]')).toBeNull()
   })
 })

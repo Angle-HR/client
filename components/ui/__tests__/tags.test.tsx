@@ -14,7 +14,7 @@ describe('Tag', () => {
 
   it('defaults to empty color', () => {
     const { container } = render(<Tag label="Test" />)
-    expect(container.querySelector('.border-border-tags-empty')).toBeInTheDocument()
+    expect(container.firstElementChild!.className).toContain('bg-bg-tags-empty')
   })
 
   it('supports all 11 colors', () => {
@@ -151,5 +151,18 @@ describe('ChipRemoveButton', () => {
       expect(screen.getByRole('button')).toBeInTheDocument()
       unmount()
     })
+  })
+})
+
+describe('Chip clickable and removable', () => {
+  it('clicking remove calls onRemove only, not onClick', async () => {
+    const onClick = vi.fn()
+    const onRemove = vi.fn()
+    render(<Chip label="Ada" onClick={onClick} removable onRemove={onRemove} />)
+    screen.getByRole('button', { name: 'Remove Ada' }).click()
+    expect(onRemove).toHaveBeenCalledTimes(1)
+    expect(onClick).not.toHaveBeenCalled()
+    screen.getByRole('button', { name: 'Ada' }).click()
+    expect(onClick).toHaveBeenCalledTimes(1)
   })
 })

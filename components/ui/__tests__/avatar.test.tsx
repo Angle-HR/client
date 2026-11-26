@@ -147,7 +147,7 @@ describe('AvatarStack', () => {
         ]}
       </AvatarStack>,
     )
-    expect(screen.getByText('+2')).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: '2 more' })).toBeInTheDocument()
   })
 
   it('hides overflow when showOverflow=false', () => {
@@ -156,7 +156,7 @@ describe('AvatarStack', () => {
         {[<span key="1">A</span>, <span key="2">B</span>, <span key="3">C</span>]}
       </AvatarStack>,
     )
-    expect(screen.queryByText('+1')).not.toBeInTheDocument()
+    expect(screen.queryByRole('img', { name: '1 more' })).not.toBeInTheDocument()
   })
 })
 

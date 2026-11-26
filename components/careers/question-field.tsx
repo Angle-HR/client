@@ -104,7 +104,8 @@ function QuestionControl({
           {...(interactive
             ? {
                 value: textOf(value),
-                onChange: (event: ChangeEvent<HTMLTextAreaElement>) => onChange(event.target.value),
+                // With the toolbar on the field is rich text; onValueChange covers both.
+                onValueChange: (text: string) => onChange(text),
               }
             : {})}
         />

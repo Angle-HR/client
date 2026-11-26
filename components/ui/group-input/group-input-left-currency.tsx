@@ -2,51 +2,46 @@
 
 import { forwardRef, type ButtonHTMLAttributes } from 'react'
 
-type GroupInputLeftCurrencySize = 'sm' | 'md' | 'lg'
+import { MaskIcon } from '../icons/mask-icon'
+
+import { useGroupInput } from './group-input-context'
+import { CURRENCY_TEXT, LEFT_PANEL, PANEL_BASE, PANEL_FOCUS } from './group-input-panel'
+
+import type { GroupInputSize } from './group-input.figma'
+
+type GroupInputLeftCurrencySize = GroupInputSize
 
 interface GroupInputLeftCurrencyProps extends Omit<
   ButtonHTMLAttributes<HTMLButtonElement>,
   'children'
 > {
+  /** The currency code shown, e.g. `USD`. */
   value: string
-  height?: GroupInputLeftCurrencySize
+  /** Inside a GroupInput, defaults to the group's size. */
+  size?: GroupInputLeftCurrencySize
   'aria-expanded'?: boolean
   'aria-haspopup'?: 'listbox' | 'true' | 'dialog' | 'menu' | 'grid' | 'tree'
-  className?: string
 }
 
-const sizeConfig: Record<GroupInputLeftCurrencySize, { panel: string; padding: string }> = {
-  sm: { panel: 'h-[25px]', padding: 'pl-[8px] pr-[4px]' },
-  md: { panel: 'h-[32px]', padding: 'pl-[8px] pr-[4px]' },
-  lg: { panel: 'h-[40px]', padding: 'pl-[12px] pr-[6px]' },
-}
-
+/** A currency picker before the field. Figma: .Subcomponents/Group-input/Left/Currency. */
 const GroupInputLeftCurrency = forwardRef<HTMLButtonElement, GroupInputLeftCurrencyProps>(
-  function GroupInputLeftCurrency({ value, height = 'md', className = '', ...props }, ref) {
-    const config = sizeConfig[height]
-
+  function GroupInputLeftCurrency(
+    { value, size: sizeProp, className = '', disabled, ...props },
+    ref,
+  ) {
+    const group = useGroupInput()
+    const size = sizeProp ?? group?.size ?? 'md'
     return (
       <button
         ref={ref}
         type="button"
-        className={`inline-flex items-center gap-[3px] ${config.panel} ${config.padding} bg-bg-input-placeholder border border-border-input-placeholder rounded-l-sm-7 rounded-r-none hover:bg-bg-input-hover-group-items hover:border-border-input-hover-group-items transition-colors ${className}`}
-        aria-label={props['aria-label'] || 'Select currency'}
+        disabled={disabled ?? group?.disabled}
+        aria-label={`Currency: ${value}`}
+        className={`${PANEL_BASE} ${LEFT_PANEL[size]} ${CURRENCY_TEXT[size]} ${PANEL_FOCUS} ${className}`}
         {...props}
       >
-        <span className="text-body-s font-medium text-text-primary">{value}</span>
-        <svg
-          className="h-[12px] w-[12px] text-text-secondary shrink-0"
-          viewBox="0 0 12 12"
-          fill="none"
-        >
-          <path
-            d="M3 4.5L6 7.5L9 4.5"
-            stroke="currentColor"
-            strokeWidth="1.25"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        {value}
+        <MaskIcon src="/dashboard/icons/chevron-down-outline.svg" size={12} />
       </button>
     )
   },

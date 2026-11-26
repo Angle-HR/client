@@ -225,14 +225,12 @@ describe('ListItemPicker vertical layout matches Figma (Picker, 1127:43938)', ()
     expect(card.className).toContain('w-[188px]')
     expect(card.className).toContain('text-left')
     expect(card.className).toContain('px-[17px] py-[13px]')
-    expect(card.className).toContain('duration-100 ease-[cubic-bezier(0,0,0.58,1)]')
+    expect(card.className).toContain('duration-100 ease-figma-out')
   })
 
   it('trims the title and sub-text to cap height, sub-text at 19.2px', () => {
     render(<ListItemPicker layout="vertical" title="Individual" subText="Just me" />)
-    expect(screen.getByText('Individual').className).toContain(
-      '[text-box:trim-both_cap_alphabetic]',
-    )
+    expect(screen.getByText('Individual').className).toContain('text-trim-cap')
     const sub = screen.getByText('Just me').className
     expect(sub).toContain('leading-[19.2px]')
     expect(sub).toContain('[text-box:trim-both_cap_alphabetic]')

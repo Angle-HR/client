@@ -1,26 +1,27 @@
-type GroupInputLeftTextSize = 'sm' | 'md' | 'lg'
+'use client'
+
+import { useGroupInput } from './group-input-context'
+import { HELPER_TEXT, LEFT_PANEL, PANEL_BASE } from './group-input-panel'
+
+import type { GroupInputSize } from './group-input.figma'
+
+type GroupInputLeftTextSize = GroupInputSize
 
 interface GroupInputLeftTextProps {
+  /** Fixed text before the field, e.g. `https://`. */
   text: string
-  height?: GroupInputLeftTextSize
+  /** Inside a GroupInput, defaults to the group's size. */
+  size?: GroupInputLeftTextSize
   className?: string
 }
 
-const sizeConfig: Record<GroupInputLeftTextSize, { panel: string; padding: string }> = {
-  sm: { panel: 'h-[25px]', padding: 'pl-[8px] pr-[4px]' },
-  md: { panel: 'h-[32px]', padding: 'pl-[8px] pr-[4px]' },
-  lg: { panel: 'h-[40px]', padding: 'pl-[12px] pr-[6px]' },
-}
-
-function GroupInputLeftText({ text, height = 'md', className = '' }: GroupInputLeftTextProps) {
-  const config = sizeConfig[height]
-
+/** Fixed text before the field. Figma: .Subcomponents/Group-input/Left/Text-helpers. */
+function GroupInputLeftText({ text, size: sizeProp, className = '' }: GroupInputLeftTextProps) {
+  const group = useGroupInput()
+  const size = sizeProp ?? group?.size ?? 'md'
   return (
-    <div
-      aria-hidden="true"
-      className={`inline-flex items-center gap-[3px] ${config.panel} ${config.padding} bg-bg-input-placeholder border border-border-input-placeholder rounded-l-sm-7 rounded-r-none text-body-s text-text-secondary ${className}`}
-    >
-      <span className="h-[24px] flex items-center">{text}</span>
+    <div className={`${PANEL_BASE} ${LEFT_PANEL[size]} ${HELPER_TEXT[size]} ${className}`}>
+      {text}
     </div>
   )
 }

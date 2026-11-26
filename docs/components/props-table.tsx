@@ -41,7 +41,10 @@ function PropsTable({ of, native }: PropsTableProps) {
   if (!rows)
     throw new Error(`No props found for ${of}. Add it to the list in scripts/build-docs.mjs.`)
   return (
-    <div className="not-prose my-[16px] overflow-x-auto rounded-lg-10 outline-[0.5px] -outline-offset-[0.5px] outline-border-transparent-medium">
+    <div
+      tabIndex={0}
+      className="docs-scroll-focus not-prose my-[16px] overflow-x-auto rounded-lg-10 outline-[0.5px] -outline-offset-[0.5px] outline-border-transparent-medium"
+    >
       <table className="w-full min-w-[640px] border-collapse text-left">
         <thead>
           <tr className="body-l-medium text-text-primary">

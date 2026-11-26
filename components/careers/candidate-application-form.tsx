@@ -95,7 +95,8 @@ function CandidateApplicationForm({ job }: CandidateApplicationFormProps): React
       >
         {/* The check circle is #448039 in 9346:561739; no token has that green. */}
         <span className="flex size-[31.5px] items-center justify-center rounded-full bg-[#448039]">
-          <Check className="size-[13px] text-text-inverted" />
+          {/* Figma: the check glyph is 12.69 × 11.61px in a 13px frame. */}
+          <Check className="h-[11.61px] w-[12.69px] text-text-inverted" />
         </span>
         <div className="flex flex-col gap-[14px]">
           <p className="text-[15.9px] leading-[24px] font-semibold text-text-primary">

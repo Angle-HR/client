@@ -1,10 +1,15 @@
-import { TagRemoveButton, type TagColor } from './tag-remove-button'
+import { TagRemoveButton } from './tag-remove-button'
+
+import type { TagColor, TagSize } from './tag.figma'
 
 type TagWeight = 'regular' | 'medium'
 
 interface TagProps {
   label: string
   color?: TagColor
+  /** Figma's "Size": `lg` Large (default), `sm` Small, `xs` xSmall. */
+  size?: TagSize
+  /** Adds a remove button. Figma has no removable xSmall, so it's ignored at `xs`. */
   removable?: boolean
   weight?: TagWeight
   onRemove?: () => void
@@ -12,6 +17,7 @@ interface TagProps {
   className?: string
 }
 
+// All values from tag.figma.ts (Figma node 912:21312).
 const bgColorMap: Record<TagColor, string> = {
   empty: 'bg-bg-tags-empty',
   red: 'bg-bg-tags-red',
@@ -40,30 +46,86 @@ const textColorMap: Record<TagColor, string> = {
   orange: 'text-text-tags-orange',
 }
 
+// `pad` is the label's padding alone; `padRemovable` when a remove button follows.
+const sizeClasses: Record<
+  TagSize,
+  { root: string; font: string; pad: string; padRemovable: string }
+> = {
+  lg: {
+    root: 'h-[20px] rounded-sm-7',
+    font: 'text-body-s',
+    pad: 'px-[8px]',
+    padRemovable: 'pl-[8px]',
+  },
+  sm: {
+    root: 'h-[20px] rounded-sm-7',
+    font: 'text-body-xs',
+    pad: 'px-[6px]',
+    padRemovable: 'pl-[6px]',
+  },
+  xs: { root: 'rounded-xs-4', font: 'text-caption-m', pad: 'px-[4px] py-[3px]', padRemovable: '' },
+}
+
+// Figma: Empty has a 1px dashed stroke (2px dash, 2px gap) centred on the
+// edge. CSS dashed borders can't set dash lengths and sit inside the box, so
+// it's an SVG rect on the tag's edge: an SVG stroke is centred like Figma's.
+function EmptyStroke({ radius }: { radius: number }) {
+  return (
+    <svg
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 size-full overflow-visible text-border-tags-empty"
+    >
+      <rect
+        width="100%"
+        height="100%"
+        rx={radius}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1}
+        strokeDasharray="2 2"
+      />
+    </svg>
+  )
+}
+
+const RADIUS: Record<TagSize, number> = { lg: 7, sm: 7, xs: 4 }
+
 function Tag({
   label,
   color = 'empty',
+  size = 'lg',
   removable = false,
   weight = 'regular',
   onRemove,
   className = '',
   ...props
 }: TagProps) {
+  const withRemove = removable && size !== 'xs'
+  const s = sizeClasses[size]
+
   const containerClasses = [
-    'inline-flex items-center h-[20px] rounded-sm-7',
+    'relative inline-flex shrink-0 items-center',
+    s.root,
     bgColorMap[color],
     textColorMap[color],
-    color === 'empty' ? 'border border-border-tags-empty' : '',
-    removable ? 'pl-[8px] pr-0 gap-[2px]' : 'px-[8px]',
+    withRemove && 'gap-[2px]',
     className,
+  ]
+    .filter(Boolean)
+    .join(' ')
+
+  const labelClasses = [
+    'text-trim-cap whitespace-nowrap',
+    withRemove ? s.padRemovable : s.pad,
+    s.font,
+    weight === 'medium' ? 'font-medium' : 'font-regular',
   ].join(' ')
 
   return (
     <span className={containerClasses} {...props}>
-      <span className={`text-body-xs leading-none ${weight === 'medium' ? 'font-medium' : ''}`}>
-        {label}
-      </span>
-      {removable && (
+      {color === 'empty' && <EmptyStroke radius={RADIUS[size]} />}
+      <span className={labelClasses}>{label}</span>
+      {withRemove && (
         <TagRemoveButton color={color} aria-label={`Remove ${label}`} onClick={onRemove} />
       )}
     </span>
@@ -71,4 +133,4 @@ function Tag({
 }
 
 export { Tag }
-export type { TagProps, TagColor, TagWeight }
+export type { TagProps, TagColor, TagSize, TagWeight }

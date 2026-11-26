@@ -2,22 +2,19 @@
 
 import { useState, type ReactNode } from 'react'
 
-import { CountryFlag } from './country-flag'
-import { NotificationBadge, type BadgeSize } from './notification-badge'
+import { MaskIcon } from '../icons/mask-icon'
 
-type AvatarSize = 12 | 14 | 16 | 18 | 20 | 24 | 32 | 44
+import {
+  AVATAR_COUNTRY,
+  AVATAR_ICON,
+  AVATAR_NOTIFICATION,
+  type AvatarColour,
+  type AvatarSize,
+} from './avatar.figma'
+import { CountryFlag } from './country-flag'
+import { NotificationBadge } from './notification-badge'
+
 type AvatarType = 'initials' | 'image' | 'image-border' | 'icon' | 'country'
-type AvatarColour =
-  | 'green'
-  | 'purple'
-  | 'aqua'
-  | 'orange'
-  | 'yellow'
-  | 'blue'
-  | 'fuchsia'
-  | 'red'
-  | 'grey'
-  | 'teal'
 
 interface AvatarProps {
   size?: AvatarSize
@@ -29,6 +26,7 @@ interface AvatarProps {
   src?: string
   alt?: string
   onError?: () => void
+  /** Replaces the icon avatar's glyph (Figma's default is an ellipsis). */
   icon?: ReactNode
   countryCode?: string
   showNotification?: boolean
@@ -38,26 +36,63 @@ interface AvatarProps {
   className?: string
 }
 
+// All values from avatar.figma.ts (Figma node 674:46801). Class strings are
+// spelled out so Tailwind can see them.
 const sizeClasses: Record<AvatarSize, string> = {
-  12: 'h-[12px] w-[12px]',
-  14: 'h-[14px] w-[14px]',
-  16: 'h-[16px] w-[16px]',
-  18: 'h-[18px] w-[18px]',
-  20: 'h-[20px] w-[20px]',
-  24: 'h-[24px] w-[24px]',
-  32: 'h-[32px] w-[32px]',
-  44: 'h-[44px] w-[44px]',
+  12: 'size-[12px]',
+  14: 'size-[14px]',
+  16: 'size-[16px]',
+  18: 'size-[18px]',
+  20: 'size-[20px]',
+  24: 'size-[24px]',
+  32: 'size-[32px]',
+  44: 'size-[44px]',
 }
 
-const textSizeClasses: Record<AvatarSize, string> = {
-  12: 'text-[9px]',
+// Square corners per size (AVATAR_RADIUS).
+const squareRadius: Record<AvatarSize, string> = {
+  12: 'rounded-[3px]',
+  14: 'rounded-[4px]',
+  16: 'rounded-[4px]',
+  18: 'rounded-[4px]',
+  20: 'rounded-[4px]',
+  24: 'rounded-[5px]',
+  32: 'rounded-[7px]',
+  44: 'rounded-[8px]',
+}
+
+// Square image corners (AVATAR_IMAGE_RADIUS). Figma oddity: the 14px image is
+// square-cornered with a border and 3px without.
+const imageSquareRadius: Record<AvatarSize, { border: string; borderless: string }> = {
+  12: { border: 'rounded-[3px]', borderless: 'rounded-[3px]' },
+  14: { border: 'rounded-none', borderless: 'rounded-[3px]' },
+  16: { border: 'rounded-[4px]', borderless: 'rounded-[4px]' },
+  18: { border: 'rounded-[4px]', borderless: 'rounded-[4px]' },
+  20: { border: 'rounded-[4px]', borderless: 'rounded-[4px]' },
+  24: { border: 'rounded-[5px]', borderless: 'rounded-[5px]' },
+  32: { border: 'rounded-[7px]', borderless: 'rounded-[7px]' },
+  44: { border: 'rounded-[8px]', borderless: 'rounded-[8px]' },
+}
+
+// Initials: Medium, trimmed to cap height (AVATAR_TEXT).
+const textClasses: Record<AvatarSize, string> = {
+  12: 'text-label',
   14: 'text-caption-s',
-  16: 'text-[11px]',
-  18: 'text-[9px]',
-  20: 'text-[9px]',
-  24: 'text-[10px]',
-  32: 'text-body-xs',
-  44: 'text-body-s',
+  16: 'text-caption-m',
+  18: 'text-caption-m',
+  20: 'text-caption-m',
+  24: 'text-body-s',
+  32: 'text-body-m',
+  44: 'text-body-xl',
+}
+
+// Country (12–20px): a 3:2 flag when square (AVATAR_COUNTRY).
+const countrySquare: Partial<Record<AvatarSize, string>> = {
+  12: 'w-[18px] h-[12px] rounded-[2px]',
+  14: 'w-[21px] h-[14px] rounded-[2px]',
+  16: 'w-[24px] h-[16px] rounded-[3px]',
+  18: 'w-[27px] h-[18px] rounded-[3px]',
+  20: 'w-[30px] h-[20px] rounded-[3px]',
 }
 
 const bgColorMap: Record<AvatarColour, string> = {
@@ -86,18 +121,11 @@ const textColorMap: Record<AvatarColour, string> = {
   teal: 'text-text-avatar-teal',
 }
 
-// Badge sizes from Figma bounding boxes: 18/20 → 5px (md), 24/32 → 8px (lg),
-// 44 → 11px (xl). 12/14/16 unresolved in Figma — kept at the smallest dot.
-const notificationBadgeSizeMap: Record<AvatarSize, BadgeSize> = {
-  12: 'sm',
-  14: 'sm',
-  16: 'sm',
-  18: 'md',
-  20: 'md',
-  24: 'lg',
-  32: 'lg',
-  44: 'xl',
-}
+// Figma's 0.5px inside strokes, as inset shadows so they aren't rounded to a
+// whole pixel. Images and flags would cover an inset shadow, so those draw it
+// on an overlay instead.
+const TEXT_STROKE = 'shadow-[inset_0_0_0_0.5px_var(--color-border-avatar-text)]'
+const IMAGE_STROKE = 'shadow-[inset_0_0_0_0.5px_var(--color-border-avatar-image)]'
 
 /** Derive 1–2 character initials from a display name. */
 function getInitials(name: string): string {
@@ -124,6 +152,7 @@ function Avatar({
 }: AvatarProps) {
   const [imgError, setImgError] = useState(false)
 
+  // Not in Figma: an image that fails falls back to the initials, or the icon.
   const resolvedType =
     (type === 'image' || type === 'image-border') && (imgError || !src)
       ? text
@@ -131,72 +160,102 @@ function Avatar({
         : 'icon'
       : type
 
-  // Figma: the square 12px avatar has a 3px radius; larger ones have 4px.
-  const shapeClass = circular ? 'rounded-full' : size === 12 ? 'rounded-[3px]' : 'rounded-xs-4'
-  const containerClasses = [
-    sizeClasses[size],
-    'relative inline-flex items-center justify-center shrink-0',
-    shapeClass,
-    className,
-  ].join(' ')
+  const shape = circular ? 'rounded-full' : squareRadius[size]
+  const squareFlag = resolvedType === 'country' && !circular ? countrySquare[size] : undefined
+  const box = squareFlag ?? `${sizeClasses[size]} ${shape}`
+  const flagShape = squareFlag ?? shape
 
-  const badgeSize = notificationBadgeSizeMap[size]
+  const withBorder = resolvedType === 'image-border'
+  const imageShape = circular
+    ? 'rounded-full'
+    : imageSquareRadius[size][withBorder ? 'border' : 'borderless']
+
+  const notification = AVATAR_NOTIFICATION[size]
 
   return (
     <span
-      className={containerClasses}
+      className={`relative inline-flex shrink-0 items-center justify-center ${box} ${className}`}
       aria-label={props['aria-label']}
       aria-hidden={props['aria-hidden']}
     >
       {resolvedType === 'initials' && (
         <span
-          className={`${sizeClasses[size]} ${shapeClass} ${bgColorMap[colour]} ${textColorMap[colour]} ${textSizeClasses[size]} font-medium flex items-center justify-center`}
+          className={`flex size-full items-center justify-center ${shape} ${bgColorMap[colour]} ${textColorMap[colour]} ${TEXT_STROKE}`}
         >
-          {text}
+          <span className={`${textClasses[size]} text-trim-cap font-medium`}>{text}</span>
         </span>
-      )}
-
-      {(resolvedType === 'image' || resolvedType === 'image-border') && (
-        // Framework-agnostic design-system primitive: a plain <img> keeps Avatar
-        // usable outside Next and avoids next/image's layout/runtime constraints.
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={src}
-          alt={alt}
-          className={`${sizeClasses[size]} ${shapeClass} object-cover overflow-hidden ${resolvedType === 'image-border' ? 'border border-border-avatar-image' : ''}`}
-          onError={() => {
-            setImgError(true)
-            onError?.()
-          }}
-        />
       )}
 
       {resolvedType === 'icon' && (
         <span
-          className={`${sizeClasses[size]} ${shapeClass} bg-bg-avatar-grey text-text-avatar-grey flex items-center justify-center`}
+          className={`flex size-full items-center justify-center ${shape} ${bgColorMap[colour]} ${textColorMap[colour]} ${TEXT_STROKE}`}
         >
-          {icon || (
-            <svg className="w-[60%] h-[60%]" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M8 8a3.5 3.5 0 100-7 3.5 3.5 0 000 7zM1.5 14.5c0-3.59 2.91-6.5 6.5-6.5s6.5 2.91 6.5 6.5" />
-            </svg>
+          {icon ? (
+            <span
+              className="inline-flex items-center justify-center"
+              style={{ width: AVATAR_ICON[size], height: AVATAR_ICON[size] }}
+            >
+              {icon}
+            </span>
+          ) : (
+            <MaskIcon
+              src="/dashboard/icons/ellipsis-horizontal-solid.svg"
+              size={AVATAR_ICON[size]}
+            />
           )}
         </span>
       )}
 
+      {(resolvedType === 'image' || resolvedType === 'image-border') && (
+        <>
+          {/* Framework-agnostic design-system primitive: a plain <img> keeps
+              Avatar usable outside Next and avoids next/image's constraints. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={src}
+            alt={alt}
+            className={`size-full object-cover ${imageShape}`}
+            onError={() => {
+              setImgError(true)
+              onError?.()
+            }}
+          />
+          {withBorder && (
+            <span
+              aria-hidden="true"
+              className={`pointer-events-none absolute inset-0 ${imageShape} ${IMAGE_STROKE}`}
+            />
+          )}
+        </>
+      )}
+
       {resolvedType === 'country' && countryCode && (
-        <span
-          className={`${sizeClasses[size]} ${shapeClass} flex items-center justify-center overflow-hidden bg-bg-avatar-grey`}
-        >
-          <CountryFlag code={countryCode} name={countryCode} width={size} height={size} />
-        </span>
+        <>
+          {/* Circular crops the 3:2 flag to a circle, centred. */}
+          <span
+            className={`flex size-full items-center justify-center overflow-hidden ${flagShape}`}
+          >
+            <CountryFlag
+              code={countryCode}
+              name={countryCode}
+              width={AVATAR_COUNTRY[size]?.width ?? size}
+              height={size}
+            />
+          </span>
+          <span
+            aria-hidden="true"
+            className={`pointer-events-none absolute inset-0 ${flagShape} ${TEXT_STROKE}`}
+          />
+        </>
       )}
 
       {showNotification && (
-        <span className="absolute top-0 right-0 translate-x-[15%] -translate-y-[15%]">
+        // Figma: the dot sits at the top-left corner, 1px outside.
+        <span className="absolute -top-[1px] -left-[1px] flex">
           <NotificationBadge
-            size={badgeSize}
+            size={notification.size}
             count={notificationCount}
-            showNumber={badgeSize === 'xl' && notificationCount !== undefined}
+            showNumber={notification.size === 'xl' && notificationCount !== undefined}
           />
         </span>
       )}

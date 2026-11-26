@@ -3,53 +3,55 @@
 import { forwardRef, type ButtonHTMLAttributes } from 'react'
 
 import { CountryFlag } from '../avatar/country-flag'
+import { MaskIcon } from '../icons/mask-icon'
 
-type GroupInputLeftFlagSize = 'sm' | 'md' | 'lg'
+import { useGroupInput } from './group-input-context'
+import { LEFT_PANEL, PANEL_BASE, PANEL_FOCUS } from './group-input-panel'
+
+import type { GroupInputSize } from './group-input.figma'
+
+type GroupInputLeftFlagSize = GroupInputSize
 
 interface GroupInputLeftFlagProps extends Omit<
   ButtonHTMLAttributes<HTMLButtonElement>,
   'children'
 > {
+  /** ISO country code, e.g. `NG`. */
   countryCode: string
-  height?: GroupInputLeftFlagSize
+  /** The country's name, read out in the button's label. Defaults to the code. */
+  countryName?: string
+  /** Inside a GroupInput, defaults to the group's size. */
+  size?: GroupInputLeftFlagSize
   'aria-expanded'?: boolean
   'aria-haspopup'?: 'listbox' | 'true' | 'dialog' | 'menu' | 'grid' | 'tree'
-  className?: string
 }
 
-const sizeConfig: Record<GroupInputLeftFlagSize, { panel: string; padding: string }> = {
-  sm: { panel: 'h-[25px]', padding: 'pl-[8px] pr-[4px]' },
-  md: { panel: 'h-[32px]', padding: 'pl-[8px] pr-[4px]' },
-  lg: { panel: 'h-[40px]', padding: 'pl-[12px] pr-[6px]' },
-}
-
+/** A country picker before the field. Figma: .Subcomponents/Group-input/Left/Flag. */
 const GroupInputLeftFlag = forwardRef<HTMLButtonElement, GroupInputLeftFlagProps>(
-  function GroupInputLeftFlag({ countryCode, height = 'md', className = '', ...props }, ref) {
-    const config = sizeConfig[height]
-
+  function GroupInputLeftFlag(
+    { countryCode, countryName, size: sizeProp, className = '', disabled, ...props },
+    ref,
+  ) {
+    const group = useGroupInput()
+    const size = sizeProp ?? group?.size ?? 'md'
     return (
       <button
         ref={ref}
         type="button"
-        className={`inline-flex items-center gap-[3px] ${config.panel} ${config.padding} bg-bg-input-placeholder border border-border-input-placeholder rounded-l-sm-7 rounded-r-none hover:bg-bg-input-hover-group-items hover:border-border-input-hover-group-items transition-colors ${className}`}
-        aria-label={props['aria-label'] || 'Select country'}
+        disabled={disabled ?? group?.disabled}
+        aria-label={`Country: ${countryName ?? countryCode}`}
+        className={`${PANEL_BASE} ${LEFT_PANEL[size]} ${PANEL_FOCUS} ${className}`}
         {...props}
       >
-        {/* Decorative: the button already carries the country in its label. */}
-        <CountryFlag code={countryCode} width={18} height={12} decorative />
-        <svg
-          className="h-[12px] w-[12px] text-text-secondary shrink-0"
-          viewBox="0 0 12 12"
-          fill="none"
-        >
-          <path
-            d="M3 4.5L6 7.5L9 4.5"
-            stroke="currentColor"
-            strokeWidth="1.25"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        {/* Decorative: the button's label already names the country. */}
+        <CountryFlag
+          code={countryCode}
+          width={18}
+          height={12}
+          decorative
+          className="rounded-xs-2"
+        />
+        <MaskIcon src="/dashboard/icons/chevron-down-outline.svg" size={12} />
       </button>
     )
   },

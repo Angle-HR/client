@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 
+import { HIDE_NATIVE, Scrollbar } from '../list/scrollbar'
+
 type SlotsBackground = 'neutral' | 'light'
 type SlotsShadow = 'xsmall' | 'small' | 'medium'
 type SlotsPadding = 'default' | 'tight'
@@ -11,7 +13,7 @@ interface SlotsProps {
   background?: SlotsBackground
   shadow?: SlotsShadow
   padding?: SlotsPadding
-  /** Shows top/bottom fade hints when the slot's content overflows and is scrolled. */
+  /** Scrolls its content, with Figma's scrollbar on the right edge and top/bottom fade hints. */
   scrollable?: boolean
   className?: string
   style?: CSSProperties
@@ -99,7 +101,7 @@ function Slots({
     >
       <div
         ref={contentRef}
-        className={`min-w-0 flex-1 ${paddingClasses[padding]} ${scrollable ? 'overflow-y-auto' : 'flex flex-col'}`}
+        className={`min-w-0 flex-1 ${paddingClasses[padding]} ${scrollable ? `overflow-y-auto ${HIDE_NATIVE}` : 'flex flex-col'}`}
       >
         {children}
       </div>
@@ -115,6 +117,7 @@ function Slots({
           className={`pointer-events-none absolute inset-x-0 bottom-0 h-[16px] bg-gradient-to-t transition-opacity duration-120 ease-out ${fadeFromClasses[background]} to-transparent ${atBottom ? 'opacity-0' : 'opacity-100'}`}
         />
       )}
+      {scrollable && <Scrollbar target={contentRef} />}
     </div>
   )
 }

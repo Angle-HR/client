@@ -1,5 +1,5 @@
 export { GroupInput } from './group-input'
-export type { GroupInputProps, GroupInputSize, GroupInputPosition } from './group-input'
+export type { GroupInputProps, GroupInputSize } from './group-input'
 
 export { GroupInputField } from './group-input-field'
 export type {
@@ -23,3 +23,6 @@ export type { GroupInputLeftTextProps, GroupInputLeftTextSize } from './group-in
 
 export { GroupInputRightText } from './group-input-right-text'
 export type { GroupInputRightTextProps, GroupInputRightTextSize } from './group-input-right-text'
+
+export { GroupSelectionField } from './group-selection-field'
+export type { GroupSelectionFieldProps } from './group-selection-field'

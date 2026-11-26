@@ -31,12 +31,15 @@ const LabelButton = forwardRef<HTMLButtonElement, LabelButtonProps>(function Lab
 ) {
   const classes = [
     'inline-flex h-[24px] items-center gap-[4px] rounded-sm-7 border px-[7px] font-medium text-body-s text-text-btn-default-primary',
-    'transition-colors duration-100 ease-out hover:ease-in',
+    // Figma: hover fades in over 100ms (ease in) and out over 100ms (ease out);
+    // selecting fades over 50ms (ease out). Figma deselects instantly; here it
+    // takes the 100ms hover fade, as CSS can't tell deselecting from un-hovering.
+    'transition-colors',
     'focus-visible:border-border-btn-blue-pri-focus focus-visible:bg-bg-btn-default-pri-focus focus-visible:outline-none',
     'disabled:cursor-not-allowed disabled:border-border-btn-default-pri-disabled disabled:bg-bg-btn-default-pri-disabled disabled:text-text-btn-default-disabled',
     selected
-      ? 'border-border-btn-default-pri-focus bg-bg-transparent-blue-accent-light'
-      : 'border-border-btn-default-pri-rest bg-bg-btn-default-pri-rest hover:border-border-btn-default-pri-hover hover:bg-bg-btn-default-pri-hover',
+      ? 'border-border-btn-default-pri-focus bg-bg-transparent-blue-accent-light duration-[50ms] ease-figma-out'
+      : 'border-border-btn-default-pri-rest bg-bg-btn-default-pri-rest hover:border-border-btn-default-pri-hover hover:bg-bg-btn-default-pri-hover duration-100 ease-figma-out hover:ease-figma-in',
     className,
   ].join(' ')
 

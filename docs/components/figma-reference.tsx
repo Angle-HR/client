@@ -29,7 +29,7 @@ function FigmaReference({ src, href, taken, alt, width }: FigmaReferenceProps) {
       </div>
       <figcaption className="flex flex-wrap items-center justify-between gap-[8px] border-t-[0.5px] border-border-transparent-medium px-[16px] py-[10px] body-l-regular text-text-secondary">
         <span>Figma snapshot, taken {taken}. Light mode.</span>
-        <a href={href} className="text-text-blue-accent underline-offset-2 hover:underline">
+        <a href={href} className="docs-link underline underline-offset-2">
           Open in Figma
         </a>
       </figcaption>

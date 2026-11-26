@@ -1,5 +1,5 @@
 export { Tag } from './tag'
-export type { TagProps, TagColor, TagWeight } from './tag'
+export type { TagProps, TagColor, TagSize, TagWeight } from './tag'
 
 export { TagRemoveButton } from './tag-remove-button'
 export type { TagRemoveButtonProps } from './tag-remove-button'

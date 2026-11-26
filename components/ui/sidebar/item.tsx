@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState } from 'react'
 
 import { Notification } from '../notification/notification'
@@ -154,9 +155,11 @@ function SidebarItem({
 
   if (href) {
     return (
-      <a href={href} className={sharedClasses} {...sharedProps}>
+      // Link, not <a>: a plain link reloads the whole page, which resets the
+      // sidebar (open groups, scroll) on every click.
+      <Link href={href} className={sharedClasses} {...sharedProps}>
         {content}
-      </a>
+      </Link>
     )
   }
 

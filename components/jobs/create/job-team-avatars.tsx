@@ -1,4 +1,5 @@
 import { PersonAvatar } from '@/components/jobs/person-avatar'
+import { AvatarStack } from '@/components/ui'
 import { colourFor } from '@/lib/jobs/api'
 import { accessSentence } from '@/lib/jobs/publish-step'
 
@@ -23,15 +24,17 @@ function JobTeamAvatars({ team }: { team: HeaderMember[] }): ReactNode {
       aria-label={`Team: ${team.map((member) => member.name).join(', ')}`}
       className="group relative inline-flex shrink-0 items-center"
     >
-      {team.slice(0, SHOWN).map((member, index) => (
-        <span key={member.id} className={index === 0 ? 'inline-flex' : '-ml-[6px] inline-flex'}>
+      {/* Figma: 20px standard stack of 2, no "more" tile, first face on top. */}
+      <AvatarStack size={20} maxVisible={SHOWN} showOverflow={false}>
+        {team.map((member) => (
           <PersonAvatar
+            key={member.id}
             person={{ name: member.name, colour: colourFor(member.id) }}
             size={20}
             circular
           />
-        </span>
-      ))}
+        ))}
+      </AvatarStack>
       <span className="pointer-events-none absolute top-[calc(100%+8px)] left-1/2 z-20 hidden -translate-x-1/2 flex-col gap-[10px] rounded-lg-12 bg-dark-grey-1 px-[10px] py-[10px] whitespace-nowrap group-hover:flex">
         <span className="text-body-xs leading-19_2 font-medium text-text-inverted">
           {first.name}
