@@ -5,7 +5,7 @@ import { useEffect } from 'react'
 
 import { LoginLegalFooter, LoginShell } from '@/components/auth/login-shell'
 import { StepLoginVerify } from '@/components/auth/steps/step-login-verify'
-import { applyApiError, getRetryAfterSeconds } from '@/lib/api-error'
+import { getRetryAfterSeconds, verificationCodeError } from '@/lib/api-error'
 import {
   getLoginOtpCodeExpiresAt,
   getLoginOtpEmail,
@@ -54,7 +54,7 @@ function LoginVerifyPage() {
       router.push(landAfterLogin(result))
       return undefined
     } catch (err) {
-      return applyApiError(err, undefined, {}, 'Invalid verification code. Please try again.')
+      return verificationCodeError(err)
     }
   }
 

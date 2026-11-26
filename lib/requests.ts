@@ -73,17 +73,14 @@ import type {
   AuthLoginOtpVerifyPayload,
   AuthLoginPayload,
   AuthLoginResult,
-  AuthLogoutPayload,
   AuthMeData,
-  AuthRefreshData,
-  AuthRefreshPayload,
   AuthResendVerificationPayload,
   AuthResetPasswordData,
   AuthResetPasswordPayload,
   AuthSignupData,
   AuthSignupPatchPayload,
   AuthSignupPayload,
-  AuthTokenData,
+  AuthSessionData,
   AuthTotpConfirmPayload,
   AuthTotpDisablePayload,
   AuthTotpEnrollData,
@@ -92,13 +89,8 @@ import type {
   BusinessType,
   CompanyRole,
   Country,
-  HiringFrustration,
-  HiringTool,
   IdentificationRequirementsData,
-  Industry,
   OnboardingIndustry,
-  OnboardingPayload,
-  OnboardingResponse,
   OrganizationInviteData,
   OrganizationInvitePayload,
   ProductAddressData,
@@ -115,10 +107,6 @@ import type {
   ProductOnboardingStatusData,
   ProductProfileData,
   ProductProfilePayload,
-  Role,
-  TeamSize,
-  WaitlistPayload,
-  WaitlistResponse,
 } from './types'
 
 /** The roles a person can hold on one job's hiring team. */
@@ -179,51 +167,8 @@ const ifMatch = async (jobId: string, revision?: number): Promise<Record<string,
 }
 
 const requests = {
-  joinWaitlist: async (payload: WaitlistPayload): Promise<WaitlistResponse> => {
-    const { data } = await axiosInstance.post<ApiResponse<WaitlistResponse>>(
-      ENDPOINTS.waitlist.join(),
-      payload,
-    )
-    return data.data
-  },
-
-  submitOnboarding: async (payload: OnboardingPayload): Promise<OnboardingResponse> => {
-    const { data } = await axiosInstance.post<ApiResponse<OnboardingResponse>>(
-      ENDPOINTS.waitlist.onboarding(),
-      payload,
-    )
-    return data.data
-  },
-
   getCountries: async (): Promise<Country[]> => {
     const { data } = await axiosInstance.get<ApiResponse<Country[]>>(ENDPOINTS.countries())
-    return data.data
-  },
-
-  getIndustries: async (): Promise<Industry[]> => {
-    const { data } = await axiosInstance.get<ApiResponse<Industry[]>>(ENDPOINTS.industries())
-    return data.data
-  },
-
-  getHiringTools: async (): Promise<HiringTool[]> => {
-    const { data } = await axiosInstance.get<ApiResponse<HiringTool[]>>(ENDPOINTS.hiringTools())
-    return data.data
-  },
-
-  getHiringFrustrations: async (): Promise<HiringFrustration[]> => {
-    const { data } = await axiosInstance.get<ApiResponse<HiringFrustration[]>>(
-      ENDPOINTS.hiringFrustrations(),
-    )
-    return data.data
-  },
-
-  getRoles: async (): Promise<Role[]> => {
-    const { data } = await axiosInstance.get<ApiResponse<Role[]>>(ENDPOINTS.roles())
-    return data.data
-  },
-
-  getTeamSizes: async (): Promise<TeamSize[]> => {
-    const { data } = await axiosInstance.get<ApiResponse<TeamSize[]>>(ENDPOINTS.teamSizes())
     return data.data
   },
 
@@ -245,8 +190,8 @@ const requests = {
     return data.data
   },
 
-  verifyEmail: async (payload: AuthVerifyEmailPayload): Promise<AuthTokenData> => {
-    const { data } = await axiosInstance.post<ApiResponse<AuthTokenData>>(
+  verifyEmail: async (payload: AuthVerifyEmailPayload): Promise<AuthSessionData> => {
+    const { data } = await axiosInstance.post<ApiResponse<AuthSessionData>>(
       ENDPOINTS.auth.verifyEmail(),
       payload,
     )
@@ -285,16 +230,16 @@ const requests = {
     return data.data
   },
 
-  verifyLoginTotp: async (payload: AuthTotpLoginPayload): Promise<AuthTokenData> => {
-    const { data } = await axiosInstance.post<ApiResponse<AuthTokenData>>(
+  verifyLoginTotp: async (payload: AuthTotpLoginPayload): Promise<AuthSessionData> => {
+    const { data } = await axiosInstance.post<ApiResponse<AuthSessionData>>(
       ENDPOINTS.auth.loginTotp(),
       payload,
     )
     return data.data
   },
 
-  logout: async (payload: AuthLogoutPayload): Promise<void> => {
-    await axiosInstance.post(ENDPOINTS.auth.logout(), payload)
+  logout: async (): Promise<void> => {
+    await axiosInstance.post(ENDPOINTS.auth.logout())
   },
 
   forgotPassword: async (payload: AuthForgotPasswordPayload): Promise<AuthForgotPasswordData> => {
@@ -350,6 +295,7 @@ const requests = {
     answers: ApplicationAnswers,
     source?: string,
     market?: string,
+    declaration?: { country?: string; privacyAcknowledged?: boolean; consent?: boolean },
   ): Promise<void> => {
     const uploads: Record<string, string[]> = {}
     for (const question of job.questions) {
@@ -384,6 +330,7 @@ const requests = {
         market,
         consentRequired: job.consentRequired ?? false,
         source,
+        ...declaration,
       }),
       { headers: { 'Idempotency-Key': crypto.randomUUID() } },
     )
@@ -570,6 +517,15 @@ const requests = {
     const { data } = await axiosInstance.post<ApiResponse<ApiKybState>>(
       ENDPOINTS.organization.verification(),
       body,
+    )
+    return data.data
+  },
+
+  /** Individuals: asks for a new manual review after a rejection (an empty body). */
+  requestKybReview: async (): Promise<ApiKybState> => {
+    const { data } = await axiosInstance.post<ApiResponse<ApiKybState>>(
+      ENDPOINTS.organization.verification(),
+      {},
     )
     return data.data
   },
@@ -933,8 +889,8 @@ const requests = {
     return data.data
   },
 
-  acceptInvite: async (payload: AuthAcceptInvitePayload): Promise<AuthTokenData> => {
-    const { data } = await axiosInstance.post<ApiResponse<AuthTokenData>>(
+  acceptInvite: async (payload: AuthAcceptInvitePayload): Promise<AuthSessionData> => {
+    const { data } = await axiosInstance.post<ApiResponse<AuthSessionData>>(
       ENDPOINTS.auth.acceptInvite(),
       payload,
     )
@@ -959,14 +915,6 @@ const requests = {
   inviteTeammate: async (payload: OrganizationInvitePayload): Promise<OrganizationInviteData> => {
     const { data } = await axiosInstance.post<ApiResponse<OrganizationInviteData>>(
       ENDPOINTS.organizations.invites(),
-      payload,
-    )
-    return data.data
-  },
-
-  refreshToken: async (payload: AuthRefreshPayload): Promise<AuthRefreshData> => {
-    const { data } = await axiosInstance.post<ApiResponse<AuthRefreshData>>(
-      ENDPOINTS.auth.refresh(),
       payload,
     )
     return data.data

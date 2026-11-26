@@ -44,7 +44,7 @@ const PRIVACY_POLICY_SECTIONS: LegalSection[] = [
       {
         kind: 'p',
         children:
-          'This policy covers personal data we handle through the Open HR website, waitlist, account sign-up, and the hosted platform.',
+          'This policy covers personal data we handle through the Open HR website, account sign-up, and the hosted platform.',
       },
       {
         kind: 'p',

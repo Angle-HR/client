@@ -116,6 +116,34 @@ describe('toApplicationBody', () => {
   })
 })
 
+describe('toApplicationBody declaration', () => {
+  const base = { questions: [], answers: {}, uploads: {}, markets: ['UK'], consentRequired: false }
+
+  it('sends the picked country, the acknowledgement and an explicit consent', () => {
+    const body = toApplicationBody({
+      ...base,
+      country: 'FR',
+      privacyAcknowledged: true,
+      consent: false,
+      source: 'direct',
+    })
+    expect(body).toMatchObject({
+      candidate_country: 'FR',
+      privacy_notice_acknowledged: true,
+      consent: false,
+      source: 'direct',
+    })
+  })
+
+  it('reads the privacy notice url from the job', () => {
+    const page = toCareersJobPage(
+      { job: { title: 'T' }, privacy_notice_url: 'https://x.test/privacy' },
+      'abc',
+    )
+    expect(page?.job.privacyNoticeUrl).toBe('https://x.test/privacy')
+  })
+})
+
 describe('toUploadBody', () => {
   it('describes the file for its question', () => {
     const file = new File(['abc'], 'cv.pdf', { type: 'application/pdf' })
@@ -125,5 +153,32 @@ describe('toUploadBody', () => {
       content_type: 'application/pdf',
       size_bytes: 3,
     })
+  })
+})
+
+describe('public job extras', () => {
+  it('shows pay, seniority, experience and skills', () => {
+    const page = toCareersJobPage(
+      {
+        job: {
+          title: 'T',
+          pay: { currency: 'GBP', min: 5000000, max: 7000000, period: 'year' },
+          seniority: 'Senior',
+          experience: '3-5 years',
+          skills: ['Go', 'SQL'],
+        },
+      },
+      'x',
+    )
+    expect(page?.job.pay).toBe('GBP 50,000 - 70,000 per year')
+    expect(page?.job.seniority).toBe('Senior')
+    expect(page?.job.experience).toBe('3-5 years')
+    expect(page?.job.skills).toEqual(['Go', 'SQL'])
+  })
+
+  it('leaves them out when absent', () => {
+    const job = toCareersJobPage({ job: { title: 'T' } }, 'x')?.job
+    expect(job?.pay).toBeUndefined()
+    expect(job?.skills).toBeUndefined()
   })
 })

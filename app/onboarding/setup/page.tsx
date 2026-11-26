@@ -1,5 +1,6 @@
 'use client'
 
+import axios from 'axios'
 import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
@@ -18,8 +19,6 @@ function OnboardingSetupPage() {
   const startedRef = useRef(false)
 
   useEffect(() => {
-    // Completing runs once. It is not cancelled on unmount: in development React
-    // mounts effects twice, and the first run is the only one that sends it.
     if (startedRef.current) return
     startedRef.current = true
 
@@ -30,12 +29,18 @@ function OnboardingSetupPage() {
         redirectRef.current = result.redirect_url || '/dashboard'
         setReadyToAnimate(true)
       } catch (err) {
+        // 409: onboarding was already completed (a reload of this page, or a second
+        // tab). Nothing to report; carry on to the dashboard.
+        if (axios.isAxiosError(err) && err.response?.status === 409) {
+          setReadyToAnimate(true)
+          return
+        }
         setFallbackError(applyApiError(err))
       }
     }
 
     void finalize()
-  }, [])
+  }, [router])
 
   return (
     <AuthShell variant="centered">

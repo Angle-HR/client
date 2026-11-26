@@ -14,7 +14,7 @@ import { useOnboardingDraft } from '@/components/auth/use-flow-storage'
 import { useOnboardingResume } from '@/components/auth/use-onboarding-resume'
 import { BannerSmall } from '@/components/ui'
 import { applyApiError } from '@/lib/api-error'
-import { reconcileOnboardingStep, routeForOnboarding } from '@/lib/auth-session'
+import { routeForOnboarding } from '@/lib/auth-session'
 import { useUpsertProfile } from '@/lib/mutations'
 
 import type { AccountType } from '@/components/auth/onboarding-options'
@@ -50,7 +50,6 @@ function OnboardingAccountPage() {
         accountType: 'individual',
         profile: values,
       })
-      reconcileOnboardingStep(result)
       router.push(routeForOnboarding(result.onboarding) || '/onboarding/compliance')
     } catch (err) {
       setFallbackError(applyApiError(err))
@@ -71,7 +70,6 @@ function OnboardingAccountPage() {
         accountType: 'business',
         profile: values,
       })
-      reconcileOnboardingStep(result)
       router.push(routeForOnboarding(result.onboarding) || '/onboarding/workspace')
     } catch (err) {
       setFallbackError(applyApiError(err))

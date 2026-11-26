@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 
 import {
   EMAIL_ERROR_MESSAGE,
+  allCountries,
+  validateDeclaration,
   attachmentKind,
   isAcceptedFile,
   isAnswered,
@@ -146,5 +148,32 @@ describe('jobForRole', () => {
     expect(job.descriptionHtml).toContain('<strong>About the job</strong>')
     expect(job.descriptionHtml).toContain('Top 3 skills needed for this role:')
     expect(job.placeholders['email-address']).toBe('hello@example.com...')
+  })
+})
+
+describe('candidate declaration', () => {
+  it('lists every country by name, with ISO codes', () => {
+    const countries = allCountries()
+    expect(countries.length).toBeGreaterThan(200)
+    expect(countries.find((c) => c.code === 'GB')?.name).toMatch(/United Kingdom/)
+    expect(new Set(countries.map((c) => c.name)).size).toBe(countries.length)
+    expect(countries.some((c) => c.code === 'UK')).toBe(false)
+    expect(countries.some((c) => c.code === 'EU' || c.code === 'ZZ')).toBe(false)
+  })
+
+  it('requires a country, the privacy acknowledgement and, only when asked, consent', () => {
+    const empty = { country: '', privacyAcknowledged: false, consent: false }
+    expect(Object.keys(validateDeclaration(empty, false)).sort()).toEqual([
+      'country',
+      'privacyAcknowledged',
+    ])
+    expect(Object.keys(validateDeclaration(empty, true)).sort()).toEqual([
+      'consent',
+      'country',
+      'privacyAcknowledged',
+    ])
+    expect(
+      validateDeclaration({ country: 'FR', privacyAcknowledged: true, consent: false }, false),
+    ).toEqual({})
   })
 })

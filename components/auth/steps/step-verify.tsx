@@ -12,18 +12,22 @@ import {
   TextButton,
   type OTPInputState,
 } from '@/components/ui'
-import { applyApiError, getRetryAfterSeconds } from '@/lib/api-error'
+import {
+  formatWait,
+  applyApiError,
+  getRetryAfterSeconds,
+  verificationCodeError,
+} from '@/lib/api-error'
 import {
   clearVerificationSession,
   getCodeExpiresAt,
   getResendAvailableAt,
   getVerificationSessionId,
-  setAuthTokens,
   setVerificationSession,
 } from '@/lib/auth-session'
 import { useResendVerification, useVerifyEmail } from '@/lib/mutations'
 
-import type { AuthTokenData } from '@/lib/types'
+import type { AuthSessionData } from '@/lib/types'
 
 const OTP_LENGTH = 6
 const DEFAULT_TTL_SECONDS = 300
@@ -31,7 +35,7 @@ const DEFAULT_TTL_SECONDS = 300
 interface StepVerifyProps {
   email: string
   onEditEmail: () => void
-  onVerified: (tokens: AuthTokenData) => void
+  onVerified: (session: AuthSessionData) => void
 }
 
 function secondsUntil(timestamp: number | null, fallbackSeconds: number) {
@@ -44,12 +48,11 @@ function StepVerify({ email, onEditEmail, onVerified }: StepVerifyProps) {
   const resendVerification = useResendVerification()
 
   const [code, setCode] = useState('')
-  const [secondsLeft, setSecondsLeft] = useState(() =>
-    secondsUntil(getCodeExpiresAt(), DEFAULT_TTL_SECONDS),
-  )
-  const [resendCooldown, setResendCooldown] = useState(() =>
-    secondsUntil(getResendAvailableAt(), 0),
-  )
+  // Seeded with fixed values and synced from storage after mount: the stored
+  // deadlines depend on the clock, so reading them during render would differ
+  // between the server HTML and the first client render (a hydration mismatch).
+  const [secondsLeft, setSecondsLeft] = useState(DEFAULT_TTL_SECONDS)
+  const [resendCooldown, setResendCooldown] = useState(0)
   const [otpState, setOtpState] = useState<OTPInputState>('rest')
   const [errorText, setErrorText] = useState<string>()
   const [fallbackError, setFallbackError] = useState<string>()
@@ -57,6 +60,13 @@ function StepVerify({ email, onEditEmail, onVerified }: StepVerifyProps) {
 
   const expired = secondsLeft <= 0
   const canResend = resendCooldown <= 0 && !resendVerification.isPending
+
+  useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- one-time sync from storage after hydration */
+    setSecondsLeft(secondsUntil(getCodeExpiresAt(), DEFAULT_TTL_SECONDS))
+    setResendCooldown(secondsUntil(getResendAvailableAt(), 0))
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [])
 
   useEffect(() => {
     if (secondsLeft <= 0) return
@@ -99,7 +109,7 @@ function StepVerify({ email, onEditEmail, onVerified }: StepVerifyProps) {
       const retryAfter = getRetryAfterSeconds(err)
       if (retryAfter) {
         setResendCooldown(retryAfter)
-        setFallbackError(`Please wait ${retryAfter}s before requesting another code.`)
+        setFallbackError(`Please wait ${formatWait(retryAfter)} before requesting another code.`)
         return
       }
       setFallbackError(applyApiError(err))
@@ -128,20 +138,17 @@ function StepVerify({ email, onEditEmail, onVerified }: StepVerifyProps) {
     }
 
     try {
-      const tokens = await verifyEmail.mutateAsync({
+      const session = await verifyEmail.mutateAsync({
         code: value,
         verification_session_id: sessionId,
       })
-      setAuthTokens(tokens)
       clearVerificationSession()
       setOtpState('success')
       setErrorText(undefined)
-      onVerified(tokens)
+      onVerified(session)
     } catch (err) {
       setOtpState('error')
-      setErrorText(
-        applyApiError(err, undefined, {}, 'Invalid verification code. Please try again.'),
-      )
+      setErrorText(verificationCodeError(err))
     }
   }
 

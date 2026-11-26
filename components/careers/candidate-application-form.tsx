@@ -202,6 +202,10 @@ function FormField({
 }: FormFieldProps): ReactElement {
   // Autofill has no input of its own, so its label is not tied to one.
   const isButtonOnly = question.type === 'autofill_resume'
+  // A missing required upload has no copy in the design, but a red border alone says nothing.
+  const isUpload = question.type === 'file_upload' || question.type === 'image_upload'
+  const shownError =
+    error ?? (invalid && isUpload ? `Attach a file for "${question.label}".` : null)
   return (
     <div className="flex flex-col gap-[6px]">
       <div className="flex flex-col gap-[2px]">
@@ -237,7 +241,7 @@ function FormField({
         onChange={onChange}
         invalid={invalid}
       />
-      {error ? <HelperText state="error">{error}</HelperText> : null}
+      {shownError ? <HelperText state="error">{shownError}</HelperText> : null}
     </div>
   )
 }

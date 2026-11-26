@@ -18,6 +18,7 @@ import {
   useComplianceGates,
   useJob,
   useJobMembers,
+  useKyb,
   usePeople,
   usePublishCheck,
   useShareKit,
@@ -62,7 +63,8 @@ function PublishPage() {
   const creator = creatorId ? (people.find((person) => person.id === creatorId) ?? null) : null
   const members = useMemo(() => toAccessMembers(teamRows, creatorId), [teamRows, creatorId])
   const team = useMemo(() => headerTeam(creator, members), [creator, members])
-  const view = useMemo(() => complianceView(check), [check])
+  const individual = useKyb().data?.kind === 'individual'
+  const view = useMemo(() => complianceView(check, individual), [check, individual])
   const publishable = Boolean(jobId) && canPublish(view)
   const jobTitle = job?.title?.trim() || 'Untitled job'
 
@@ -82,7 +84,9 @@ function PublishPage() {
     if (!jobId || publishing || !publishable) return
     setPublishing(true)
     try {
-      await requests.publishJob(jobId, job?.revision)
+      // Read the revision again: the steps before this one saved the job after the cached copy was taken.
+      const fresh = await requests.getJob(jobId)
+      await requests.publishJob(jobId, fresh.revision)
       await queryClient.invalidateQueries({ queryKey: queryKeys.jobs })
       await queryClient.invalidateQueries({ queryKey: queryKeys.job(jobId) })
       await queryClient.invalidateQueries({ queryKey: queryKeys.publishCheck(jobId) })

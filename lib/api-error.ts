@@ -9,11 +9,21 @@ type FieldErrorMap<T extends FieldValues> = Partial<Record<string, Path<T>>>
 
 const DEFAULT_FALLBACK_MESSAGE = 'Something went wrong. Please try again.'
 
+/** The API words some messages in lower case ("wrong email or password"); show them as sentences. */
+function capitalize(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
+
 function getApiError(error: unknown): ApiErrorBody['error'] | undefined {
   if (!axios.isAxiosError(error)) return undefined
   const body = error.response?.data as Partial<ApiErrorBody> | undefined
   if (body?.error?.code && body.error?.message) return body.error
   return undefined
+}
+
+/** Whether the API answered 401: no session, or one that has expired. */
+function isUnauthorized(error: unknown): boolean {
+  return axios.isAxiosError(error) && error.response?.status === 401
 }
 
 function getApiErrorDetails(error: unknown): Record<string, unknown> | undefined {
@@ -61,7 +71,7 @@ function applyApiError<T extends FieldValues>(
     return undefined
   }
 
-  return apiError.message || fallbackMessage
+  return capitalize(apiError.message) || fallbackMessage
 }
 
 /**
@@ -77,5 +87,35 @@ function getRetryAfterSeconds(error: unknown): number | undefined {
   return Number.isFinite(raw) && raw > 0 ? Math.ceil(raw) : undefined
 }
 
-export { applyApiError, getApiError, getApiErrorDetails, getFieldErrors, getRetryAfterSeconds }
+/** "45s", "5 min": a wait in seconds as a person would say it. */
+function formatWait(seconds: number): string {
+  if (seconds < 120) return `${seconds}s`
+  return `${Math.ceil(seconds / 60)} min`
+}
+
+const WRONG_CODE_MESSAGE = 'Incorrect code. Check the email and try again.'
+
+/**
+ * A readable message for a failed one-time-code check. The server's wording for
+ * a wrong code is terse ("incorrect otp"), so that code gets a friendlier line;
+ * a 429 says how long to wait; anything else uses the server's own message.
+ */
+function verificationCodeError(error: unknown): string {
+  const apiError = getApiError(error)
+  if (apiError?.code === 'invalid_verification_code') return WRONG_CODE_MESSAGE
+  const retryAfter = getRetryAfterSeconds(error)
+  if (retryAfter) return `Too many attempts. Try again in ${formatWait(retryAfter)}.`
+  return applyApiError(error, undefined, {}, 'Invalid verification code. Please try again.') ?? ''
+}
+
+export {
+  formatWait,
+  verificationCodeError,
+  applyApiError,
+  getApiError,
+  getApiErrorDetails,
+  getFieldErrors,
+  getRetryAfterSeconds,
+  isUnauthorized,
+}
 export type { ApiFieldError, FieldErrorMap }

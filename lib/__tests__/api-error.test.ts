@@ -1,7 +1,12 @@
 import { AxiosError, AxiosHeaders } from 'axios'
 import { describe, expect, it } from 'vitest'
 
-import { getFieldErrors, getRetryAfterSeconds } from '../api-error'
+import {
+  formatWait,
+  getFieldErrors,
+  getRetryAfterSeconds,
+  verificationCodeError,
+} from '../api-error'
 
 function failure(details: Record<string, unknown> | undefined): AxiosError {
   return new AxiosError('bad', 'ERR_BAD_REQUEST', undefined, undefined, {
@@ -55,5 +60,45 @@ describe('getRetryAfterSeconds', () => {
     expect(getRetryAfterSeconds(rateLimited(undefined))).toBeUndefined()
     expect(getRetryAfterSeconds(rateLimited({ retry_after_seconds: 0 }))).toBeUndefined()
     expect(getRetryAfterSeconds(new Error('x'))).toBeUndefined()
+  })
+})
+
+describe('verificationCodeError', () => {
+  function withCode(status: number, code: string, message: string, details?: object): AxiosError {
+    return new AxiosError('bad', 'ERR', undefined, undefined, {
+      status,
+      statusText: '',
+      headers: {},
+      config: { headers: new AxiosHeaders() },
+      data: { error: { code, message, details } },
+    })
+  }
+
+  it('rewrites the terse wrong-code message', () => {
+    expect(verificationCodeError(withCode(400, 'invalid_verification_code', 'incorrect otp'))).toBe(
+      'Incorrect code. Check the email and try again.',
+    )
+  })
+
+  it('names the wait on a 429', () => {
+    expect(
+      verificationCodeError(
+        withCode(429, 'RATE_LIMITED', 'slow down', { retry_after_seconds: 12 }),
+      ),
+    ).toBe('Too many attempts. Try again in 12s.')
+  })
+
+  it('falls back to the server message or a generic line', () => {
+    expect(verificationCodeError(withCode(400, 'EXPIRED', 'code expired'))).toBe('Code expired')
+    expect(verificationCodeError(new Error('x'))).toBe(
+      'Invalid verification code. Please try again.',
+    )
+  })
+})
+
+describe('formatWait', () => {
+  it('uses seconds for short waits and minutes for long ones', () => {
+    expect(formatWait(45)).toBe('45s')
+    expect(formatWait(869)).toBe('15 min')
   })
 })

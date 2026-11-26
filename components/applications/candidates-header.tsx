@@ -22,21 +22,21 @@ interface CandidatesTopBarProps {
 /** The top bar: "Candidates › Marketing Specialist (32)" and the add action, which has no flow yet. */
 function CandidatesTopBar({ title, total }: CandidatesTopBarProps): ReactElement {
   return (
-    <header className="flex h-[44px] shrink-0 items-center justify-between border-b-[0.5px] border-border-transparent-medium pr-[16px] pl-[18px]">
-      <p className="flex min-w-0 items-center gap-[6px] text-body-xs leading-19_2 text-text-secondary">
+    <header className="flex h-[44px] shrink-0 items-center justify-between border-b-[0.5px] border-border-transparent-medium pr-[10px] pl-[18px]">
+      <p className="flex min-w-0 items-center gap-[8px] text-body-xs leading-19_2 text-text-primary">
         <span>Candidates</span>
-        <span aria-hidden="true" className="text-text-tertiary">
+        <span aria-hidden="true" className="text-text-secondary">
           ›
         </span>
-        <span className="truncate text-text-primary">
+        <span className="truncate">
           {title} ({total})
         </span>
       </p>
       <Button
-        variant="tertiary"
-        accent="blue"
+        variant="secondary"
+        accent="default"
         size="sm"
-        iconPrefix={<DashboardIcon name="plus-solid" size={12} />}
+        iconPrefix={<DashboardIcon name="plus-solid" size={14} />}
       >
         Add Candidates
       </Button>
@@ -57,7 +57,7 @@ interface JobHeaderProps {
 function PersonAvatar({ person }: { person: HeaderPerson }): ReactElement {
   return (
     <Avatar
-      size={16}
+      size={14}
       type="initials"
       text={getInitials(person.name)}
       colour={person.colour}
@@ -76,28 +76,43 @@ function JobHeader({
 }: JobHeaderProps): ReactElement {
   return (
     <div className="flex flex-col gap-[6px]">
-      <h1 className="text-body-l leading-24 font-semibold text-text-primary">{title}</h1>
-      {details ? <p className="text-body-xs leading-19_2 text-text-secondary">{details}</p> : null}
-      <div className="flex flex-wrap items-center gap-x-[16px] gap-y-[4px] text-body-xs leading-19_2 text-text-secondary">
+      <h1 className="text-body-xl leading-24 font-semibold text-text-primary">{title}</h1>
+      {details ? (
+        <p className="text-body-s leading-19_5 font-medium text-text-secondary">{details}</p>
+      ) : null}
+      <div className="flex flex-wrap items-center gap-x-[10px] gap-y-[4px] text-body-s leading-19_5 font-medium text-text-secondary">
         {creator ? (
-          <p className="flex items-center gap-[6px]">
+          <p className="flex items-center gap-[10px]">
             <span>Created by:</span>
-            <PersonAvatar person={creator} />
-            <span className="text-text-primary">{creator.name}</span>
+            <span className="flex items-center gap-[4px] rounded-sm-7 bg-bg-transparent-light px-[3px] py-[3px] font-normal text-text-primary">
+              <PersonAvatar person={creator} />
+              {creator.name}
+            </span>
           </p>
         ) : null}
         {reviewers.length > 0 ? (
-          <p className="flex items-center gap-[6px]">
+          <p className="flex items-center gap-[10px]">
             <span>Reviewers:</span>
-            <span className="flex items-center gap-[2px]">
-              {reviewers.map((person) => (
-                <PersonAvatar key={person.name} person={person} />
-              ))}
+            <span className="flex items-center gap-[4px] rounded-sm-7 bg-bg-transparent-light px-[3px] py-[3px] font-normal text-text-primary">
+              <span className="flex items-center">
+                {reviewers.map((person, index) => (
+                  <span key={person.name} className={index > 0 ? '-ml-[4px]' : ''}>
+                    <PersonAvatar person={person} />
+                  </span>
+                ))}
+              </span>
+              {listNames(reviewers.map((p) => p.name))}
             </span>
-            <span className="text-text-primary">{listNames(reviewers.map((p) => p.name))}</span>
           </p>
         ) : null}
-        {publishedOn ? <p>Published on {formatPostedDate(publishedOn)}</p> : null}
+        {publishedOn ? (
+          <>
+            {creator || reviewers.length > 0 ? (
+              <span aria-hidden="true" className="h-[20px] w-px bg-border-transparent-medium" />
+            ) : null}
+            <p>Published on {formatPostedDate(publishedOn)}</p>
+          </>
+        ) : null}
       </div>
     </div>
   )
@@ -109,9 +124,9 @@ function JobHeader({
  */
 function WorkflowBanner(): ReactElement {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-[12px] rounded-lg-10 bg-blue-alpha-5 px-[12px] py-[10px]">
+    <div className="flex w-fit max-w-full flex-wrap items-center justify-between gap-[24px] rounded-lg-10 bg-blue-alpha-5 px-[12px] py-[10px]">
       <div className="flex min-w-0 flex-col gap-[2px]">
-        <p className="text-body-s leading-19_5 font-medium text-text-blue-accent">
+        <p className="text-body-m leading-21 font-medium text-text-primary">
           Automate Applicant review with Workflow
         </p>
         <p className="text-body-xs leading-19_2 text-text-secondary">
@@ -119,7 +134,7 @@ function WorkflowBanner(): ReactElement {
         </p>
       </div>
       <div className="flex shrink-0 items-center gap-[12px]">
-        <TextButton size="sm">Learn more</TextButton>
+        <TextButton size="sm">Learn-more</TextButton>
         <Button variant="secondary" accent="blue" size="sm">
           Create Workflow
         </Button>

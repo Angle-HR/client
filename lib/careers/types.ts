@@ -24,6 +24,11 @@ interface CareersJob {
   location?: string
   workplace: CareersWorkplace
   employmentType: CareersEmploymentType
+  /** Pay as a display string, e.g. "GBP 50,000 - 70,000 per year". Absent when the employer hides it. */
+  pay?: string
+  seniority?: string
+  experience?: string
+  skills?: readonly string[]
   /** Rich text from the hiring team, as HTML. */
   descriptionHtml: string
   /** The application form, in the order the candidate sees it. */
@@ -38,6 +43,8 @@ interface CareersJob {
   state?: 'open' | 'closed' | 'paused' | 'archived'
   /** False once the job takes no more applications. */
   accepting?: boolean
+  /** The employer's privacy notice, when the API sends one. */
+  privacyNoticeUrl?: string
 }
 
 interface CareersJobPage {

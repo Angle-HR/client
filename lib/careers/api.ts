@@ -1,7 +1,13 @@
 import { formFromApi, isChoiceType } from '../jobs/application-form'
 import { toCountryCode } from '../markets'
 
-import type { ApiApplicationBody, ApiPublicJob, ApiPublicJobData, ApiUploadBody } from './api-types'
+import type {
+  ApiApplicationBody,
+  ApiPublicJob,
+  ApiPublicJobData,
+  ApiPublicPay,
+  ApiUploadBody,
+} from './api-types'
 import type { ApplicationAnswers } from './application'
 import type { CareersEmploymentType, CareersJobPage, CareersWorkplace } from './types'
 import type { FormQuestion } from '../jobs/application-form'
@@ -43,6 +49,36 @@ function locationOf(job: ApiPublicJob): string | undefined {
   return first?.city || first?.market_code || undefined
 }
 
+const PAY_PERIOD: Readonly<Record<string, string>> = {
+  hour: 'per hour',
+  hourly: 'per hour',
+  day: 'per day',
+  daily: 'per day',
+  week: 'per week',
+  weekly: 'per week',
+  month: 'per month',
+  monthly: 'per month',
+  year: 'per year',
+  yearly: 'per year',
+  annual: 'per year',
+}
+
+/** The pay as one line. The API sends minor units (pence, cents), so amounts are divided by 100. */
+function payText(pay: ApiPublicPay | undefined): string | undefined {
+  if (!pay || !pay.currency || (pay.min == null && pay.max == null)) return undefined
+  const fmt = (minor: number): string =>
+    (minor / 100).toLocaleString('en-US', { maximumFractionDigits: 2 })
+  const lo = pay.min && pay.min > 0 ? pay.min : undefined
+  const hi = pay.max && pay.max > 0 ? pay.max : undefined
+  const range =
+    lo !== undefined && hi !== undefined && lo !== hi
+      ? `${fmt(lo)} - ${fmt(hi)}`
+      : fmt((hi ?? lo) as number)
+  if (lo === undefined && hi === undefined) return undefined
+  const period = PAY_PERIOD[(pay.period ?? '').toLowerCase()]
+  return `${pay.currency} ${range}${period ? ` ${period}` : ''}`
+}
+
 /**
  * The public job in the shape the careers screens draw. `jobId` is the job's
  * `public_id`, which is what the careers URL carries. Null when the API sent
@@ -60,6 +96,10 @@ function toCareersJobPage(data: ApiPublicJobData, jobId: string): CareersJobPage
       location: locationOf(job),
       workplace: WORKPLACE_FROM_API[job.workplace_type ?? ''] ?? 'On-site',
       employmentType: EMPLOYMENT_FROM_API[job.employment_type ?? ''] ?? 'Full time',
+      pay: payText(job.pay),
+      seniority: job.seniority || undefined,
+      experience: job.experience || undefined,
+      skills: job.skills && job.skills.length > 0 ? job.skills : undefined,
       descriptionHtml: descriptionHtml(job),
       questions: formFromApi({ questions: job.questions }).questions,
       placeholders: {},
@@ -67,6 +107,7 @@ function toCareersJobPage(data: ApiPublicJobData, jobId: string): CareersJobPage
       consentRequired: data.consent_required ?? false,
       state: (data.state as PublicJobState | undefined) ?? 'open',
       accepting: data.accepting ?? true,
+      privacyNoticeUrl: data.privacy_notice_url || undefined,
     },
   }
 }
@@ -91,9 +132,15 @@ interface ApplicationBodyInput {
   market?: string
   consentRequired: boolean
   source?: string
+  /** An ISO country picked from the full list. Wins over `market`. */
+  country?: string
+  /** What the candidate ticked. Absent: the form's legal line stands in for both. */
+  privacyAcknowledged?: boolean
+  consent?: boolean
 }
 
 function candidateCountry(input: ApplicationBodyInput): string | undefined {
+  if (input.country) return input.country
   const market = input.market ?? (input.markets.length === 1 ? input.markets[0] : undefined)
   return market ? toCountryCode(market) : undefined
 }
@@ -118,8 +165,8 @@ function toApplicationBody(input: ApplicationBodyInput): ApiApplicationBody {
     // The API wants the candidate's country as an ISO code, one of the job's markets. A job with one market has no choice.
     candidate_country: candidateCountry(input),
     // The form's legal line is shown above the button, so submitting acknowledges it.
-    privacy_notice_acknowledged: true,
-    consent: input.consentRequired ? true : undefined,
+    privacy_notice_acknowledged: input.privacyAcknowledged ?? true,
+    consent: input.consent ?? (input.consentRequired ? true : undefined),
     source: input.source,
   }
 }
@@ -133,5 +180,5 @@ function toUploadBody(question: FormQuestion, file: File): ApiUploadBody {
   }
 }
 
-export { descriptionHtml, toApplicationBody, toCareersJobPage, toUploadBody }
+export { descriptionHtml, payText, toApplicationBody, toCareersJobPage, toUploadBody }
 export type { ApplicationBodyInput, PublicJobState }

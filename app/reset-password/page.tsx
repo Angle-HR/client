@@ -1,7 +1,7 @@
 'use client'
 
-import { useRouter, useSearchParams } from 'next/navigation'
-import { Suspense, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useEffect, useRef, useState } from 'react'
 
 import { LoginShell } from '@/components/auth/login-shell'
 import {
@@ -17,14 +17,23 @@ const MISSING_TOKEN_MESSAGE =
 
 function ResetPasswordContent() {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const resetPassword = useResetPassword()
   const [formError, setFormError] = useState<string>()
 
-  // The link in the reset email is {APP_URL}/reset-password?token=...
-  const token = searchParams.get('token')?.trim() ?? ''
+  // The link in the reset email is {APP_URL}/reset-password?token=... The token is read once
+  // from the address bar and the URL is cleaned straight away, so it does not stay in the
+  // history, the address bar or a Referer. The page also sends Referrer-Policy: no-referrer.
+  const tokenRef = useRef('')
+  useEffect(() => {
+    const found = new URLSearchParams(window.location.search).get('token')?.trim() ?? ''
+    if (found) {
+      tokenRef.current = found
+      window.history.replaceState(window.history.state, '', window.location.pathname)
+    }
+  }, [])
 
   async function handleContinue(values: ResetPasswordValues) {
+    const token = tokenRef.current
     if (!token) {
       setFormError(MISSING_TOKEN_MESSAGE)
       return
@@ -47,7 +56,7 @@ function ResetPasswordContent() {
     <LoginShell>
       <StepResetPassword
         submitting={resetPassword.isPending}
-        formError={formError ?? (token ? undefined : MISSING_TOKEN_MESSAGE)}
+        formError={formError}
         onContinue={handleContinue}
         onBack={() => router.push('/login')}
       />
@@ -56,11 +65,7 @@ function ResetPasswordContent() {
 }
 
 function ResetPasswordPage() {
-  return (
-    <Suspense fallback={null}>
-      <ResetPasswordContent />
-    </Suspense>
-  )
+  return <ResetPasswordContent />
 }
 
 export default ResetPasswordPage

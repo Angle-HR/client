@@ -17,6 +17,10 @@ interface ComplianceView {
   state: ComplianceState
   /** One line per problem, or the single "No issues found." when there are none. */
   bullets: string[]
+  /** Where to fix each bullet, in step with `bullets` (undefined where there is no page for it). Only set when some bullet has one. */
+  links?: (string | undefined)[]
+  /** A person hiring as themselves: the unverified heading says "your account", not "company account". */
+  individual?: boolean
 }
 
 /** The code the API gives an account that has not been verified yet. */
@@ -25,6 +29,14 @@ const UNVERIFIED_CODE = 'company_not_verified'
 // Copy as drawn: the status rows' sub-text. The API's own wording is not shown.
 const UNVERIFIED_BULLET = 'Unverified account can’t post job'
 const COMPLIANT_BULLET = 'No issues found.'
+
+const COMPANY_SETTINGS_HREF = '/dashboard/settings/company'
+
+/** The page that fixes a blocking issue, for the codes the company can settle outside the job. */
+const FIX_HREF: Record<string, string> = {
+  dpa_not_accepted: COMPANY_SETTINGS_HREF,
+  privacy_contact_missing: COMPANY_SETTINGS_HREF,
+}
 
 function issueText(issue: ApiPublishIssue): string {
   return issue.message?.trim() || issue.code || 'Issue'
@@ -35,18 +47,29 @@ function issueText(issue: ApiPublishIssue): string {
  * unverified company shows only that reason, as drawn; any other blocking
  * issue or warning shows as one bullet each.
  */
-function complianceView(check: ApiPublishCheck | undefined): ComplianceView | null {
+function complianceView(
+  check: ApiPublishCheck | undefined,
+  individual = false,
+): ComplianceView | null {
   if (!check) return null
   const blocking = check.blocking ?? []
   const warnings = check.warnings ?? []
 
   if (blocking.some((issue) => issue.code === UNVERIFIED_CODE)) {
-    return { state: 'unverified', bullets: [UNVERIFIED_BULLET] }
+    return {
+      state: 'unverified',
+      bullets: [UNVERIFIED_BULLET],
+      links: ['/dashboard/verification'],
+      ...(individual ? { individual } : {}),
+    }
   }
   if (blocking.length > 0 || warnings.length > 0) {
+    const issues = [...blocking, ...warnings]
+    const links = issues.map((issue) => (issue.code ? FIX_HREF[issue.code] : undefined))
     return {
       state: 'not-compliant',
-      bullets: [...blocking, ...warnings].map(issueText),
+      bullets: issues.map(issueText),
+      ...(links.some(Boolean) ? { links } : {}),
     }
   }
   return { state: 'compliant', bullets: [COMPLIANT_BULLET] }
