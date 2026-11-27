@@ -6,11 +6,9 @@
 //
 //   node scripts/build-landing.mjs        ->  out-landing/  (sync this to the landing bucket)
 //
-// The marketing landing/waitlist pages are gone: the static site now only holds the legal pages (/terms,
-// /privacy-policy, plus /privacy as an alias). The root `/` is not a page of its own: it is a small redirect document
-// that sends visitors to the app (APP_URL, default https://tryopenhr.com), where signed-in users land on
-// /dashboard and everyone else on /login. Redirect status codes are not available on a static bucket, so this uses
-// a meta refresh with a visible link as the fallback.
+// The static site holds the marketing page at `/` (the landing route, no forms and no API calls) and the legal pages
+// (/terms, /privacy-policy, plus /privacy as an alias). Its buttons link into the app at NEXT_PUBLIC_APP_URL, set at
+// build time (the workflow passes it from the APP_URL variable).
 import { spawnSync } from 'node:child_process'
 import {
   appendFileSync,
@@ -70,7 +68,11 @@ writeFileSync(
 const build = spawnSync('npx', ['next', 'build'], {
   cwd: work,
   stdio: 'inherit',
-  env: { ...process.env, NEXT_TELEMETRY_DISABLED: '1' },
+  env: {
+    ...process.env,
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || '',
+    NEXT_TELEMETRY_DISABLED: '1',
+  },
 })
 if (build.status !== 0) process.exit(build.status ?? 1)
 
@@ -87,24 +89,12 @@ if (!existsSync(join(output, 'privacy-policy', 'index.html'))) {
 mkdirSync(join(output, 'privacy'), { recursive: true })
 cpSync(join(output, 'privacy-policy', 'index.html'), join(output, 'privacy', 'index.html'))
 
-const appUrl = (process.env.APP_URL || 'https://tryopenhr.com').replace(/\/+$/, '')
-writeFileSync(
-  join(output, 'index.html'),
-  `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<title>Open HR</title>
-<meta name="robots" content="noindex">
-<meta http-equiv="refresh" content="0; url=${appUrl}/">
-<link rel="canonical" href="${appUrl}/">
-</head>
-<body>
-<p>Redirecting to <a href="${appUrl}/">Open HR</a>. <a href="/terms/">Terms</a> &middot; <a href="/privacy/">Privacy</a></p>
-<script>location.replace(${JSON.stringify(appUrl + '/')})</script>
-</body>
-</html>
-`,
-)
+// `/` is the marketing page (app/(open-hr)/landing). It is a static page that makes no API calls; its buttons link
+// into the app at NEXT_PUBLIC_APP_URL.
+if (!existsSync(join(output, 'landing', 'index.html'))) {
+  console.error('expected out-landing/landing/index.html')
+  process.exit(1)
+}
+cpSync(join(output, 'landing', 'index.html'), join(output, 'index.html'))
 rmSync(work, { recursive: true, force: true })
 console.log('landing site built in out-landing/')

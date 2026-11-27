@@ -1,9 +1,9 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import { Button } from '@/components/ui/button/button'
+import { appUrl } from '@/lib/app-url'
 
 import { Logo } from './logo'
 
@@ -16,8 +16,7 @@ interface StickyNavProps {
 
 function StickyNav({ sentinelId = 'legal-nav-sentinel' }: StickyNavProps) {
   const [visible, setVisible] = useState(false)
-  const router = useRouter()
-  const goSignup = () => router.push('/signup')
+  const goSignup = () => window.location.assign(appUrl('/signup'))
 
   useEffect(() => {
     const sentinel = document.getElementById(sentinelId)
