@@ -514,6 +514,8 @@ const requests = {
     const { data } = await axiosInstance.post<ApiResponse<ApiAttachment>>(
       ENDPOINTS.jobs.applicationAttachments(jobId, appId),
       form,
+      // The client's default is JSON; a form needs its own type, with the boundary the browser adds.
+      { headers: { 'Content-Type': 'multipart/form-data' } },
     )
     return toAttachment(data.data)
   },
