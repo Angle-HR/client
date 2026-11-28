@@ -162,6 +162,11 @@ function ScheduleInterviewDialog({
           label="Interviewers"
           multiple
           placeholder="Choose from the job's team"
+          helperText={
+            members.data && members.data.length === 0
+              ? "No one is on this job's team yet. Add people to the job to pick interviewers."
+              : undefined
+          }
           options={(members.data ?? [])
             .filter((member) => member.user_id)
             .map((member) => ({
