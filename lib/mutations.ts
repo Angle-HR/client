@@ -9,6 +9,7 @@ import { requests } from './requests'
 import type { ApplicationStatus } from './applications/api'
 import type { ApplicationDecision } from './applications/api-types'
 import type { InterviewBody, MessageBody, OfferBody } from './applications/communications'
+import type { PublicOffer } from './applications/offers'
 import type { ApplicationAnswers } from './careers/application'
 import type { CareersJob } from './careers/types'
 import type { ApiRulesBody } from './compliance/api-types'
@@ -61,7 +62,12 @@ function useDeclineOffer(token: string) {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (reason?: string) => requests.declinePublicOffer(token, reason),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.publicOffer(token) }),
+    // A declined offer's link stops answering, so a refetch would say "not available" right after
+    // the candidate answered. Keep what they read and mark it declined.
+    onSuccess: () =>
+      queryClient.setQueryData<PublicOffer>(queryKeys.publicOffer(token), (offer) =>
+        offer ? { ...offer, status: 'declined', canRespond: false } : offer,
+      ),
   })
 }
 
