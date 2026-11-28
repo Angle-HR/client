@@ -115,6 +115,10 @@ function toCareersJobPage(data: ApiPublicJobData, jobId: string): CareersJobPage
 /** A question's answer as the API takes it. Files are replaced by upload tokens before this runs. */
 function answerToApi(question: FormQuestion, value: string | string[] | number): unknown {
   if (typeof value === 'number') return value
+  // The server wants E.164 ("+447700900123"); people type spaces, dashes and brackets.
+  if (question.type === 'phone_number' && typeof value === 'string') {
+    return value.replace(/[\s().-]/g, '')
+  }
   if (!isChoiceType(question.type)) return value
   // The form holds the option labels the candidate saw; the API wants the option ids.
   const idOf = (label: string): string =>

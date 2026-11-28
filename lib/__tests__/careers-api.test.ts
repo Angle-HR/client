@@ -91,6 +91,17 @@ describe('toApplicationBody', () => {
     })
   })
 
+  it('strips spaces, dashes and brackets from a phone number so it is E.164', () => {
+    const body = toApplicationBody({
+      questions: [question({ key: 'p', id: 'p', type: 'phone_number' })],
+      answers: { p: '+44 (7700) 900-123' },
+      uploads: {},
+      markets: ['UK'],
+      consentRequired: false,
+    })
+    expect(body.answers).toEqual({ p: '+447700900123' })
+  })
+
   it('sends the candidate country as an ISO code, the picked market when the job has several', () => {
     const base = { questions: [], answers: {}, uploads: {}, consentRequired: false }
     expect(
