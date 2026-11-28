@@ -4,12 +4,14 @@ import { type ReactElement } from 'react'
 
 import { CandidateRowMenu } from '@/components/applications/candidate-row-menu'
 import { StageChip } from '@/components/applications/stage-chip'
+import { TagPill } from '@/components/applications/tag-pill'
 import { DashboardIcon } from '@/components/dashboard/nav-config'
 import { Checkbox } from '@/components/ui'
-import { stageOfStatus, type DesignStage } from '@/lib/applications/stages'
+import { findStage } from '@/lib/applications/stages'
 import { marketName } from '@/lib/markets'
 
 import type { Applicant } from '@/lib/applications/api'
+import type { PipelineStage, Tag } from '@/lib/applications/pipeline'
 
 const DATE = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
 
@@ -36,10 +38,17 @@ const COLUMNS = [
 
 interface CandidatesTableProps {
   rows: Applicant[]
+  stages: ReadonlyArray<PipelineStage>
+  tags: ReadonlyArray<Tag>
   selectedId: string | null
-  onOpen: (id: string) => void
+  /** The rows ticked for a bulk move. */
+  checked: ReadonlySet<string>
+  onCheck: (id: string, checked: boolean) => void
+  onCheckAll: (checked: boolean) => void
+  onOpen: (id: string, tab?: 'communications' | 'notes', action?: 'compose' | 'schedule') => void
   /** A stage picked from a row's menu. */
-  onPick: (row: Applicant, stage: DesignStage) => void
+  onPick: (row: Applicant, stage: PipelineStage) => void
+  onToggleFollow: (row: Applicant) => void
   onDownloadCv: (row: Applicant) => void
   /** Whether the signed-in person may move or disqualify this job's applications. */
   canDecide: boolean
@@ -48,9 +57,15 @@ interface CandidatesTableProps {
 /** The applicants of the job: one row each, and a click on a row opens its overview. */
 function CandidatesTable({
   rows,
+  stages,
+  tags,
   selectedId,
+  checked,
+  onCheck,
+  onCheckAll,
   onOpen,
   onPick,
+  onToggleFollow,
   onDownloadCv,
   canDecide,
 }: CandidatesTableProps): ReactElement {
@@ -64,9 +79,13 @@ function CandidatesTable({
           role="columnheader"
           className={`${COLUMNS[0].className} flex shrink-0 items-center gap-[8px] pl-[2px] ${cellText}`}
         >
-          {/* The chevron is not drawn at rest (10670:729402); it only holds the column's indent. */}
-          <span className="invisible inline-flex" aria-hidden="true">
-            <DashboardIcon name="chev-down-solid" size={10} />
+          <span className="flex shrink-0 items-center px-[3px]">
+            <Checkbox
+              size="sm"
+              aria-label="Select every candidate"
+              checked={rows.length > 0 && rows.every((row) => checked.has(row.id))}
+              onChange={(event) => onCheckAll(event.target.checked)}
+            />
           </span>
           {COLUMNS[0].label}
         </span>
@@ -84,7 +103,9 @@ function CandidatesTable({
         </span>
       </div>
       {rows.map((row) => {
-        const stage = stageOfStatus(row.status)
+        const stage = findStage(stages, row.stageId)
+        const isChecked = checked.has(row.id)
+        const rowTags = tags.filter((tag) => row.tagIds.includes(tag.id))
         const selected = row.id === selectedId
         const name = row.name || row.email
         return (
@@ -100,16 +121,15 @@ function CandidatesTable({
             className={`group flex h-[40px] shrink-0 cursor-pointer items-center gap-[2px] px-[12px] transition-colors ${selected ? 'bg-bg-transparent-light' : 'hover:bg-bg-transparent-light'}`}
           >
             <div role="cell" className="flex min-w-[261px] flex-1 items-center gap-[4px]">
-              {/* The checkbox shows on the hovered or open row only, as drawn. No bulk action
-                  exists yet, so it does nothing. */}
+              {/* The checkbox shows on the hovered or open row, and on every row once one is ticked. */}
               <span
-                className={`flex shrink-0 items-center px-[3px] ${selected ? 'visible' : 'invisible group-hover:visible'}`}
+                className={`flex shrink-0 items-center px-[3px] ${selected || isChecked || checked.size > 0 ? 'visible' : 'invisible group-hover:visible'}`}
               >
                 <Checkbox
                   size="sm"
                   aria-label={`Select ${name}`}
-                  checked={false}
-                  onChange={() => undefined}
+                  checked={isChecked}
+                  onChange={(event) => onCheck(row.id, event.target.checked)}
                 />
               </span>
               <button
@@ -119,9 +139,27 @@ function CandidatesTable({
               >
                 {name}
               </button>
+              {row.isNew ? (
+                <span className="shrink-0 rounded-xs-4 bg-bg-avatar-blue px-[4px] text-caption-m leading-17_6 text-text-avatar-blue">
+                  New
+                </span>
+              ) : null}
+              {row.followed ? (
+                <span className="inline-flex shrink-0 text-text-secondary" title="Following">
+                  <DashboardIcon name="star-solid" size={10} />
+                </span>
+              ) : null}
+              {rowTags.slice(0, 2).map((tag) => (
+                <TagPill key={tag.id} tag={tag} />
+              ))}
+              {rowTags.length > 2 ? (
+                <span className="shrink-0 text-caption-m text-text-secondary">
+                  +{rowTags.length - 2}
+                </span>
+              ) : null}
             </div>
             <div role="cell" className="flex w-[124px] shrink-0 items-center px-[10px]">
-              {stage ? <StageChip stage={stage} /> : null}
+              {stage ? <StageChip kind={stage.kind} name={stage.name} /> : null}
             </div>
             <div role="cell" className={`w-[110px] shrink-0 px-[12px] ${cellText}`}>
               {formatDate(row.submittedAt)}
@@ -135,8 +173,13 @@ function CandidatesTable({
             <div role="cell" className="flex w-[32px] shrink-0 items-center justify-center">
               <CandidateRowMenu
                 row={row}
+                stages={stages}
                 onView={() => onOpen(row.id)}
                 onPick={(stage) => onPick(row, stage)}
+                onAddNote={() => onOpen(row.id, 'notes')}
+                onCompose={() => onOpen(row.id, 'communications', 'compose')}
+                onSchedule={() => onOpen(row.id, 'communications', 'schedule')}
+                onToggleFollow={() => onToggleFollow(row)}
                 onDownloadCv={() => onDownloadCv(row)}
                 canDecide={canDecide}
               />

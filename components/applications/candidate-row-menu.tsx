@@ -5,9 +5,10 @@ import { createPortal } from 'react-dom'
 
 import { StageAvatar } from '@/components/applications/stage-chip'
 import { DashboardIcon } from '@/components/dashboard/nav-config'
-import { moveOptionsFor, type DesignStage } from '@/lib/applications/stages'
+import { moveOptionsFor } from '@/lib/applications/stages'
 
 import type { Applicant } from '@/lib/applications/api'
+import type { PipelineStage } from '@/lib/applications/pipeline'
 
 interface RowMenuItemProps {
   icon?: ReactNode
@@ -51,9 +52,14 @@ function RowMenuItem({
 
 interface CandidateRowMenuProps {
   row: Applicant
+  stages: ReadonlyArray<PipelineStage>
   onView: () => void
-  /** Picks a stage from the submenu. Disqualified opens the dialog; Hired moves at once. */
-  onPick: (stage: DesignStage) => void
+  /** Picks a stage from the submenu. Disqualified opens the dialog; the rest move at once. */
+  onPick: (stage: PipelineStage) => void
+  onAddNote: () => void
+  onCompose: () => void
+  onSchedule: () => void
+  onToggleFollow: () => void
   onDownloadCv: () => void
   /** Whether the signed-in person may move or disqualify this job's applications. */
   canDecide: boolean
@@ -66,8 +72,13 @@ interface CandidateRowMenuProps {
  */
 function CandidateRowMenu({
   row,
+  stages,
   onView,
   onPick,
+  onAddNote,
+  onCompose,
+  onSchedule,
+  onToggleFollow,
   onDownloadCv,
   canDecide,
 }: CandidateRowMenuProps): ReactElement {
@@ -123,10 +134,8 @@ function CandidateRowMenu({
   // The list does not say who opened a flagged application, so Disqualify is offered; the
   // server refuses it for anyone but the last opener, and that refusal shows as an error.
   // Move to and Disqualify need a decider on the job; the design draws them disabled otherwise (01).
-  const options = moveOptionsFor(row.status, true).map((option) => ({
-    ...option,
-    enabled: option.enabled && canDecide,
-  }))
+  const options = moveOptionsFor(stages, { status: row.status, stageId: row.stageId }, canDecide)
+  const disqualify = options.find((option) => option.stage.kind === 'disqualified')
 
   return (
     <>
@@ -168,19 +177,13 @@ function CandidateRowMenu({
                   </li>
                   {options.map((option) => (
                     <RowMenuItem
-                      key={option.stage}
-                      label={option.label}
+                      key={option.stage.id}
+                      label={option.stage.name}
                       disabled={!option.enabled}
-                      icon={<StageAvatar stage={option.stage} menu />}
+                      icon={<StageAvatar kind={option.stage.kind} menu />}
                       onClick={() => choose(() => onPick(option.stage))}
                     />
                   ))}
-                  {/* No server stages to add, so this is drawn only. */}
-                  <RowMenuItem
-                    label="Add new stage"
-                    disabled
-                    icon={<DashboardIcon name="plus-solid" size={13} />}
-                  />
                 </>
               ) : (
                 <>
@@ -191,12 +194,14 @@ function CandidateRowMenu({
                   />
                   <RowMenuItem
                     label="Send email"
-                    disabled
+                    disabled={!canDecide}
+                    onClick={() => choose(onCompose)}
                     icon={<DashboardIcon name="envelope-solid" size={13} />}
                   />
                   <RowMenuItem
                     label="Schedule interview"
-                    disabled
+                    disabled={!canDecide}
+                    onClick={() => choose(onSchedule)}
                     icon={<DashboardIcon name="calendar-solid" size={13} />}
                   />
                   <RowMenuItem
@@ -208,19 +213,24 @@ function CandidateRowMenu({
                   />
                   <RowMenuItem
                     label="Disqualify…"
-                    disabled={!options.find((option) => option.stage === 'disqualified')?.enabled}
+                    disabled={!disqualify?.enabled}
                     icon={<DashboardIcon name="minus-circle-solid" size={13} />}
-                    onClick={() => choose(() => onPick('disqualified'))}
+                    onClick={() => disqualify && choose(() => onPick(disqualify.stage))}
                   />
                   <RowMenuItem
                     label="Add note"
-                    disabled
+                    onClick={() => choose(onAddNote)}
                     icon={<DashboardIcon name="pencil-square-solid" size={13} />}
                   />
                   <RowMenuItem
-                    label="Follow"
-                    disabled
-                    icon={<DashboardIcon name="user-plus-solid" size={13} />}
+                    label={row.followed ? 'Unfollow' : 'Follow'}
+                    onClick={() => choose(onToggleFollow)}
+                    icon={
+                      <DashboardIcon
+                        name={row.followed ? 'user-minus-solid' : 'user-plus-solid'}
+                        size={13}
+                      />
+                    }
                   />
                   <RowMenuItem
                     label="Download CV"

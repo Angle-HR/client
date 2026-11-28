@@ -6,11 +6,10 @@ import { StageAvatar } from '@/components/applications/stage-chip'
 import { DashboardIcon } from '@/components/dashboard/nav-config'
 import { Button } from '@/components/ui'
 
-import type { DesignStage } from '@/lib/applications/stages'
+import type { PipelineStage } from '@/lib/applications/pipeline'
 
 interface MoveToOption {
-  stage: DesignStage
-  label: string
+  stage: PipelineStage
   enabled: boolean
 }
 
@@ -18,16 +17,19 @@ interface MoveToMenuProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   options: MoveToOption[]
-  onPick: (stage: DesignStage) => void
+  onPick: (stage: PipelineStage) => void
+  /** Opens the add-a-stage form; omitted when the person cannot manage stages. */
+  onAddStage?: () => void
   disabled: boolean
 }
 
-/** The Move to menu: every design stage, with the ones the server cannot reach disabled. */
+/** The Move to menu: the job's stages, with the ones this application cannot reach disabled. */
 function MoveToMenu({
   open,
   onOpenChange,
   options,
   onPick,
+  onAddStage,
   disabled,
 }: MoveToMenuProps): ReactElement {
   const wrapper = useRef<HTMLDivElement>(null)
@@ -75,7 +77,7 @@ function MoveToMenu({
             </span>
           </li>
           {options.map((option) => (
-            <li key={option.stage} role="none">
+            <li key={option.stage.id} role="none">
               <button
                 type="button"
                 role="menuitem"
@@ -86,18 +88,21 @@ function MoveToMenu({
                 }}
                 className="flex h-[24px] w-full items-center gap-[6px] rounded-sm-7 px-[6px] text-left text-body-s leading-19_5 text-text-secondary transition-colors hover:bg-bg-transparent-light disabled:cursor-not-allowed disabled:text-text-tertiary disabled:hover:bg-transparent"
               >
-                <StageAvatar stage={option.stage} menu />
-                {option.label}
+                <StageAvatar kind={option.stage.kind} menu />
+                <span className="truncate">{option.stage.name}</span>
               </button>
             </li>
           ))}
-          {/* No server stages to add, so this is drawn only. */}
           <li role="none">
             <button
               type="button"
               role="menuitem"
-              disabled
-              className="flex h-[24px] w-full items-center gap-[6px] rounded-sm-7 px-[6px] text-left text-body-s leading-19_5 text-text-tertiary"
+              disabled={!onAddStage}
+              onClick={() => {
+                onOpenChange(false)
+                onAddStage?.()
+              }}
+              className="flex h-[24px] w-full items-center gap-[6px] rounded-sm-7 px-[6px] text-left text-body-s leading-19_5 text-text-secondary transition-colors hover:bg-bg-transparent-light disabled:cursor-not-allowed disabled:text-text-tertiary disabled:hover:bg-transparent"
             >
               <DashboardIcon name="plus-solid" size={13} />
               Add new stage

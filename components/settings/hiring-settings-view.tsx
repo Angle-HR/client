@@ -2,16 +2,18 @@
 
 import { useState, type ReactElement, type ReactNode } from 'react'
 
+import { TemplatesSettings } from '@/components/settings/templates-settings'
 import { Tabs, Toggle, type TabOption } from '@/components/ui'
 import { getApiError } from '@/lib/api-error'
 import { useSetApplicantSettings, useSetAutomatedScreening } from '@/lib/mutations'
 import { useApplicantSettings, useHiringSettings } from '@/lib/queries'
 
-type SettingsTab = 'hiring' | 'candidates'
+type SettingsTab = 'hiring' | 'candidates' | 'templates'
 
 const TABS: TabOption<SettingsTab>[] = [
   { key: 'hiring', label: 'Hiring' },
   { key: 'candidates', label: 'Candidates' },
+  { key: 'templates', label: 'Email & offers' },
 ]
 
 /** The months a reapply block runs for when it is on. The API takes 0 or 6. */
@@ -60,7 +62,9 @@ function HiringSettingsView(): ReactElement {
       <h1 className="text-body-xl leading-24 font-semibold text-text-primary">Hiring settings</h1>
       <Tabs tabs={TABS} value={tab} onValueChange={setTab} aria-label="Settings" />
 
-      {tab === 'hiring' ? (
+      {tab === 'templates' ? (
+        <TemplatesSettings />
+      ) : tab === 'hiring' ? (
         hiring.data ? (
           <Row
             title="Automated screening"

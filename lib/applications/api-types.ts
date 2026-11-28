@@ -22,12 +22,18 @@ interface ApiApplicationSummary {
   /** False until somebody opens the application. */
   opened?: boolean
   submitted_at?: string
+  stage_id?: string
+  followed?: boolean
+  note_count?: number
+  tag_ids?: string[]
 }
 
 /** `GET /jobs/{id}/applications`: one page, newest first. `counts` are for the whole job. */
 interface ApiApplicationPage {
   items?: ApiApplicationSummary[]
   counts?: Record<string, number>
+  /** Applications per stage id, for the whole job. */
+  stage_counts?: Record<string, number>
   next_cursor?: string
 }
 
@@ -72,6 +78,8 @@ interface ApiApplicationDetail extends ApiApplicationSummary {
   privacy_notice_version?: string
   form_version?: number
   retention_until?: string
+  disqualify_reason?: string
+  tags?: Array<{ id?: string; name?: string; color?: string }>
 }
 
 /** What the filters of the list take. `status` may be repeated. */
@@ -80,6 +88,11 @@ interface ApplicationListQuery {
   source?: string
   q?: string
   new?: boolean
+  /** A stage id. */
+  stage?: string
+  /** A tag id. */
+  tag?: string
+  followed?: boolean
   limit?: number
 }
 

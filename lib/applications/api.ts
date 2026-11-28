@@ -1,3 +1,5 @@
+import { toTag, type Tag } from './pipeline'
+
 import type {
   ApiApplicationAnswer,
   ApiApplicationDetail,
@@ -39,6 +41,10 @@ interface Applicant {
   hasFiles: boolean
   isNew: boolean
   submittedAt: string
+  stageId: string
+  followed: boolean
+  noteCount: number
+  tagIds: string[]
 }
 
 interface ApplicantAnswer {
@@ -70,6 +76,9 @@ interface ApplicantDetail extends Applicant {
   consentGivenAt: string
   retentionUntil: string
   reviewNote: string
+  /** The code of the reason it was disqualified for. */
+  disqualifyReason: string
+  tags: Tag[]
 }
 
 function toStatus(status: string | undefined): ApplicationStatus {
@@ -90,6 +99,10 @@ function toApplicant(row: ApiApplicationSummary): Applicant {
     hasFiles: row.has_files ?? false,
     isNew: row.opened === false,
     submittedAt: row.submitted_at ?? '',
+    stageId: row.stage_id ?? '',
+    followed: row.followed ?? false,
+    noteCount: row.note_count ?? 0,
+    tagIds: row.tag_ids ?? [],
   }
 }
 
@@ -134,6 +147,8 @@ function toApplicantDetail(row: ApiApplicationDetail): ApplicantDetail {
     consentGivenAt: row.consent_given_at ?? '',
     retentionUntil: row.retention_until ?? '',
     reviewNote: row.review?.note ?? '',
+    disqualifyReason: row.disqualify_reason ?? '',
+    tags: (row.tags ?? []).map(toTag),
   }
 }
 
@@ -147,6 +162,9 @@ function applicationListParams(
   if (query.source) params.source = query.source
   if (query.q?.trim()) params.q = query.q.trim()
   if (query.new) params.new = true
+  if (query.stage) params.stage = query.stage
+  if (query.tag) params.tag = query.tag
+  if (query.followed) params.followed = true
   if (query.limit) params.limit = query.limit
   if (cursor) params.cursor = cursor
   return params

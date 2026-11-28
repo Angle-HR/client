@@ -5,15 +5,17 @@ import { useEffect, useRef, useState, type ReactElement } from 'react'
 import { NoteField, ReasonField } from '@/components/applications/disqualify-dialog'
 import { DashboardIcon } from '@/components/dashboard/nav-config'
 import { Button, Checkbox, TextButton } from '@/components/ui'
-import { disqualifyNote, reasonNeedsNote } from '@/lib/applications/stages'
+import { reasonNeedsNote, type DisqualifyReason } from '@/lib/applications/pipeline'
+import { disqualifyNote } from '@/lib/applications/stages'
 
 interface DisqualifyPopoverProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   disabled: boolean
+  reasons: ReadonlyArray<DisqualifyReason>
   sendEmails: boolean | undefined
   pending: boolean
-  onConfirm: (note: string) => void
+  onConfirm: (decision: { reason: string; note: string }) => void
 }
 
 /**
@@ -25,6 +27,7 @@ function DisqualifyPopover({
   open,
   onOpenChange,
   disabled,
+  reasons,
   sendEmails,
   pending,
   onConfirm,
@@ -56,20 +59,31 @@ function DisqualifyPopover({
         Disqualify
       </Button>
       {open ? (
-        <DisqualifyForm sendEmails={sendEmails} pending={pending} onConfirm={onConfirm} />
+        <DisqualifyForm
+          reasons={reasons}
+          sendEmails={sendEmails}
+          pending={pending}
+          onConfirm={onConfirm}
+        />
       ) : null}
     </div>
   )
 }
 
 interface DisqualifyFormProps {
+  reasons: ReadonlyArray<DisqualifyReason>
   sendEmails: boolean | undefined
   pending: boolean
-  onConfirm: (note: string) => void
+  onConfirm: (decision: { reason: string; note: string }) => void
 }
 
 /** The popover's contents, mounted only while it is open. */
-function DisqualifyForm({ sendEmails, pending, onConfirm }: DisqualifyFormProps): ReactElement {
+function DisqualifyForm({
+  reasons,
+  sendEmails,
+  pending,
+  onConfirm,
+}: DisqualifyFormProps): ReactElement {
   const [reason, setReason] = useState('')
   const [note, setNote] = useState('')
   const [noteOpen, setNoteOpen] = useState(false)
@@ -84,14 +98,16 @@ function DisqualifyForm({ sendEmails, pending, onConfirm }: DisqualifyFormProps)
           <div className="flex items-start justify-between gap-[8px]">
             <div className="flex min-w-0 flex-col gap-[2px]">
               <p className="text-body-xs leading-19_2 text-text-secondary">Reason</p>
-              <p className="text-body-s leading-19_5 font-medium text-text-primary">{reason}</p>
+              <p className="text-body-s leading-19_5 font-medium text-text-primary">
+                {reasons.find((item) => item.code === reason)?.label ?? reason}
+              </p>
             </div>
             <TextButton size="sm" onClick={() => setReason('')}>
               Change
             </TextButton>
           </div>
         ) : (
-          <ReasonField value={reason} onChange={setReason} />
+          <ReasonField value={reason} reasons={reasons} onChange={setReason} />
         )}
 
         {/* Drawn with the company's setting only: no template, schedule or preview. */}
@@ -122,7 +138,7 @@ function DisqualifyForm({ sendEmails, pending, onConfirm }: DisqualifyFormProps)
           size="sm"
           disabled={blocked || pending}
           loading={pending}
-          onClick={() => onConfirm(disqualifyNote(reason, note))}
+          onClick={() => onConfirm({ reason, note: disqualifyNote(note) })}
         >
           Disqualify
         </Button>

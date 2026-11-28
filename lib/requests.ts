@@ -3,6 +3,17 @@ import axios from 'axios'
 import { axiosInstance } from '@/config/axios'
 
 import { applicationListParams, toApplicant, toApplicantDetail } from './applications/api'
+import {
+  toAttachment,
+  toEmailTemplate,
+  toInterview,
+  toMessage,
+  toOffer,
+  toOfferEvent,
+  toOfferTemplate,
+} from './applications/communications'
+import { toPublicOffer } from './applications/offers'
+import { toActivity, toNote, toReason, toStage, toTag } from './applications/pipeline'
 import { toApplicationBody, toCareersJobPage, toUploadBody } from './careers/api'
 import { CAREERS_FIXTURES } from './careers/fixtures'
 import { ENDPOINTS } from './endpoints'
@@ -17,6 +28,38 @@ import type {
   ApplicationDecision,
   ApplicationListQuery,
 } from './applications/api-types'
+import type {
+  ApiAttachment,
+  ApiInterview,
+  ApiMessage,
+  ApiOffer,
+  ApiOfferEvent,
+  ApiOfferTemplate,
+  ApiEmailTemplate,
+  Attachment,
+  EmailTemplate,
+  Interview,
+  InterviewBody,
+  Message,
+  MessageBody,
+  Offer,
+  OfferBody,
+  OfferEvent,
+  OfferTemplate,
+} from './applications/communications'
+import type { ApiPublicOffer, PublicOffer } from './applications/offers'
+import type {
+  ActivityItem,
+  ApiActivityPage,
+  ApiNote,
+  ApiReason,
+  ApiStage,
+  ApiTag,
+  DisqualifyReason,
+  Note,
+  PipelineStage,
+  Tag,
+} from './applications/pipeline'
 import type { ApiApplicationReceipt, ApiPublicJobData, ApiUploadTarget } from './careers/api-types'
 import type { ApplicationAnswers } from './careers/application'
 import type { CareersJob, CareersJobPage, CareersPage } from './careers/types'
@@ -341,7 +384,12 @@ const requests = {
     jobId: string,
     query: ApplicationListQuery = {},
     cursor?: string,
-  ): Promise<{ items: Applicant[]; counts: Record<string, number>; nextCursor?: string }> => {
+  ): Promise<{
+    items: Applicant[]
+    counts: Record<string, number>
+    stageCounts: Record<string, number>
+    nextCursor?: string
+  }> => {
     const { data } = await axiosInstance.get<ApiResponse<ApiApplicationPage>>(
       ENDPOINTS.jobs.applications(jobId),
       { params: applicationListParams(query, cursor) },
@@ -349,6 +397,7 @@ const requests = {
     return {
       items: (data.data.items ?? []).map(toApplicant),
       counts: data.data.counts ?? {},
+      stageCounts: data.data.stage_counts ?? {},
       nextCursor: data.data.next_cursor || undefined,
     }
   },
@@ -377,7 +426,12 @@ const requests = {
   reviewApplication: async (
     jobId: string,
     appId: string,
-    body: { decision: ApplicationDecision; note?: string },
+    body: {
+      decision: ApplicationDecision
+      reason?: string
+      note?: string
+      message?: MessageBody
+    },
   ): Promise<ApiApplicationResult> => {
     const { data } = await axiosInstance.post<ApiResponse<ApiApplicationResult>>(
       ENDPOINTS.jobs.applicationReview(jobId, appId),
@@ -397,6 +451,450 @@ const requests = {
       body,
     )
     return data.data
+  },
+
+  /** The emails written to an application's candidate, newest first. */
+  getApplicationEmails: async (jobId: string, appId: string): Promise<Message[]> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiMessage[]>>(
+      ENDPOINTS.jobs.applicationEmails(jobId, appId),
+    )
+    return (data.data ?? []).map(toMessage)
+  },
+
+  /** Writes to the candidate now or later. The recipient is the application's candidate. */
+  sendApplicationEmail: async (
+    jobId: string,
+    appId: string,
+    body: MessageBody,
+  ): Promise<Message> => {
+    const { data } = await axiosInstance.post<ApiResponse<ApiMessage>>(
+      ENDPOINTS.jobs.applicationEmails(jobId, appId),
+      body,
+    )
+    return toMessage(data.data)
+  },
+
+  /** The message as the candidate would get it, placeholders filled in. */
+  previewApplicationEmail: async (
+    jobId: string,
+    appId: string,
+    body: MessageBody,
+  ): Promise<{ subject: string; body: string }> => {
+    const { data } = await axiosInstance.post<ApiResponse<{ subject?: string; body?: string }>>(
+      ENDPOINTS.jobs.applicationEmailPreview(jobId, appId),
+      body,
+    )
+    return { subject: data.data.subject ?? '', body: data.data.body ?? '' }
+  },
+
+  cancelApplicationEmail: async (
+    jobId: string,
+    appId: string,
+    messageId: string,
+  ): Promise<void> => {
+    await axiosInstance.delete(ENDPOINTS.jobs.applicationEmail(jobId, appId, messageId))
+  },
+
+  /** Files uploaded to the application and not yet sent. */
+  getApplicationAttachments: async (jobId: string, appId: string): Promise<Attachment[]> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiAttachment[]>>(
+      ENDPOINTS.jobs.applicationAttachments(jobId, appId),
+    )
+    return (data.data ?? []).map(toAttachment)
+  },
+
+  /** Uploads one file (the server checks its type, size and content). */
+  uploadApplicationAttachment: async (
+    jobId: string,
+    appId: string,
+    file: File,
+  ): Promise<Attachment> => {
+    const form = new FormData()
+    form.append('file', file)
+    const { data } = await axiosInstance.post<ApiResponse<ApiAttachment>>(
+      ENDPOINTS.jobs.applicationAttachments(jobId, appId),
+      form,
+    )
+    return toAttachment(data.data)
+  },
+
+  deleteApplicationAttachment: async (
+    jobId: string,
+    appId: string,
+    attachmentId: string,
+  ): Promise<void> => {
+    await axiosInstance.delete(ENDPOINTS.jobs.applicationAttachment(jobId, appId, attachmentId))
+  },
+
+  getEmailTemplates: async (): Promise<EmailTemplate[]> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiEmailTemplate[]>>(
+      ENDPOINTS.hiring.emailTemplates(),
+    )
+    return (data.data ?? []).map(toEmailTemplate)
+  },
+
+  saveEmailTemplate: async (
+    id: string | null,
+    body: { name: string; subject: string; body: string },
+  ): Promise<EmailTemplate> => {
+    const { data } = id
+      ? await axiosInstance.put<ApiResponse<ApiEmailTemplate>>(
+          ENDPOINTS.hiring.emailTemplate(id),
+          body,
+        )
+      : await axiosInstance.post<ApiResponse<ApiEmailTemplate>>(
+          ENDPOINTS.hiring.emailTemplates(),
+          body,
+        )
+    return toEmailTemplate(data.data)
+  },
+
+  deleteEmailTemplate: async (id: string): Promise<void> => {
+    await axiosInstance.delete(ENDPOINTS.hiring.emailTemplate(id))
+  },
+
+  getEmailSettings: async (): Promise<{ replyTo: string }> => {
+    const { data } = await axiosInstance.get<ApiResponse<{ reply_to?: string }>>(
+      ENDPOINTS.hiring.emailSettings(),
+    )
+    return { replyTo: data.data.reply_to ?? '' }
+  },
+
+  setEmailSettings: async (replyTo: string): Promise<{ replyTo: string }> => {
+    const { data } = await axiosInstance.put<ApiResponse<{ reply_to?: string }>>(
+      ENDPOINTS.hiring.emailSettings(),
+      { reply_to: replyTo },
+    )
+    return { replyTo: data.data.reply_to ?? '' }
+  },
+
+  getApplicationInterviews: async (jobId: string, appId: string): Promise<Interview[]> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiInterview[]>>(
+      ENDPOINTS.jobs.applicationInterviews(jobId, appId),
+    )
+    return (data.data ?? []).map(toInterview)
+  },
+
+  scheduleInterview: async (
+    jobId: string,
+    appId: string,
+    body: InterviewBody,
+  ): Promise<Interview> => {
+    const { data } = await axiosInstance.post<ApiResponse<ApiInterview>>(
+      ENDPOINTS.jobs.applicationInterviews(jobId, appId),
+      body,
+    )
+    return toInterview(data.data)
+  },
+
+  /** Reschedules or edits an interview. Only what is sent changes. */
+  updateInterview: async (
+    jobId: string,
+    appId: string,
+    interviewId: string,
+    body: Partial<InterviewBody>,
+  ): Promise<Interview> => {
+    const { data } = await axiosInstance.patch<ApiResponse<ApiInterview>>(
+      ENDPOINTS.jobs.applicationInterview(jobId, appId, interviewId),
+      body,
+    )
+    return toInterview(data.data)
+  },
+
+  /** Cancels or completes: `notify` also emails the candidate a cancellation. */
+  closeInterview: async (
+    jobId: string,
+    appId: string,
+    interviewId: string,
+    action: 'cancel' | 'complete',
+    body?: { note?: string; notify?: boolean },
+  ): Promise<Interview> => {
+    const { data } = await axiosInstance.post<ApiResponse<ApiInterview>>(
+      `${ENDPOINTS.jobs.applicationInterview(jobId, appId, interviewId)}/${action}`,
+      body ?? {},
+    )
+    return toInterview(data.data)
+  },
+
+  getApplicationOffers: async (jobId: string, appId: string): Promise<Offer[]> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiOffer[]>>(
+      ENDPOINTS.jobs.applicationOffers(jobId, appId),
+    )
+    return (data.data ?? []).map(toOffer)
+  },
+
+  createOffer: async (jobId: string, appId: string, body: OfferBody): Promise<Offer> => {
+    const { data } = await axiosInstance.post<ApiResponse<ApiOffer>>(
+      ENDPOINTS.jobs.applicationOffers(jobId, appId),
+      body,
+    )
+    return toOffer(data.data)
+  },
+
+  updateOffer: async (
+    jobId: string,
+    appId: string,
+    offerId: string,
+    body: Partial<Pick<OfferBody, 'title' | 'body' | 'compensation' | 'start_date'>>,
+  ): Promise<Offer> => {
+    const { data } = await axiosInstance.patch<ApiResponse<ApiOffer>>(
+      ENDPOINTS.jobs.applicationOffer(jobId, appId, offerId),
+      body,
+    )
+    return toOffer(data.data)
+  },
+
+  /** Sends a draft, or sends a sent offer again with a new expiry. */
+  sendOffer: async (
+    jobId: string,
+    appId: string,
+    offerId: string,
+    expiresInDays?: number,
+  ): Promise<Offer> => {
+    const { data } = await axiosInstance.post<ApiResponse<ApiOffer>>(
+      `${ENDPOINTS.jobs.applicationOffer(jobId, appId, offerId)}/send`,
+      { expires_in_days: expiresInDays },
+    )
+    return toOffer(data.data)
+  },
+
+  withdrawOffer: async (jobId: string, appId: string, offerId: string): Promise<void> => {
+    await axiosInstance.post(`${ENDPOINTS.jobs.applicationOffer(jobId, appId, offerId)}/withdraw`)
+  },
+
+  getOfferAudit: async (jobId: string, appId: string, offerId: string): Promise<OfferEvent[]> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiOfferEvent[]>>(
+      `${ENDPOINTS.jobs.applicationOffer(jobId, appId, offerId)}/audit`,
+    )
+    return (data.data ?? []).map(toOfferEvent)
+  },
+
+  /** A link to the signed PDF of an offer. It works for five minutes. */
+  getOfferDocumentLink: async (
+    jobId: string,
+    appId: string,
+    offerId: string,
+  ): Promise<ApiFileLink> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiFileLink>>(
+      `${ENDPOINTS.jobs.applicationOffer(jobId, appId, offerId)}/document`,
+    )
+    return data.data
+  },
+
+  getOfferTemplates: async (): Promise<OfferTemplate[]> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiOfferTemplate[]>>(
+      ENDPOINTS.hiring.offerTemplates(),
+    )
+    return (data.data ?? []).map(toOfferTemplate)
+  },
+
+  saveOfferTemplate: async (
+    id: string | null,
+    body: { name: string; body: string },
+  ): Promise<OfferTemplate> => {
+    const { data } = id
+      ? await axiosInstance.put<ApiResponse<ApiOfferTemplate>>(
+          ENDPOINTS.hiring.offerTemplate(id),
+          body,
+        )
+      : await axiosInstance.post<ApiResponse<ApiOfferTemplate>>(
+          ENDPOINTS.hiring.offerTemplates(),
+          body,
+        )
+    return toOfferTemplate(data.data)
+  },
+
+  deleteOfferTemplate: async (id: string): Promise<void> => {
+    await axiosInstance.delete(ENDPOINTS.hiring.offerTemplate(id))
+  },
+
+  /** An offer by the token in its link. Opening it is recorded as a view. */
+  getPublicOffer: async (token: string): Promise<PublicOffer> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiPublicOffer>>(
+      ENDPOINTS.public.offer(token),
+    )
+    return toPublicOffer(data.data)
+  },
+
+  /** Signs with a typed full name and the consent. The date is the server's. */
+  signPublicOffer: async (
+    token: string,
+    body: { full_name: string; consent: boolean },
+  ): Promise<PublicOffer> => {
+    const { data } = await axiosInstance.post<ApiResponse<ApiPublicOffer>>(
+      ENDPOINTS.public.offerSign(token),
+      body,
+    )
+    return toPublicOffer(data.data)
+  },
+
+  declinePublicOffer: async (token: string, reason?: string): Promise<void> => {
+    await axiosInstance.post(ENDPOINTS.public.offerDecline(token), { reason })
+  },
+
+  /** A link to the signed PDF. It works for five minutes. */
+  getPublicOfferDocument: async (token: string): Promise<ApiFileLink> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiFileLink>>(
+      ENDPOINTS.public.offerDocument(token),
+    )
+    return data.data
+  },
+
+  /** The job's pipeline: its stages in order, each with how many applications it holds. */
+  getStages: async (jobId: string): Promise<PipelineStage[]> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiStage[]>>(ENDPOINTS.jobs.stages(jobId))
+    return (data.data ?? []).map(toStage)
+  },
+
+  /** Adds a custom stage before Hired. Returns the new stage. */
+  createStage: async (jobId: string, name: string): Promise<PipelineStage> => {
+    const { data } = await axiosInstance.post<ApiResponse<ApiStage>>(ENDPOINTS.jobs.stages(jobId), {
+      name,
+    })
+    return toStage(data.data)
+  },
+
+  renameStage: async (jobId: string, stageId: string, name: string): Promise<PipelineStage[]> => {
+    const { data } = await axiosInstance.patch<ApiResponse<ApiStage[]>>(
+      ENDPOINTS.jobs.stage(jobId, stageId),
+      { name },
+    )
+    return (data.data ?? []).map(toStage)
+  },
+
+  /** Removes a custom stage. The server refuses while applications are in it. */
+  deleteStage: async (jobId: string, stageId: string): Promise<void> => {
+    await axiosInstance.delete(ENDPOINTS.jobs.stage(jobId, stageId))
+  },
+
+  /** Puts the open stages in this order. */
+  reorderStages: async (jobId: string, stageIds: string[]): Promise<PipelineStage[]> => {
+    const { data } = await axiosInstance.put<ApiResponse<ApiStage[]>>(
+      ENDPOINTS.jobs.stagesOrder(jobId),
+      { stage_ids: stageIds },
+    )
+    return (data.data ?? []).map(toStage)
+  },
+
+  /**
+   * Moves an application to a stage. Hired and Disqualified decide it, and
+   * Disqualified needs a reason code.
+   */
+  moveApplicationStage: async (
+    jobId: string,
+    appId: string,
+    body: { stage_id: string; reason?: string; note?: string; message?: MessageBody },
+  ): Promise<ApiApplicationResult & { stage_id?: string }> => {
+    const { data } = await axiosInstance.post<
+      ApiResponse<ApiApplicationResult & { stage_id?: string }>
+    >(ENDPOINTS.jobs.applicationStage(jobId, appId), body)
+    return data.data
+  },
+
+  /** Moves several applications at once. Each answers on its own: some may be refused. */
+  bulkMoveStage: async (
+    jobId: string,
+    body: {
+      application_ids: string[]
+      stage_id: string
+      reason?: string
+      note?: string
+      message?: MessageBody
+    },
+  ): Promise<Array<{ applicationId: string; ok: boolean; reason: string }>> => {
+    const { data } = await axiosInstance.post<
+      ApiResponse<Array<{ application_id?: string; ok?: boolean; reason?: string }>>
+    >(ENDPOINTS.jobs.bulkStage(jobId), body)
+    return (data.data ?? []).map((item) => ({
+      applicationId: item.application_id ?? '',
+      ok: item.ok ?? false,
+      reason: item.reason ?? '',
+    }))
+  },
+
+  getApplicationNotes: async (jobId: string, appId: string): Promise<Note[]> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiNote[]>>(
+      ENDPOINTS.jobs.applicationNotes(jobId, appId),
+    )
+    return (data.data ?? []).map(toNote)
+  },
+
+  addApplicationNote: async (jobId: string, appId: string, body: string): Promise<Note> => {
+    const { data } = await axiosInstance.post<ApiResponse<ApiNote>>(
+      ENDPOINTS.jobs.applicationNotes(jobId, appId),
+      { body },
+    )
+    return toNote(data.data)
+  },
+
+  editApplicationNote: async (
+    jobId: string,
+    appId: string,
+    noteId: string,
+    body: string,
+  ): Promise<Note> => {
+    const { data } = await axiosInstance.patch<ApiResponse<ApiNote>>(
+      ENDPOINTS.jobs.applicationNote(jobId, appId, noteId),
+      { body },
+    )
+    return toNote(data.data)
+  },
+
+  deleteApplicationNote: async (jobId: string, appId: string, noteId: string): Promise<void> => {
+    await axiosInstance.delete(ENDPOINTS.jobs.applicationNote(jobId, appId, noteId))
+  },
+
+  /** The company's tags. */
+  getTags: async (): Promise<Tag[]> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiTag[]>>(ENDPOINTS.hiring.tags())
+    return (data.data ?? []).map(toTag)
+  },
+
+  createTag: async (body: { name: string; color: string }): Promise<Tag> => {
+    const { data } = await axiosInstance.post<ApiResponse<ApiTag>>(ENDPOINTS.hiring.tags(), body)
+    return toTag(data.data)
+  },
+
+  deleteTag: async (tagId: string): Promise<void> => {
+    await axiosInstance.delete(ENDPOINTS.hiring.tag(tagId))
+  },
+
+  /** Replaces an application's tags with these. Returns the tags it now has. */
+  setApplicationTags: async (jobId: string, appId: string, tagIds: string[]): Promise<Tag[]> => {
+    const { data } = await axiosInstance.put<ApiResponse<ApiTag[]>>(
+      ENDPOINTS.jobs.applicationTags(jobId, appId),
+      { tag_ids: tagIds },
+    )
+    return (data.data ?? []).map(toTag)
+  },
+
+  followApplication: async (jobId: string, appId: string, follow: boolean): Promise<void> => {
+    const url = ENDPOINTS.jobs.applicationFollow(jobId, appId)
+    if (follow) await axiosInstance.put(url)
+    else await axiosInstance.delete(url)
+  },
+
+  /** One page of an application's timeline, newest first. */
+  getApplicationActivity: async (
+    jobId: string,
+    appId: string,
+    cursor?: string,
+  ): Promise<{ items: ActivityItem[]; nextCursor?: string }> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiActivityPage>>(
+      ENDPOINTS.jobs.applicationActivity(jobId, appId),
+      { params: cursor ? { cursor } : undefined },
+    )
+    return {
+      items: (data.data.items ?? []).map(toActivity),
+      nextCursor: data.data.next_cursor || undefined,
+    }
+  },
+
+  getDisqualificationReasons: async (): Promise<DisqualifyReason[]> => {
+    const { data } = await axiosInstance.get<ApiResponse<ApiReason[]>>(
+      ENDPOINTS.hiring.disqualificationReasons(),
+    )
+    return (data.data ?? []).map(toReason)
   },
 
   /** The gates that apply to the job, with where each stands. */

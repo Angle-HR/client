@@ -2,9 +2,16 @@
 
 import { useEffect, useState, type ReactElement } from 'react'
 
+import { CandidateActivity } from '@/components/applications/candidate-activity'
+import { CandidateCommunications } from '@/components/applications/candidate-communications'
+import { CandidateNotes } from '@/components/applications/candidate-notes'
 import { CandidateOverview, formatDateTime } from '@/components/applications/candidate-overview'
+import { CandidateTags } from '@/components/applications/candidate-tags'
+import { ComposeDialog } from '@/components/applications/compose-dialog'
 import { DisqualifyPopover } from '@/components/applications/disqualify-popover'
 import { MoveToMenu } from '@/components/applications/move-to-menu'
+import { OfferDialog } from '@/components/applications/offer-dialog'
+import { ScheduleInterviewDialog } from '@/components/applications/schedule-interview-dialog'
 import { ShortcutsDialog } from '@/components/applications/shortcuts-dialog'
 import { StageChip } from '@/components/applications/stage-chip'
 import { DashboardIcon } from '@/components/dashboard/nav-config'
@@ -12,19 +19,19 @@ import { Avatar, Button, IconButton, Tabs, getInitials } from '@/components/ui'
 import { currentRoleFromAnswers } from '@/lib/applications/contact'
 import {
   disqualifyPlan,
+  findStage,
   moveOptionsFor,
-  stageLabel,
-  stageOfStatus,
   type CandidateTarget,
-  type DesignStage,
 } from '@/lib/applications/stages'
 import { useApplication } from '@/lib/queries'
 
 import type { Applicant } from '@/lib/applications/api'
+import type { Interview, Offer } from '@/lib/applications/communications'
+import type { DisqualifyReason, PipelineStage } from '@/lib/applications/pipeline'
 
 type PanelTab = 'overview' | 'communications' | 'notes' | 'activity'
 
-/** The tabs as the design draws them. Only Overview has content yet. */
+/** The tabs as the design draws them. Communications waits for the email flow. */
 const PANEL_TABS: ReadonlyArray<{ key: PanelTab; label: string }> = [
   { key: 'overview', label: 'Overview' },
   { key: 'communications', label: 'Communications' },
@@ -43,6 +50,12 @@ interface CandidatePanelProps {
   appId: string
   /** The loaded rows of the table, which the arrows and the count walk through. */
   rows: Applicant[]
+  stages: ReadonlyArray<PipelineStage>
+  reasons: ReadonlyArray<DisqualifyReason>
+  /** The tab it opens on: Notes when it was opened from "Add note". */
+  initialTab?: PanelTab
+  /** Opens this form at once: from a row's menu, or after choosing to send the offer when moving to Offer. */
+  initialAction?: 'compose' | 'schedule' | 'offer'
   onOpen: (appId: string) => void
   onClose: () => void
   onError: (cause: unknown) => void
@@ -52,9 +65,23 @@ interface CandidatePanelProps {
   pending: boolean
   /** Whether the signed-in person may move or disqualify this job's applications. */
   canDecide: boolean
-  onPick: (target: CandidateTarget, stage: DesignStage) => void
-  onDisqualify: (target: CandidateTarget, note: string) => void
+  /** Whether the person may create company tags. */
+  canCreateTags: boolean
+  onPick: (target: CandidateTarget, stage: PipelineStage) => void
+  onDisqualify: (target: CandidateTarget, decision: { reason: string; note: string }) => void
+  onToggleFollow: (appId: string, follow: boolean) => void
+  onDownloadCv: (appId: string) => void
+  /** The job's title, for an offer's heading. */
+  jobTitle: string
+  /** Says something went well: a toast. */
+  onNotify: (message: string) => void
 }
+
+/** The write-to-the-candidate dialogs the header buttons and the Communications tab open. */
+type PanelDialog =
+  | { kind: 'compose' }
+  | { kind: 'schedule'; interview?: Interview }
+  | { kind: 'offer'; draft?: Offer }
 
 /**
  * One candidate over the page: the stage, the actions, and the overview. The
@@ -65,37 +92,51 @@ function CandidatePanel({
   jobId,
   appId,
   rows,
+  stages,
+  reasons,
+  initialTab = 'overview',
+  initialAction,
   onOpen,
   onClose,
   onError,
   sendEmails,
   pending,
   canDecide,
+  canCreateTags,
   onPick,
   onDisqualify,
+  onToggleFollow,
+  onDownloadCv,
+  jobTitle,
+  onNotify,
 }: CandidatePanelProps): ReactElement {
   const application = useApplication(jobId, appId)
   const detail = application.data
   const row = rows.find((item) => item.id === appId)
   const status = detail?.status ?? row?.status
-  const stage: DesignStage | null = status ? stageOfStatus(status) : null
-  const group = stage ? rows.filter((item) => stageOfStatus(item.status) === stage) : []
+  const stageId = detail?.stageId ?? row?.stageId
+  const stage = findStage(stages, stageId)
+  const group = stage ? rows.filter((item) => item.stageId === stage.id) : []
   const index = group.findIndex((item) => item.id === appId)
   const previousId = index > 0 ? group[index - 1]?.id : undefined
   const nextId = index >= 0 && index < group.length - 1 ? group[index + 1]?.id : undefined
 
-  const [tab, setTab] = useState<PanelTab>('overview')
+  const [tab, setTab] = useState<PanelTab>(initialTab)
   const [moveOpen, setMoveOpen] = useState(false)
   const [disqualifyOpen, setDisqualifyOpen] = useState(false)
   const [shortcutsOpen, setShortcutsOpen] = useState(false)
+  const [dialog, setDialog] = useState<PanelDialog | null>(
+    initialAction ? { kind: initialAction } : null,
+  )
   const name = detail?.name || row?.name || row?.email || ''
   const role = detail ? currentRoleFromAnswers(detail.answers) : { role: '', company: '' }
   // The decision is made for this candidate; canDecide is only known once the detail loads.
   const target: CandidateTarget | null = status
-    ? { id: appId, name, status, canDecide: detail?.canDecide ?? false }
+    ? { id: appId, name, status, stageId: stageId ?? '', canDecide: detail?.canDecide ?? false }
     : null
+  const followed = detail?.followed ?? row?.followed ?? false
 
-  const moveOptions = target ? moveOptionsFor(target.status, target.canDecide) : []
+  const moveOptions = target ? moveOptionsFor(stages, target, canDecide) : []
   const canDisqualify = target ? disqualifyPlan(target.status, target.canDecide) !== null : false
   // D opens the Disqualify popover only where the button would be enabled (01, 03).
   const canOpenDisqualify = canDecide && canDisqualify
@@ -169,7 +210,7 @@ function CandidatePanel({
             {index >= 0 && stage ? (
               <>
                 {index + 1} of {group.length} in{' '}
-                <span className="font-medium text-text-primary">{stageLabel(stage)}</span> Stage
+                <span className="font-medium text-text-primary">{stage.name}</span> Stage
               </>
             ) : null}
           </p>
@@ -215,7 +256,7 @@ function CandidatePanel({
             onClick={() => nextId && onOpen(nextId)}
             icon={<DashboardIcon name="chevron-right-solid" size={14} />}
           />
-          {stage ? <StageChip stage={stage} /> : null}
+          {stage ? <StageChip kind={stage.kind} name={stage.name} /> : null}
           <div className="ml-auto flex items-center gap-[2px]">
             {/* Drawn with no flow behind them yet. Their tooltips are the design's copy. */}
             <IconButton
@@ -223,6 +264,8 @@ function CandidatePanel({
               size="md"
               aria-label="Mail"
               title="Mail"
+              disabled={!canDecide}
+              onClick={() => setDialog({ kind: 'compose' })}
               icon={<DashboardIcon name="envelope-solid" size={14} />}
             />
             <IconButton
@@ -230,6 +273,8 @@ function CandidatePanel({
               size="md"
               aria-label="Schedule event"
               title="Schedule event"
+              disabled={!canDecide}
+              onClick={() => setDialog({ kind: 'schedule' })}
               icon={<DashboardIcon name="calendar-days-solid" size={14} />}
             />
             <IconButton
@@ -237,6 +282,7 @@ function CandidatePanel({
               size="md"
               aria-label="Add comment"
               title="Add comment"
+              onClick={() => setTab('notes')}
               icon={<DashboardIcon name="chat-bubble-oval-left-solid" size={14} />}
             />
             <IconButton
@@ -244,20 +290,22 @@ function CandidatePanel({
               size="md"
               aria-label="Download CV"
               title="Download CV"
+              onClick={() => onDownloadCv(appId)}
               icon={<DashboardIcon name="arrow-down-tray-outline" size={14} />}
             />
             <IconButton
               variant="tertiary"
               size="md"
-              aria-label="Star"
-              title="Star"
-              icon={<DashboardIcon name="star-outline" size={14} />}
+              aria-label={followed ? 'Unfollow' : 'Follow'}
+              title={followed ? 'Unfollow' : 'Follow'}
+              onClick={() => onToggleFollow(appId, !followed)}
+              icon={<DashboardIcon name={followed ? 'star-solid' : 'star-outline'} size={14} />}
             />
             <IconButton
               variant="tertiary"
               size="md"
               aria-label="More actions"
-              title="Add new stage"
+              title="More actions"
               icon={<DashboardIcon name="ellipsis-horizontal-solid" size={14} />}
             />
           </div>
@@ -278,11 +326,12 @@ function CandidatePanel({
                 open={disqualifyOpen}
                 onOpenChange={setDisqualifyOpen}
                 disabled={!target || !canDisqualify || !canDecide}
+                reasons={reasons}
                 sendEmails={sendEmails}
                 pending={pending}
-                onConfirm={(note) => {
+                onConfirm={(decision) => {
                   setDisqualifyOpen(false)
-                  if (target) onDisqualify(target, note)
+                  if (target) onDisqualify(target, decision)
                 }}
               />
               <MoveToMenu
@@ -307,11 +356,17 @@ function CandidatePanel({
                   <h2 className="truncate text-body-xl leading-24 font-semibold text-text-primary">
                     {name}
                   </h2>
-                  {/* Drawn with no follow behind it yet. */}
-                  <span className="flex shrink-0 items-center gap-[2px] px-[6px] py-[6px] text-body-s leading-19_5 text-text-secondary">
-                    <DashboardIcon name="user-plus-solid" size={11} />
-                    Follow
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() => onToggleFollow(appId, !followed)}
+                    className="flex shrink-0 items-center gap-[2px] rounded-sm-7 px-[6px] py-[6px] text-body-s leading-19_5 text-text-secondary transition-colors hover:bg-bg-transparent-light"
+                  >
+                    <DashboardIcon
+                      name={followed ? 'user-minus-solid' : 'user-plus-solid'}
+                      size={11}
+                    />
+                    {followed ? 'Unfollow' : 'Follow'}
+                  </button>
                 </div>
                 {detail ? (
                   <p className="flex items-center gap-[4px] text-caption-m leading-17_6 text-text-secondary">
@@ -324,6 +379,16 @@ function CandidatePanel({
                     <DashboardIcon name="briefcase-outline" size={10} />
                     {[role.role, role.company].filter(Boolean).join(' · ')}
                   </p>
+                ) : null}
+                {detail ? (
+                  <CandidateTags
+                    jobId={jobId}
+                    appId={appId}
+                    applied={detail.tags}
+                    canEdit={canDecide}
+                    canCreate={canCreateTags}
+                    onError={onError}
+                  />
                 ) : null}
               </div>
             </div>
@@ -342,14 +407,70 @@ function CandidatePanel({
               </p>
             ) : detail && tab === 'overview' ? (
               <CandidateOverview jobId={jobId} detail={detail} onError={onError} />
+            ) : tab === 'communications' ? (
+              <CandidateCommunications
+                jobId={jobId}
+                appId={appId}
+                canAct={canDecide}
+                canOffer={status === 'in_review'}
+                onCompose={() => setDialog({ kind: 'compose' })}
+                onSchedule={(interview) => setDialog({ kind: 'schedule', interview })}
+                onOffer={(draft) => setDialog({ kind: 'offer', draft })}
+                onNotify={onNotify}
+                onError={onError}
+              />
+            ) : tab === 'notes' ? (
+              <CandidateNotes jobId={jobId} appId={appId} onError={onError} />
+            ) : tab === 'activity' ? (
+              <CandidateActivity jobId={jobId} appId={appId} />
             ) : null}
           </div>
         </div>
       </aside>
       <ShortcutsDialog open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
+      {dialog?.kind === 'compose' ? (
+        <ComposeDialog
+          jobId={jobId}
+          appId={appId}
+          candidateName={name}
+          candidateEmail={detail?.email ?? row?.email ?? ''}
+          onClose={() => setDialog(null)}
+          onSent={(message) => {
+            setTab('communications')
+            onNotify(message)
+          }}
+        />
+      ) : null}
+      {dialog?.kind === 'schedule' ? (
+        <ScheduleInterviewDialog
+          jobId={jobId}
+          appId={appId}
+          candidateName={name}
+          interview={dialog.interview}
+          onClose={() => setDialog(null)}
+          onDone={(message) => {
+            setTab('communications')
+            onNotify(message)
+          }}
+        />
+      ) : null}
+      {dialog?.kind === 'offer' ? (
+        <OfferDialog
+          jobId={jobId}
+          appId={appId}
+          candidateName={name}
+          jobTitle={jobTitle}
+          draft={dialog.draft}
+          onClose={() => setDialog(null)}
+          onDone={(message) => {
+            setTab('communications')
+            onNotify(message)
+          }}
+        />
+      ) : null}
     </>
   )
 }
 
 export { CandidatePanel }
-export type { CandidatePanelProps }
+export type { CandidatePanelProps, PanelTab }

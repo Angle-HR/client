@@ -2,9 +2,13 @@
 
 import { type ReactElement } from 'react'
 
+import { FilterMenu, type CandidateFilters } from '@/components/applications/filter-menu'
 import { DashboardIcon } from '@/components/dashboard/nav-config'
 import { Tabs, TextButton, TextInput } from '@/components/ui'
-import { STAGE_TABS, tabCount, type StageTab } from '@/lib/applications/stages'
+
+
+import type { Tag } from '@/lib/applications/pipeline'
+import type { StageTab, StageTabItem } from '@/lib/applications/stages'
 
 // The bar actions from the jobs page: grey until hovered, and never bold.
 const barAction =
@@ -13,30 +17,35 @@ const barAction =
 interface CandidatesToolbarProps {
   tab: StageTab
   onTabChange: (tab: StageTab) => void
-  counts: Record<string, number>
+  tabs: StageTabItem[]
+  /** Opens the add-a-stage form; omitted when the person cannot manage stages. */
+  onAddStage?: () => void
+  /** Opens the stage manager; omitted when the person cannot manage stages. */
+  onManageStages?: () => void
+  tags: ReadonlyArray<Tag>
+  filters: CandidateFilters
+  onFiltersChange: (value: CandidateFilters) => void
   search: string
   onSearchChange: (value: string) => void
   onToggleSort: () => void
 }
 
 /**
- * The stage tabs with their counts, Filter and Sort, and the search box. Filter
- * has no flow in the design yet, so it is drawn and inert.
+ * The stage tabs with their counts, Stages, Filter and Sort, and the search box.
  */
 function CandidatesToolbar({
   tab,
   onTabChange,
-  counts,
+  tabs,
+  onAddStage,
+  onManageStages,
+  tags,
+  filters,
+  onFiltersChange,
   search,
   onSearchChange,
   onToggleSort,
 }: CandidatesToolbarProps): ReactElement {
-  const tabs = STAGE_TABS.map((option) => ({
-    key: option.key,
-    label: option.label,
-    count: tabCount(option.key, counts),
-  }))
-
   return (
     <div className="flex flex-col gap-[12px]">
       <Tabs
@@ -46,20 +55,30 @@ function CandidatesToolbar({
         aria-label="Candidate stage"
         trailing={
           <div className="flex items-center gap-[2px]">
-            {/* The add-tab control is drawn after the tabs; it has no flow yet. */}
-            <button
-              type="button"
-              aria-label="Add new stage"
-              className="inline-flex h-[24px] w-[24px] items-center justify-center rounded-sm-6 text-text-secondary hover:bg-bg-transparent-light hover:text-text-primary"
-            >
-              <DashboardIcon name="plus-solid" size={14} />
-            </button>
-            <TextButton size="sm" className={barAction}>
-              <span className="flex items-center gap-[2px] leading-none">
-                <DashboardIcon name="funnel-outline" size={11} />
-                Filter
-              </span>
-            </TextButton>
+            {onAddStage ? (
+              <button
+                type="button"
+                aria-label="Add new stage"
+                onClick={onAddStage}
+                className="inline-flex h-[24px] w-[24px] items-center justify-center rounded-sm-6 text-text-secondary hover:bg-bg-transparent-light hover:text-text-primary"
+              >
+                <DashboardIcon name="plus-solid" size={14} />
+              </button>
+            ) : null}
+            {onManageStages ? (
+              <TextButton size="sm" className={barAction} onClick={onManageStages}>
+                <span className="flex items-center gap-[2px] leading-none">
+                  <DashboardIcon name="adjustments-horizontal-solid" size={11} />
+                  Stages
+                </span>
+              </TextButton>
+            ) : null}
+            <FilterMenu
+              tags={tags}
+              value={filters}
+              onChange={onFiltersChange}
+              className={barAction}
+            />
             <TextButton size="sm" className={barAction} onClick={onToggleSort}>
               <span className="flex items-center gap-[2px] leading-none">
                 <DashboardIcon name="bars-arrow-up-solid" size={10} />

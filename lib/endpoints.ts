@@ -50,12 +50,44 @@ const ENDPOINTS = {
       `/jobs/${id}/applications/${appId}/files/${fileId}`,
     applicationReview: (id: string, appId: string) => `/jobs/${id}/applications/${appId}/review`,
     applicationStatus: (id: string, appId: string) => `/jobs/${id}/applications/${appId}/status`,
+    stages: (id: string) => `/jobs/${id}/stages`,
+    stagesOrder: (id: string) => `/jobs/${id}/stages/order`,
+    stage: (id: string, stageId: string) => `/jobs/${id}/stages/${stageId}`,
+    applicationStage: (id: string, appId: string) => `/jobs/${id}/applications/${appId}/stage`,
+    bulkStage: (id: string) => `/jobs/${id}/applications/bulk/stage`,
+    applicationNotes: (id: string, appId: string) => `/jobs/${id}/applications/${appId}/notes`,
+    applicationNote: (id: string, appId: string, noteId: string) =>
+      `/jobs/${id}/applications/${appId}/notes/${noteId}`,
+    applicationTags: (id: string, appId: string) => `/jobs/${id}/applications/${appId}/tags`,
+    applicationFollow: (id: string, appId: string) => `/jobs/${id}/applications/${appId}/follow`,
+    applicationActivity: (id: string, appId: string) =>
+      `/jobs/${id}/applications/${appId}/activity`,
+    applicationEmails: (id: string, appId: string) => `/jobs/${id}/applications/${appId}/emails`,
+    applicationEmail: (id: string, appId: string, messageId: string) =>
+      `/jobs/${id}/applications/${appId}/emails/${messageId}`,
+    applicationEmailPreview: (id: string, appId: string) =>
+      `/jobs/${id}/applications/${appId}/emails/preview`,
+    applicationAttachments: (id: string, appId: string) =>
+      `/jobs/${id}/applications/${appId}/email-attachments`,
+    applicationAttachment: (id: string, appId: string, attachmentId: string) =>
+      `/jobs/${id}/applications/${appId}/email-attachments/${attachmentId}`,
+    applicationInterviews: (id: string, appId: string) =>
+      `/jobs/${id}/applications/${appId}/interviews`,
+    applicationInterview: (id: string, appId: string, interviewId: string) =>
+      `/jobs/${id}/applications/${appId}/interviews/${interviewId}`,
+    applicationOffers: (id: string, appId: string) => `/jobs/${id}/applications/${appId}/offers`,
+    applicationOffer: (id: string, appId: string, offerId: string) =>
+      `/jobs/${id}/applications/${appId}/offers/${offerId}`,
   },
   /** No sign-in. The id is the job's `public_id`. */
   public: {
     job: (publicId: string) => `/public/jobs/${publicId}`,
     applications: (publicId: string) => `/public/jobs/${publicId}/applications`,
     uploads: (publicId: string) => `/public/jobs/${publicId}/uploads`,
+    offer: (token: string) => `/public/offers/${token}`,
+    offerSign: (token: string) => `/public/offers/${token}/sign`,
+    offerDecline: (token: string) => `/public/offers/${token}/decline`,
+    offerDocument: (token: string) => `/public/offers/${token}/document`,
   },
   organization: {
     agreements: () => '/organization/agreements',
@@ -71,6 +103,15 @@ const ENDPOINTS = {
     me: () => '/hiring/me',
     settings: () => '/hiring/settings',
     applicantSettings: () => '/hiring/applicant-settings',
+    tags: () => '/hiring/tags',
+    tag: (id: string) => `/hiring/tags/${id}`,
+    disqualificationReasons: () => '/hiring/disqualification-reasons',
+    emailTemplates: () => '/hiring/email-templates',
+    emailTemplate: (id: string) => `/hiring/email-templates/${id}`,
+    emailSettings: () => '/hiring/email-settings',
+    offerTemplates: () => '/hiring/offer-templates',
+    offerTemplate: (id: string) => `/hiring/offer-templates/${id}`,
+    myInterviews: () => '/hiring/interviews/mine',
     people: () => '/hiring/people',
     catalog: () => '/hiring/catalog',
     departments: () => '/hiring/departments',

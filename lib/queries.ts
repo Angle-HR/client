@@ -135,6 +135,114 @@ function useApplications(jobId: string, query: ApplicationListQuery = {}, enable
   })
 }
 
+/** An offer by its link token. A 404 means the link is unknown or has ended, so it is not retried. */
+function usePublicOffer(token: string) {
+  return useQuery({
+    queryKey: queryKeys.publicOffer(token),
+    queryFn: () => requests.getPublicOffer(token),
+    enabled: Boolean(token),
+    retry: false,
+    refetchOnWindowFocus: false,
+  })
+}
+
+/** The emails written to a candidate. */
+function useApplicationEmails(jobId: string, appId: string | null, enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.emails(jobId, appId ?? ''),
+    queryFn: () => requests.getApplicationEmails(jobId, appId ?? ''),
+    enabled: Boolean(jobId) && Boolean(appId) && enabled,
+  })
+}
+
+/** Files uploaded for the next email and not yet sent. */
+function useApplicationAttachments(jobId: string, appId: string | null, enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.attachments(jobId, appId ?? ''),
+    queryFn: () => requests.getApplicationAttachments(jobId, appId ?? ''),
+    enabled: Boolean(jobId) && Boolean(appId) && enabled,
+  })
+}
+
+function useApplicationInterviews(jobId: string, appId: string | null, enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.interviews(jobId, appId ?? ''),
+    queryFn: () => requests.getApplicationInterviews(jobId, appId ?? ''),
+    enabled: Boolean(jobId) && Boolean(appId) && enabled,
+  })
+}
+
+function useApplicationOffers(jobId: string, appId: string | null, enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.offers(jobId, appId ?? ''),
+    queryFn: () => requests.getApplicationOffers(jobId, appId ?? ''),
+    enabled: Boolean(jobId) && Boolean(appId) && enabled,
+  })
+}
+
+function useOfferAudit(jobId: string, appId: string, offerId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.offerAudit(jobId, appId, offerId ?? ''),
+    queryFn: () => requests.getOfferAudit(jobId, appId, offerId ?? ''),
+    enabled: Boolean(offerId),
+  })
+}
+
+function useEmailTemplates() {
+  return useQuery({ queryKey: queryKeys.emailTemplates, queryFn: requests.getEmailTemplates })
+}
+
+function useEmailSettings() {
+  return useQuery({ queryKey: queryKeys.emailSettings, queryFn: requests.getEmailSettings })
+}
+
+function useOfferTemplates() {
+  return useQuery({ queryKey: queryKeys.offerTemplates, queryFn: requests.getOfferTemplates })
+}
+
+/** A job's pipeline stages, in order, with how many applications each holds. */
+function useStages(jobId: string) {
+  return useQuery({
+    queryKey: queryKeys.stages(jobId),
+    queryFn: () => requests.getStages(jobId),
+    enabled: Boolean(jobId),
+  })
+}
+
+/** An application's notes. Skipped until one is picked or the tab is open. */
+function useApplicationNotes(jobId: string, appId: string | null, enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.notes(jobId, appId ?? ''),
+    queryFn: () => requests.getApplicationNotes(jobId, appId ?? ''),
+    enabled: Boolean(jobId) && Boolean(appId) && enabled,
+  })
+}
+
+/** An application's timeline, a page at a time, newest first. */
+function useApplicationActivity(jobId: string, appId: string | null, enabled = true) {
+  return useInfiniteQuery({
+    queryKey: queryKeys.activity(jobId, appId ?? ''),
+    queryFn: ({ pageParam }) => requests.getApplicationActivity(jobId, appId ?? '', pageParam),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (page) => page.nextCursor,
+    enabled: Boolean(jobId) && Boolean(appId) && enabled,
+  })
+}
+
+/** The company's tags. */
+function useTags() {
+  return useQuery({ queryKey: queryKeys.tags, queryFn: requests.getTags })
+}
+
+/** The reasons a candidate can be disqualified for. They rarely change. */
+function useDisqualificationReasons() {
+  return useQuery({
+    queryKey: queryKeys.disqualificationReasons,
+    queryFn: requests.getDisqualificationReasons,
+    staleTime: 60 * 60 * 1000,
+  })
+}
+
 /**
  * The link to one application file, for showing it inline. Links work for five
  * minutes, so the link is asked for again after four.
@@ -296,6 +404,20 @@ export {
   useApplications,
   useApplication,
   useApplicationFileLink,
+  useStages,
+  useApplicationEmails,
+  useApplicationAttachments,
+  useApplicationInterviews,
+  useApplicationOffers,
+  useOfferAudit,
+  useEmailTemplates,
+  useEmailSettings,
+  useOfferTemplates,
+  usePublicOffer,
+  useApplicationNotes,
+  useApplicationActivity,
+  useTags,
+  useDisqualificationReasons,
   usePublishCheck,
   useJobMembers,
   useIdentificationRequirements,

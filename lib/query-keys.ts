@@ -20,6 +20,27 @@ const queryKeys = {
     ['jobs', 'one', jobId, 'applications', 'one', appId] as const,
   applicationFile: (jobId: string, appId: string, fileId: string) =>
     ['jobs', 'one', jobId, 'applications', 'one', appId, 'file', fileId] as const,
+  publicOffer: (token: string) => ['offers', token] as const,
+  stages: (jobId: string) => ['jobs', 'one', jobId, 'stages'] as const,
+  notes: (jobId: string, appId: string) =>
+    ['jobs', 'one', jobId, 'applications', 'one', appId, 'notes'] as const,
+  activity: (jobId: string, appId: string) =>
+    ['jobs', 'one', jobId, 'applications', 'one', appId, 'activity'] as const,
+  tags: ['hiring', 'tags'] as const,
+  emails: (jobId: string, appId: string) =>
+    ['jobs', 'one', jobId, 'applications', 'one', appId, 'emails'] as const,
+  attachments: (jobId: string, appId: string) =>
+    ['jobs', 'one', jobId, 'applications', 'one', appId, 'attachments'] as const,
+  interviews: (jobId: string, appId: string) =>
+    ['jobs', 'one', jobId, 'applications', 'one', appId, 'interviews'] as const,
+  offers: (jobId: string, appId: string) =>
+    ['jobs', 'one', jobId, 'applications', 'one', appId, 'offers'] as const,
+  offerAudit: (jobId: string, appId: string, offerId: string) =>
+    ['jobs', 'one', jobId, 'applications', 'one', appId, 'offers', offerId, 'audit'] as const,
+  emailTemplates: ['hiring', 'email-templates'] as const,
+  emailSettings: ['hiring', 'email-settings'] as const,
+  offerTemplates: ['hiring', 'offer-templates'] as const,
+  disqualificationReasons: ['hiring', 'disqualification-reasons'] as const,
   compliance: (id: string) => ['jobs', 'one', id, 'compliance'] as const,
   screeningRules: (id: string) => ['jobs', 'one', id, 'screening-rules'] as const,
   shareKit: (id: string) => ['jobs', 'one', id, 'share-kit'] as const,

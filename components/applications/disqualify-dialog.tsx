@@ -3,34 +3,44 @@
 import { useState, type ReactElement } from 'react'
 
 import { DashboardIcon } from '@/components/dashboard/nav-config'
-import { Button, InputSelection, ModalActions, Modal, RadioButton, Textarea } from '@/components/ui'
-import { DISQUALIFY_REASONS, disqualifyNote, reasonNeedsNote } from '@/lib/applications/stages'
+import {
+  Button,
+  InputSelection,
+  Modal,
+  ModalActions,
+  RadioButton,
+  TextInput,
+  Textarea,
+} from '@/components/ui'
+import { reasonNeedsNote, type DisqualifyReason } from '@/lib/applications/pipeline'
+import { disqualifyNote } from '@/lib/applications/stages'
 
 import type { SelectOption } from '@/components/ui'
+import type { MessageBody } from '@/lib/applications/communications'
 
-/** The reasons as the select lists them, grouped as the design draws them (05). */
-const REASON_OPTIONS: SelectOption[] = DISQUALIFY_REASONS.map((reason) => ({
-  value: reason.label,
-  label: reason.label,
-  group: reason.group,
-}))
+/** The reasons as the select lists them: the server's list, by code. */
+function reasonOptions(reasons: ReadonlyArray<DisqualifyReason>): SelectOption[] {
+  return reasons.map((reason) => ({ value: reason.code, label: reason.label }))
+}
 
 interface ReasonFieldProps {
+  /** The reason's code. */
   value: string
+  reasons: ReadonlyArray<DisqualifyReason>
   onChange: (reason: string) => void
   /** Helper copy under the picker, as the dialog's design draws it. */
   helperText?: string
 }
 
 /** The reason picker: a list with a search box at its top. */
-function ReasonField({ value, onChange, helperText }: ReasonFieldProps): ReactElement {
+function ReasonField({ value, reasons, onChange, helperText }: ReasonFieldProps): ReactElement {
   return (
     <InputSelection
       label="Disqualify candidate"
       placeholder="Select a reason"
       listSearchPlaceholder="Search a reason"
       helperText={helperText}
-      options={REASON_OPTIONS}
+      options={reasonOptions(reasons)}
       value={value}
       onChange={(next) => onChange(typeof next === 'string' ? next : '')}
     />
@@ -61,27 +71,37 @@ function NoteField({ value, onChange, required }: NoteFieldProps): ReactElement 
   )
 }
 
+type Notify = 'standard' | 'own'
+
 /**
- * "Notify candidate" as the design draws it, but read-only: the server emails a
- * candidate on a rejection only when the company's send_status_emails is on.
+ * "Notify candidate": the company's standard email goes unless it turned status
+ * emails off (a setting, so shown read-only), or the person writes their own,
+ * which goes instead of it.
  */
-function NotifyChoice({ sendEmails }: { sendEmails: boolean | undefined }): ReactElement {
+function NotifyChoice({
+  sendEmails,
+  value,
+  onChange,
+}: {
+  sendEmails: boolean | undefined
+  value: Notify
+  onChange: (value: Notify) => void
+}): ReactElement {
   return (
     <div className="flex flex-col gap-[10px]">
       <p className="text-body-s leading-19_5 font-medium text-text-secondary">Notify candidate:</p>
       <RadioButton
         name="notify-candidate"
-        label="Send email"
-        checked={sendEmails === true}
-        disabled
-        onChange={() => undefined}
+        label={sendEmails === false ? 'Standard email (turned off in settings)' : 'Standard email'}
+        checked={value === 'standard'}
+        disabled={sendEmails === false}
+        onChange={() => onChange('standard')}
       />
       <RadioButton
         name="notify-candidate"
-        label="Don’t notify"
-        checked={sendEmails === false}
-        disabled
-        onChange={() => undefined}
+        label="Write my own email"
+        checked={value === 'own'}
+        onChange={() => onChange('own')}
       />
     </div>
   )
@@ -89,11 +109,12 @@ function NotifyChoice({ sendEmails }: { sendEmails: boolean | undefined }): Reac
 
 interface DisqualifyDialogProps {
   name: string
+  reasons: ReadonlyArray<DisqualifyReason>
   sendEmails: boolean | undefined
   pending: boolean
   onCancel: () => void
-  /** Called with the note the server keeps: the reason, then the optional note. */
-  onConfirm: (note: string) => void
+  /** Called with the reason's code and the optional note. */
+  onConfirm: (decision: { reason: string; note: string; message?: MessageBody }) => void
 }
 
 /**
@@ -102,6 +123,7 @@ interface DisqualifyDialogProps {
  */
 function DisqualifyDialog({
   name,
+  reasons,
   sendEmails,
   pending,
   onCancel,
@@ -109,8 +131,13 @@ function DisqualifyDialog({
 }: DisqualifyDialogProps): ReactElement {
   const [reason, setReason] = useState('')
   const [note, setNote] = useState('')
+  const [notify, setNotify] = useState<Notify>('standard')
+  const [subject, setSubject] = useState('')
+  const [message, setMessage] = useState('')
   const needsNote = reasonNeedsNote(reason)
-  const blocked = !reason || (needsNote && !note.trim())
+  const own = notify === 'own'
+  const blocked =
+    !reason || (needsNote && !note.trim()) || (own && (!subject.trim() || !message.trim()))
 
   return (
     <Modal
@@ -120,13 +147,26 @@ function DisqualifyDialog({
       onClose={onCancel}
       width={500}
     >
-      <ReasonField
-        value={reason}
-        onChange={setReason}
-        helperText="Select stages where this template can be used"
-      />
+      <ReasonField value={reason} reasons={reasons} onChange={setReason} />
       <NoteField value={note} onChange={setNote} required={needsNote} />
-      <NotifyChoice sendEmails={sendEmails} />
+      <NotifyChoice sendEmails={sendEmails} value={notify} onChange={setNotify} />
+      {own ? (
+        <>
+          <TextInput
+            label="Subject"
+            value={subject}
+            onChange={(event) => setSubject(event.target.value)}
+          />
+          <Textarea
+            label="Message"
+            helperText="Variables: {{candidate_name}} {{job_title}} {{company}} {{sender_name}}"
+            showToolbar={false}
+            rows={5}
+            value={message}
+            onChange={(event) => setMessage(event.target.value)}
+          />
+        </>
+      ) : null}
       <ModalActions>
         <Button variant="primary" accent="default" size="md" onClick={onCancel}>
           Cancel
@@ -137,7 +177,13 @@ function DisqualifyDialog({
           size="md"
           disabled={blocked || pending}
           loading={pending}
-          onClick={() => onConfirm(disqualifyNote(reason, note))}
+          onClick={() =>
+            onConfirm({
+              reason,
+              note: disqualifyNote(note),
+              message: own ? { subject: subject.trim(), body: message.trim() } : undefined,
+            })
+          }
         >
           Disqualify
         </Button>

@@ -8,6 +8,7 @@ import { requests } from './requests'
 
 import type { ApplicationStatus } from './applications/api'
 import type { ApplicationDecision } from './applications/api-types'
+import type { InterviewBody, MessageBody, OfferBody } from './applications/communications'
 import type { ApplicationAnswers } from './careers/application'
 import type { CareersJob } from './careers/types'
 import type { ApiRulesBody } from './compliance/api-types'
@@ -45,53 +46,342 @@ function useReviewApplication(jobId: string) {
   })
 }
 
-/** Moves an application to its next status, then reloads the job's applications and counts. */
-function useChangeApplicationStatus(jobId: string) {
+/** Signs an offer, then shows the signed state from the answer. */
+function useSignOffer(token: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ appId, ...body }: { appId: string; status: ApplicationStatus; note?: string }) =>
-      requests.changeApplicationStatus(jobId, appId, body),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.applications(jobId) }),
+    mutationFn: (body: { full_name: string; consent: boolean }) =>
+      requests.signPublicOffer(token, body),
+    onSuccess: (offer) => queryClient.setQueryData(queryKeys.publicOffer(token), offer),
+  })
+}
+
+/** Declines an offer, then reloads it to show it ended. */
+function useDeclineOffer(token: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (reason?: string) => requests.declinePublicOffer(token, reason),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.publicOffer(token) }),
+  })
+}
+
+/** Everything under one application that a send, schedule or offer changes. */
+function useApplicationRefresh(jobId: string): () => Promise<unknown> {
+  const queryClient = useQueryClient()
+  return () => queryClient.invalidateQueries({ queryKey: queryKeys.applications(jobId) })
+}
+
+/** Writes to the candidate. Reloads the emails, the files waiting, and the timeline. */
+function useSendApplicationEmail(jobId: string, appId: string) {
+  const refresh = useApplicationRefresh(jobId)
+  return useMutation({
+    mutationFn: (body: MessageBody) => requests.sendApplicationEmail(jobId, appId, body),
+    onSuccess: refresh,
+  })
+}
+
+function usePreviewApplicationEmail(jobId: string, appId: string) {
+  return useMutation({
+    mutationFn: (body: MessageBody) => requests.previewApplicationEmail(jobId, appId, body),
+  })
+}
+
+function useCancelApplicationEmail(jobId: string, appId: string) {
+  const refresh = useApplicationRefresh(jobId)
+  return useMutation({
+    mutationFn: (messageId: string) => requests.cancelApplicationEmail(jobId, appId, messageId),
+    onSuccess: refresh,
+  })
+}
+
+function useUploadAttachment(jobId: string, appId: string) {
+  const refresh = useApplicationRefresh(jobId)
+  return useMutation({
+    mutationFn: (file: File) => requests.uploadApplicationAttachment(jobId, appId, file),
+    onSuccess: refresh,
+  })
+}
+
+function useDeleteAttachment(jobId: string, appId: string) {
+  const refresh = useApplicationRefresh(jobId)
+  return useMutation({
+    mutationFn: (attachmentId: string) =>
+      requests.deleteApplicationAttachment(jobId, appId, attachmentId),
+    onSuccess: refresh,
+  })
+}
+
+/** Schedules, reschedules, cancels or completes interviews of one application. */
+function useInterviewActions(jobId: string, appId: string) {
+  const refresh = useApplicationRefresh(jobId)
+  const schedule = useMutation({
+    mutationFn: (body: InterviewBody) => requests.scheduleInterview(jobId, appId, body),
+    onSuccess: refresh,
+  })
+  const update = useMutation({
+    mutationFn: ({ id, body }: { id: string; body: Partial<InterviewBody> }) =>
+      requests.updateInterview(jobId, appId, id, body),
+    onSuccess: refresh,
+  })
+  const close = useMutation({
+    mutationFn: ({
+      id,
+      action,
+      body,
+    }: {
+      id: string
+      action: 'cancel' | 'complete'
+      body?: { note?: string; notify?: boolean }
+    }) => requests.closeInterview(jobId, appId, id, action, body),
+    onSuccess: refresh,
+  })
+  return { schedule, update, close }
+}
+
+/** Makes, edits, sends and withdraws offers of one application. */
+function useOfferActions(jobId: string, appId: string) {
+  const refresh = useApplicationRefresh(jobId)
+  const create = useMutation({
+    mutationFn: (body: OfferBody) => requests.createOffer(jobId, appId, body),
+    onSuccess: refresh,
+  })
+  const update = useMutation({
+    mutationFn: ({
+      id,
+      body,
+    }: {
+      id: string
+      body: Partial<Pick<OfferBody, 'title' | 'body' | 'compensation' | 'start_date'>>
+    }) => requests.updateOffer(jobId, appId, id, body),
+    onSuccess: refresh,
+  })
+  const send = useMutation({
+    mutationFn: ({ id, expiresInDays }: { id: string; expiresInDays?: number }) =>
+      requests.sendOffer(jobId, appId, id, expiresInDays),
+    onSuccess: refresh,
+  })
+  const withdraw = useMutation({
+    mutationFn: (id: string) => requests.withdrawOffer(jobId, appId, id),
+    onSuccess: refresh,
+  })
+  return { create, update, send, withdraw }
+}
+
+/** The company's email templates: save (new or existing) and delete. */
+function useEmailTemplateActions() {
+  const queryClient = useQueryClient()
+  const refresh = () => queryClient.invalidateQueries({ queryKey: queryKeys.emailTemplates })
+  const save = useMutation({
+    mutationFn: ({
+      id,
+      body,
+    }: {
+      id: string | null
+      body: { name: string; subject: string; body: string }
+    }) => requests.saveEmailTemplate(id, body),
+    onSuccess: refresh,
+  })
+  const remove = useMutation({
+    mutationFn: (id: string) => requests.deleteEmailTemplate(id),
+    onSuccess: refresh,
+  })
+  return { save, remove }
+}
+
+function useOfferTemplateActions() {
+  const queryClient = useQueryClient()
+  const refresh = () => queryClient.invalidateQueries({ queryKey: queryKeys.offerTemplates })
+  const save = useMutation({
+    mutationFn: ({ id, body }: { id: string | null; body: { name: string; body: string } }) =>
+      requests.saveOfferTemplate(id, body),
+    onSuccess: refresh,
+  })
+  const remove = useMutation({
+    mutationFn: (id: string) => requests.deleteOfferTemplate(id),
+    onSuccess: refresh,
+  })
+  return { save, remove }
+}
+
+function useSetEmailSettings() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (replyTo: string) => requests.setEmailSettings(replyTo),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.emailSettings }),
+  })
+}
+
+/** Reloads what a pipeline change touches: the lists and counts, the open application, and the stages. */
+function usePipelineRefresh(jobId: string): () => Promise<unknown> {
+  const queryClient = useQueryClient()
+  return () =>
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey: queryKeys.applications(jobId) }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.stages(jobId) }),
+    ])
+}
+
+/** Moves an application to one of its job's stages (Hired decides it). */
+function useMoveApplicationStage(jobId: string) {
+  const refresh = usePipelineRefresh(jobId)
+  return useMutation({
+    mutationFn: ({
+      appId,
+      ...body
+    }: {
+      appId: string
+      stage_id: string
+      reason?: string
+      note?: string
+    }) => requests.moveApplicationStage(jobId, appId, body),
+    onSuccess: refresh,
   })
 }
 
 /**
- * Disqualifies an application (rejects it). A received one is moved to in
- * review first, because the server allows that step only; a flagged one is
- * rejected through its review. The job's applications reload either way, so a
- * half-done sequence still shows where it stopped.
+ * Disqualifies an application. A flagged one is rejected through its review;
+ * any other moves to the job's Disqualified stage. The reason is a code from
+ * the server's list.
  */
 function useDisqualifyApplication(jobId: string) {
-  const queryClient = useQueryClient()
+  const refresh = usePipelineRefresh(jobId)
   return useMutation({
     mutationFn: async ({
       appId,
       status,
       canDecide,
+      stageId,
+      reason,
       note,
+      message,
     }: {
       appId: string
       status: ApplicationStatus
       canDecide: boolean
-      /** The reason and note, kept with the final rejection. */
+      /** The job's Disqualified stage. */
+      stageId: string
+      reason: string
       note?: string
+      /** Written to the candidate instead of the standard email. */
+      message?: MessageBody
     }): Promise<void> => {
       const plan = disqualifyPlan(status, canDecide)
       if (!plan) throw new Error('This application cannot be disqualified.')
       if (plan.kind === 'review') {
-        await requests.reviewApplication(jobId, appId, { decision: 'reject', note })
+        await requests.reviewApplication(jobId, appId, {
+          decision: 'reject',
+          reason,
+          note,
+          message,
+        })
         return
       }
-      const last = plan.steps.length - 1
-      for (const [index, next] of plan.steps.entries()) {
-        await requests.changeApplicationStatus(
-          jobId,
-          appId,
-          index === last ? { status: next, note } : { status: next },
-        )
-      }
+      await requests.moveApplicationStage(jobId, appId, {
+        stage_id: stageId,
+        reason,
+        note,
+        message,
+      })
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.applications(jobId) }),
+    onSettled: refresh,
+  })
+}
+
+/** Moves several applications to one stage. The result says which of them were refused. */
+function useBulkMoveStage(jobId: string) {
+  const refresh = usePipelineRefresh(jobId)
+  return useMutation({
+    mutationFn: (body: {
+      application_ids: string[]
+      stage_id: string
+      reason?: string
+      note?: string
+      message?: MessageBody
+    }) => requests.bulkMoveStage(jobId, body),
+    onSettled: refresh,
+  })
+}
+
+/** Adds a custom stage, renames or removes one, or sets the order of the open ones. */
+function useCreateStage(jobId: string) {
+  const refresh = usePipelineRefresh(jobId)
+  return useMutation({
+    mutationFn: (name: string) => requests.createStage(jobId, name),
+    onSuccess: refresh,
+  })
+}
+
+function useRenameStage(jobId: string) {
+  const refresh = usePipelineRefresh(jobId)
+  return useMutation({
+    mutationFn: ({ stageId, name }: { stageId: string; name: string }) =>
+      requests.renameStage(jobId, stageId, name),
+    onSuccess: refresh,
+  })
+}
+
+function useDeleteStage(jobId: string) {
+  const refresh = usePipelineRefresh(jobId)
+  return useMutation({
+    mutationFn: (stageId: string) => requests.deleteStage(jobId, stageId),
+    onSuccess: refresh,
+  })
+}
+
+function useReorderStages(jobId: string) {
+  const refresh = usePipelineRefresh(jobId)
+  return useMutation({
+    mutationFn: (stageIds: string[]) => requests.reorderStages(jobId, stageIds),
+    onSuccess: refresh,
+  })
+}
+
+/** Notes: each change reloads the notes, the timeline and the note count in the list. */
+function useApplicationNoteActions(jobId: string, appId: string) {
+  const queryClient = useQueryClient()
+  const refresh = () => queryClient.invalidateQueries({ queryKey: queryKeys.applications(jobId) })
+  const add = useMutation({
+    mutationFn: (body: string) => requests.addApplicationNote(jobId, appId, body),
+    onSuccess: refresh,
+  })
+  const edit = useMutation({
+    mutationFn: ({ noteId, body }: { noteId: string; body: string }) =>
+      requests.editApplicationNote(jobId, appId, noteId, body),
+    onSuccess: refresh,
+  })
+  const remove = useMutation({
+    mutationFn: (noteId: string) => requests.deleteApplicationNote(jobId, appId, noteId),
+    onSuccess: refresh,
+  })
+  return { add, edit, remove }
+}
+
+/** Replaces an application's tags. */
+function useSetApplicationTags(jobId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ appId, tagIds }: { appId: string; tagIds: string[] }) =>
+      requests.setApplicationTags(jobId, appId, tagIds),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.applications(jobId) }),
+  })
+}
+
+/** Follows or unfollows an application. */
+function useFollowApplication(jobId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ appId, follow }: { appId: string; follow: boolean }) =>
+      requests.followApplication(jobId, appId, follow),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.applications(jobId) }),
+  })
+}
+
+/** A new company tag. */
+function useCreateTag() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (body: { name: string; color: string }) => requests.createTag(body),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.tags }),
   })
 }
 
@@ -342,8 +632,29 @@ export {
   useSubmitKyb,
   useConfirmGate,
   useSetScreeningRules,
-  useChangeApplicationStatus,
+  useBulkMoveStage,
+  useCreateStage,
+  useCreateTag,
+  useDeleteStage,
   useDisqualifyApplication,
+  useFollowApplication,
+  useMoveApplicationStage,
+  useApplicationNoteActions,
+  useRenameStage,
+  useReorderStages,
+  useSetApplicationTags,
+  useSendApplicationEmail,
+  usePreviewApplicationEmail,
+  useCancelApplicationEmail,
+  useUploadAttachment,
+  useDeleteAttachment,
+  useInterviewActions,
+  useOfferActions,
+  useEmailTemplateActions,
+  useOfferTemplateActions,
+  useSetEmailSettings,
+  useSignOffer,
+  useDeclineOffer,
   useReviewApplication,
   useAcceptInvite,
   useConfirmTotp,
