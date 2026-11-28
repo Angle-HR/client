@@ -3,7 +3,7 @@
 import { useState, type ReactElement } from 'react'
 
 import { BannerSmall, Button, Checkbox, TextInput, Textarea } from '@/components/ui'
-import { getApiError } from '@/lib/api-error'
+import { getApiError, getFieldErrors } from '@/lib/api-error'
 import { useDeclineOffer, useSignOffer } from '@/lib/mutations'
 import { usePublicOffer } from '@/lib/queries'
 import { requests } from '@/lib/requests'
@@ -112,7 +112,9 @@ function RespondForm({ token, offer }: { token: string; offer: PublicOffer }): R
   const canSign = fullName.trim().length > 1 && consent
 
   function failed(cause: unknown): void {
-    setError(getApiError(cause)?.message || 'That did not go through. Try again.')
+    const problem = getFieldErrors(cause)[0]?.message
+    const message = problem || getApiError(cause)?.message || 'That did not go through. Try again.'
+    setError(message.charAt(0).toUpperCase() + message.slice(1))
   }
 
   function submitSign(): void {
