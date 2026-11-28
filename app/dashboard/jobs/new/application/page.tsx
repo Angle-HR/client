@@ -22,6 +22,7 @@ import { previewJobFrom } from '@/lib/jobs/application-preview'
 import { useApplicationForm, useHiringMe, useJob } from '@/lib/queries'
 import { queryKeys } from '@/lib/query-keys'
 import { requests } from '@/lib/requests'
+import { idFromAddress, toShortId } from '@/lib/short-id'
 
 import type { PreviewTab } from '@/components/jobs/create/application-preview'
 import type { JobToastState } from '@/components/jobs/job-toast'
@@ -44,12 +45,10 @@ function ApplicationFormPage() {
   const router = useRouter()
   const params = useSearchParams()
   const queryClient = useQueryClient()
-  const jobId = params.get('job')
-  const backHref = jobId
-    ? `/dashboard/jobs/new?job=${encodeURIComponent(jobId)}`
-    : '/dashboard/jobs/new'
+  const jobId = idFromAddress(params.get('job'))
+  const backHref = jobId ? `/dashboard/jobs/new?job=${toShortId(jobId)}` : '/dashboard/jobs/new'
   const permissionsHref = jobId
-    ? `/dashboard/jobs/new/permissions?job=${encodeURIComponent(jobId)}`
+    ? `/dashboard/jobs/new/permissions?job=${toShortId(jobId)}`
     : '/dashboard/jobs/new/permissions'
 
   const savedForm = useApplicationForm(jobId).data

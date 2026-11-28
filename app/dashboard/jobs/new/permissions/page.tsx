@@ -24,6 +24,7 @@ import {
 import { useJob, useJobMembers, usePeople } from '@/lib/queries'
 import { queryKeys } from '@/lib/query-keys'
 import { requests } from '@/lib/requests'
+import { idFromAddress, toShortId } from '@/lib/short-id'
 
 import type { GeneralAccess, InvitedPerson } from '@/components/jobs/create/permissions-step'
 import type { JobToastState } from '@/components/jobs/job-toast'
@@ -57,12 +58,12 @@ function PermissionsPage() {
   const router = useRouter()
   const params = useSearchParams()
   const queryClient = useQueryClient()
-  const jobId = params.get('job')
+  const jobId = idFromAddress(params.get('job'))
   const backHref = jobId
-    ? `/dashboard/jobs/new/application?job=${encodeURIComponent(jobId)}`
+    ? `/dashboard/jobs/new/application?job=${toShortId(jobId)}`
     : '/dashboard/jobs/new/application'
   const publishHref = jobId
-    ? `/dashboard/jobs/new/publish?job=${encodeURIComponent(jobId)}`
+    ? `/dashboard/jobs/new/publish?job=${toShortId(jobId)}`
     : '/dashboard/jobs/new/publish'
 
   const job = useJob(jobId).data

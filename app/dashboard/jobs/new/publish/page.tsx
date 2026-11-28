@@ -25,6 +25,7 @@ import {
 } from '@/lib/queries'
 import { queryKeys } from '@/lib/query-keys'
 import { requests } from '@/lib/requests'
+import { idFromAddress, toShortId } from '@/lib/short-id'
 
 import type { JobToastState } from '@/components/jobs/job-toast'
 import type { ApiGate } from '@/lib/compliance/api-types'
@@ -47,9 +48,9 @@ function PublishPage() {
   const router = useRouter()
   const params = useSearchParams()
   const queryClient = useQueryClient()
-  const jobId = params.get('job')
+  const jobId = idFromAddress(params.get('job'))
   const backHref = jobId
-    ? `/dashboard/jobs/new/permissions?job=${encodeURIComponent(jobId)}`
+    ? `/dashboard/jobs/new/permissions?job=${toShortId(jobId)}`
     : '/dashboard/jobs/new/permissions'
 
   const job = useJob(jobId).data

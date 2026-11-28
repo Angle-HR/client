@@ -41,6 +41,7 @@ import {
   useMe,
   usePeople,
 } from '@/lib/queries'
+import { toShortId } from '@/lib/short-id'
 
 import type { AnchorRect } from '@/components/jobs/floating'
 import type { FilterPopover } from '@/components/jobs/job-filters'
@@ -241,8 +242,9 @@ function JobsPage() {
     else if (action === 'assign') controller.openDialog({ type: 'assign', jobIds: [job.id] })
     else if (action === 'closing-date') {
       controller.openDialog({ type: 'closing-date', jobIds: [job.id] })
-    } else if (action === 'applicants') router.push(`/dashboard/jobs/${job.id}/applications`)
-    else if (action === 'edit') router.push(`/dashboard/jobs/new?job=${job.id}`)
+    } else if (action === 'applicants')
+      router.push(`/dashboard/jobs/${toShortId(job.id)}/applications`)
+    else if (action === 'edit') router.push(`/dashboard/jobs/new?job=${toShortId(job.id)}`)
   }
 
   // Coming back from the job form: confirm the save once, then tidy the URL.
@@ -475,7 +477,7 @@ function JobsPage() {
             menuJobId={rowMenu?.jobId ?? null}
             onSelect={selectJob}
             onOpenMenu={(jobId, rect) => setRowMenu({ jobId, anchor: toAnchor(rect) })}
-            onOpenJob={(jobId) => router.push(`/dashboard/jobs/${jobId}/applications`)}
+            onOpenJob={(jobId) => router.push(`/dashboard/jobs/${toShortId(jobId)}/applications`)}
           />
         </div>
       ) : (
@@ -570,7 +572,7 @@ function JobsPage() {
             setTab('templates')
           }}
           onClose={() => setStarting(null)}
-          onContinue={(id) => router.push(`/dashboard/jobs/new?template=${id}`)}
+          onContinue={(id) => router.push(`/dashboard/jobs/new?template=${toShortId(id)}`)}
         />
       ) : null}
 

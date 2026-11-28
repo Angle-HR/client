@@ -27,6 +27,7 @@ import { exportTemplates, groupTemplates, searchTemplates } from '@/lib/jobs/tem
 import { useJobTemplates } from '@/lib/queries'
 import { queryKeys } from '@/lib/query-keys'
 import { requests } from '@/lib/requests'
+import { toShortId } from '@/lib/short-id'
 
 import type { AnchorRect } from '@/components/jobs/floating'
 import type { GroupMeta } from '@/components/jobs/job-status'
@@ -626,7 +627,7 @@ function TemplatesPanel({ view, search }: TemplatesPanelProps) {
               label="Use"
               onClick={() => {
                 setMenu(null)
-                router.push(`/dashboard/jobs/new?template=${menuTemplate.id}`)
+                router.push(`/dashboard/jobs/new?template=${toShortId(menuTemplate.id)}`)
               }}
             />
             <MenuRow
@@ -634,7 +635,7 @@ function TemplatesPanel({ view, search }: TemplatesPanelProps) {
               label="Edit"
               onClick={() => {
                 setMenu(null)
-                router.push(`/dashboard/jobs/new?template=${menuTemplate.id}&mode=edit`)
+                router.push(`/dashboard/jobs/new?template=${toShortId(menuTemplate.id)}&mode=edit`)
               }}
             />
             {/* Renaming, like deleting, is for the template's creator. */}

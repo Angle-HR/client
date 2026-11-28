@@ -25,6 +25,7 @@ import {
 } from '@/lib/queries'
 import { queryKeys } from '@/lib/query-keys'
 import { requests } from '@/lib/requests'
+import { idFromAddress, toShortId } from '@/lib/short-id'
 
 import type { JobToastState } from '@/components/jobs/job-toast'
 import type { AiAccess } from '@/lib/jobs/ai-description'
@@ -51,8 +52,8 @@ function NewJobPage() {
   const queryClient = useQueryClient()
   const me = useMe()
 
-  const jobId = params.get('job')
-  const templateId = params.get('template')
+  const jobId = idFromAddress(params.get('job'))
+  const templateId = idFromAddress(params.get('template'))
   const mode = jobId
     ? 'edit-job'
     : templateId && params.get('mode') === 'edit'
@@ -194,7 +195,7 @@ function NewJobPage() {
       // Finished details carry on to the application form for this job.
       router.push(
         requireComplete
-          ? `/dashboard/jobs/new/application?job=${encodeURIComponent(current.id)}`
+          ? `/dashboard/jobs/new/application?job=${toShortId(current.id)}`
           : '/dashboard/jobs?saved=draft',
       )
     } catch (error) {
@@ -373,7 +374,7 @@ function NewJobPage() {
             setChoosingTemplate(false)
             // The new template replaces whatever was typed, as swapping implies.
             setEdited(null)
-            router.replace(`/dashboard/jobs/new?template=${id}`)
+            router.replace(`/dashboard/jobs/new?template=${toShortId(id)}`)
           }}
         />
       ) : null}
