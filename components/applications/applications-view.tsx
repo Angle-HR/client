@@ -348,7 +348,11 @@ function ApplicationsView({ jobId }: ApplicationsViewProps): ReactElement {
             We couldn&apos;t load the applications. Try again in a moment.
           </p>
         ) : rows.length === 0 && !loading ? (
-          <p className="text-body-s text-text-secondary">No applications here yet.</p>
+          <p className="text-body-s text-text-secondary">
+            {search.trim() || filters.tag || filters.followed
+              ? 'No candidates match. Clear the search or filters to see everyone.'
+              : 'No applications here yet.'}
+          </p>
         ) : (
           <>
             {checked.size > 0 ? (

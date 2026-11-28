@@ -4,7 +4,7 @@ import { useState, type ReactElement } from 'react'
 
 import { formatDateTime } from '@/components/applications/candidate-overview'
 import { DashboardIcon } from '@/components/dashboard/nav-config'
-import { Button, IconButton, Textarea } from '@/components/ui'
+import { Button, IconButton, TextButton, Textarea } from '@/components/ui'
 import { useApplicationNoteActions } from '@/lib/mutations'
 import { useApplicationNotes } from '@/lib/queries'
 
@@ -22,6 +22,8 @@ function CandidateNotes({ jobId, appId, onError }: CandidateNotesProps): ReactEl
   const { add, edit, remove } = useApplicationNoteActions(jobId, appId)
   const [draft, setDraft] = useState('')
   const [editing, setEditing] = useState<{ id: string; body: string } | null>(null)
+  // The note whose delete is waiting for a second click: a note cannot be brought back.
+  const [confirming, setConfirming] = useState<string | null>(null)
 
   function submit(): void {
     const body = draft.trim()
@@ -89,14 +91,33 @@ function CandidateNotes({ jobId, appId, onError }: CandidateNotesProps): ReactEl
                       onClick={() => setEditing({ id: note.id, body: note.body })}
                       icon={<DashboardIcon name="pencil-square-solid" size={12} />}
                     />
-                    <IconButton
-                      variant="tertiary"
-                      size="sm"
-                      aria-label="Delete note"
-                      disabled={remove.isPending}
-                      onClick={() => remove.mutate(note.id, { onError })}
-                      icon={<DashboardIcon name="trash-solid" size={12} />}
-                    />
+                    {confirming === note.id ? (
+                      <>
+                        <TextButton
+                          size="sm"
+                          disabled={remove.isPending}
+                          onClick={() =>
+                            remove.mutate(note.id, {
+                              onSuccess: () => setConfirming(null),
+                              onError,
+                            })
+                          }
+                        >
+                          Delete note
+                        </TextButton>
+                        <TextButton size="sm" onClick={() => setConfirming(null)}>
+                          Keep
+                        </TextButton>
+                      </>
+                    ) : (
+                      <IconButton
+                        variant="tertiary"
+                        size="sm"
+                        aria-label="Delete note"
+                        onClick={() => setConfirming(note.id)}
+                        icon={<DashboardIcon name="trash-solid" size={12} />}
+                      />
+                    )}
                   </div>
                 ) : null}
               </div>

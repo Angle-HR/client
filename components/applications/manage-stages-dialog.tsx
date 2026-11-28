@@ -91,7 +91,7 @@ function ManageStagesDialog({ jobId, stages, onClose }: ManageStagesDialogProps)
                   variant="tertiary"
                   size="sm"
                   aria-label={`Move ${stage.name} up`}
-                  disabled={index === 0 || busy}
+                  disabled={index <= 1 || stage.kind === 'applied' || busy}
                   onClick={() => move(index, -1)}
                   icon={<DashboardIcon name="arrow-up-solid" size={12} />}
                 />
@@ -99,7 +99,7 @@ function ManageStagesDialog({ jobId, stages, onClose }: ManageStagesDialogProps)
                   variant="tertiary"
                   size="sm"
                   aria-label={`Move ${stage.name} down`}
-                  disabled={index === open.length - 1 || busy}
+                  disabled={index === open.length - 1 || stage.kind === 'applied' || busy}
                   onClick={() => move(index, 1)}
                   icon={<DashboardIcon name="arrow-down-solid" size={12} />}
                 />
